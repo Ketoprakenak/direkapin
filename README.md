@@ -36,6 +36,20 @@ npm run lint
 
 `npm test` menghapus dan membuat ulang database `direkapin_test` setiap kali jalan. Test hanya mau jalan ke PostgreSQL lokal.
 
+## Menjalankan aplikasi di laptop
+
+Butuh Flutter 3 dan Android SDK. Dari folder `mobile/`:
+
+```bash
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+flutter analyze
+flutter test
+flutter run --dart-define=API_URL=http://<ip-laptop>:3000
+```
+
+HP dan laptop harus satu jaringan. HTTP hanya berlaku di build debug.
+
 ## Menjalankan di mini PC
 
 Butuh Docker dan Docker Compose. Dari root repo:

@@ -9,13 +9,13 @@ Status: `Belum mulai` · `Sedang dikerjakan` · `Selesai`
 
 ## Slice 0 — Fondasi · Status: Sedang dikerjakan
 Ref: PRD bagian 8, 16; `docs/DECISIONS.md`
-- [ ] `git init` + `.gitignore` (`.env`, keystore, `data/`), monorepo `mobile/`, `backend/`, `docs/`, `docker-compose.yml`, `.env.example`
+- [x] `git init` + `.gitignore` (`.env`, keystore, `data/`), monorepo `mobile/`, `backend/`, `docs/`, `docker-compose.yml`, `.env.example`
 - [x] Backend: Fastify + TypeScript + zod type provider, struktur `src/modules`, plugin error handler sesuai format error di `openapi.yaml`
 - [x] Prisma 6 (D-18), migrasi awal dari `schema.prisma` + CHECK constraint attachment, seed 1 kode undangan owner, template kategori di `src/lib/default-categories.ts` (D-20)
 - [x] `GET /api/v1/health` + `GET /api/v1/version`
 - [x] Vitest + database test di PostgreSQL laptop berjalan (D-19)
-- [ ] Flutter: tema dari `docs/DESIGN.md`, `go_router` dengan 4 tab kosong, API client `dio` + interceptor token, format Rupiah & tanggal
-- [ ] README: cara menjalankan dev
+- [x] Flutter: tema dari `docs/DESIGN.md`, `go_router` dengan 4 tab kosong, API client `dio` + interceptor token, format Rupiah & tanggal
+- [x] README: cara menjalankan dev
 
 ## Slice 1 — Auth · Status: Belum mulai
 Ref: AUTH-01–04, US-01, US-02
@@ -73,3 +73,4 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 |---|---|---|
 | 2026-11-04 | — | Revisi dokumen sebelum Slice 0: D-18–D-23, `totalBalance` boleh negatif, `Archive.zipPath` nullable, streak dan grafik 7 hari pindah ke Slice 2 |
 | 2026-11-04 | 0 | Backend selesai: lint, 17 test, dan build lolos. Belum dites: `Dockerfile` dan `docker-compose.yml` (butuh mini PC). Sisa: mobile (menunggu Flutter) |
+| 2026-11-04 | 0 | Mobile selesai: `flutter analyze` bersih, 16 test lolos. Slice belum ditutup: build APK dan uji di HP menunggu Android SDK; compose dan `Dockerfile` menunggu mini PC |
