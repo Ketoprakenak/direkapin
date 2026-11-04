@@ -368,7 +368,7 @@ Sebagai teman owner, saya ingin daftar pakai kode undangan supaya bisa punya aku
 Sebagai user, saya ingin tidak perlu login ulang setiap buka aplikasi.
 - Access token kedaluwarsa → aplikasi diam-diam refresh tanpa user sadar.
 - Refresh token kedaluwarsa (30 hari tidak dibuka) → diarahkan ke layar login.
-- 10 kali gagal login dalam 15 menit → dikunci sementara, pesan menyebut sisa waktu.
+- 10 kali percobaan login dalam 15 menit dari IP yang sama → dikunci sementara, pesan menyebut sisa waktu.
 
 **US-03 — Catat pengeluaran cepat** (DSH-06, FIN-01, FIN-13)
 Sebagai user, saya ingin mencatat pengeluaran dalam hitungan detik supaya tidak malas mencatat.
@@ -449,7 +449,7 @@ Navigasi utama pakai bottom navigation 4 tab: **Beranda · Kalender · Laporan �
 | Field | Aturan | Pesan error |
 | --- | --- | --- |
 | Nama | 2–50 karakter | "Nama minimal 2 karakter" |
-| Email | Format email valid, unik | "Email tidak valid" / "Email sudah dipakai" |
+| Email | Format email valid, unik, huruf besar-kecil dianggap sama | "Email tidak valid" / "Email sudah dipakai" |
 | Password | Min. 8 karakter, ada huruf dan angka | "Password minimal 8 karakter dengan huruf dan angka" |
 | Nominal | Bilangan bulat Rp1 – Rp999.999.999 | "Nominal harus lebih dari 0" |
 | Tanggal transaksi/kegiatan | Tidak boleh lebih dari 1 tahun ke depan | "Tanggal terlalu jauh ke depan" |

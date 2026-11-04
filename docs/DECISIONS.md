@@ -29,6 +29,10 @@ Kalau ada alasan kuat untuk berubah, tulis usulan di bawah bagian "Usulan" dan t
 | D-22 | Status `DOWNLOADED` diset setelah stream ZIP selesai utuh, lalu foto asli dihapus. ZIP tetap bisa di-download ulang sampai `expiresAt` | Foto tidak hilang kalau file di HP gagal tersimpan | Tandai saat request masuk; endpoint konfirmasi dari HP |
 | D-23 | Job arsip jalan harian 02:00 dan idempoten: buat arsip M-2 yang belum ada atau `FAILED`, lalu bereskan yang kedaluwarsa. Bulan foto = `Attachment.createdAt` di zona waktu user. Bulan tanpa foto dilewati | Otomatis mengejar kalau job gagal atau mini PC mati; foto yang diupload belakangan tidak jatuh ke bulan yang sudah diarsip | Job hanya tanggal 1; bulan dari tanggal transaksi/kegiatan |
 
+| D-24 | Rate limit login menghitung semua percobaan, 10 per 15 menit per IP, memakai header `CF-Connecting-IP` | Login jarang dengan sesi 30 hari. Tanpa header itu semua user terbaca satu IP (`cloudflared`). Aman karena API hanya bisa dicapai lewat tunnel | Hanya menghitung yang gagal; memakai IP koneksi |
+| D-25 | Refresh token = 32 byte acak, disimpan sebagai SHA-256. `/auth/logout` tidak butuh access token | Dicek ke DB, jadi tanda tangan JWT tidak perlu. Access token bisa sudah kedaluwarsa saat logout | Refresh token JWT + `JWT_REFRESH_SECRET`; logout wajib access token |
+| D-26 | Email disimpan huruf kecil | `Desta@x.com` dan `desta@x.com` adalah satu akun | Case-sensitive |
+
 ## Dependency yang disetujui
 
 **Backend:** `fastify`, `@fastify/multipart`, `@fastify/rate-limit`, `@fastify/cors`, `@fastify/sensible`, `fastify-type-provider-zod`, `zod`, `@prisma/client`, `prisma`, `bcrypt`, `jsonwebtoken`, `sharp`, `archiver`, `node-cron`, `pino-pretty` (dev), `vitest`, `supertest`, `eslint`, `typescript-eslint`, `typescript`, `tsx`, `@types/node`, `@types/bcrypt`, `@types/jsonwebtoken`.

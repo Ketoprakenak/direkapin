@@ -163,7 +163,9 @@ paths:
   /auth/logout:
     post:
       tags: [auth]
+      security: []
       summary: Cabut refresh token (AUTH-03)
+      description: Tetap 204 walau token tidak dikenal atau sudah dicabut.
       requestBody:
         required: true
         content:

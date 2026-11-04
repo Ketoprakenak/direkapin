@@ -17,5 +17,7 @@ export default defineConfig({
     globalSetup: './test/global-setup.ts',
     include: ['src/**/*.test.ts', 'test/**/*.test.ts'],
     fileParallelism: false,
+    // bcrypt sengaja lambat, dan satu test bisa memanggilnya berkali-kali.
+    testTimeout: 30_000,
   },
 });

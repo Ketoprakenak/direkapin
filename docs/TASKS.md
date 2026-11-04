@@ -3,11 +3,11 @@
 Satu slice per sesi Claude Code. Centang item saat selesai dan ubah status slice.
 Status: `Belum mulai` · `Sedang dikerjakan` · `Selesai`
 
-**Slice aktif:** 0
+**Slice aktif:** 1
 
 ---
 
-## Slice 0 — Fondasi · Status: Sedang dikerjakan
+## Slice 0 — Fondasi · Status: Selesai
 Ref: PRD bagian 8, 16; `docs/DECISIONS.md`
 - [x] `git init` + `.gitignore` (`.env`, keystore, `data/`), monorepo `mobile/`, `backend/`, `docs/`, `docker-compose.yml`, `.env.example`
 - [x] Backend: Fastify + TypeScript + zod type provider, struktur `src/modules`, plugin error handler sesuai format error di `openapi.yaml`
@@ -17,7 +17,7 @@ Ref: PRD bagian 8, 16; `docs/DECISIONS.md`
 - [x] Flutter: tema dari `docs/DESIGN.md`, `go_router` dengan 4 tab kosong, API client `dio` + interceptor token, format Rupiah & tanggal
 - [x] README: cara menjalankan dev
 
-## Slice 1 — Auth · Status: Belum mulai
+## Slice 1 — Auth · Status: Sedang dikerjakan
 Ref: AUTH-01–04, US-01, US-02
 - [ ] `POST /auth/register` (kode undangan, buat dompet "Cash" + salin kategori bawaan)
 - [ ] `POST /auth/login`, `/auth/refresh` (rotasi), `/auth/logout`
@@ -63,6 +63,7 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 - [ ] Job `pg_dump` harian (simpan 14 hari)
 - [ ] Job arsip harian idempoten (D-23) + `GET /archives`, `GET /archives/{id}/download`, penghapusan foto asli (D-22)
 - [ ] Mobile: Arsip (S-13), Profil & Pengaturan (S-14), notifikasi arsip lokal (saat terdeteksi, hari ke-7, ke-25, tanggal 1)
+- [ ] Uji `Dockerfile` dan `docker-compose.yml` di mini PC (ditunda dari Slice 0)
 - [ ] Deploy: `cloudflared` di compose, panduan setup di README
 - [ ] Checklist rilis PRD bagian 17 lolos → tag `v1.0.0`
 
@@ -76,3 +77,4 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 | 2026-11-04 | 0 | Mobile selesai: `flutter analyze` bersih, 16 test lolos. Slice belum ditutup: build APK dan uji di HP menunggu Android SDK; compose dan `Dockerfile` menunggu mini PC |
 | 2026-11-04 | 0 | APK release ter-build (47,9 MB, masih bertanda tangan debug sampai Slice 7). Slice belum ditutup: uji di HP asli dan uji compose + `Dockerfile` di mini PC |
 | 2026-11-04 | 0 | APK release jalan di HP asli menurut owner. Sisa: uji compose + `Dockerfile` di mini PC |
+| 2026-11-04 | 0 | Ditutup atas persetujuan owner; uji compose + `Dockerfile` pindah ke Slice 8 |

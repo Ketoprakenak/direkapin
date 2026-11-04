@@ -3,9 +3,13 @@ import Fastify from 'fastify';
 import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { loadConfig, type Config } from './config.js';
+import { authRoutes } from './modules/auth/auth.routes.js';
+import { meRoutes } from './modules/me/me.routes.js';
 import { systemRoutes } from './modules/system/system.routes.js';
+import { setupAuth } from './plugins/auth.js';
 import { setupErrors } from './plugins/errors.js';
 import { setupPrisma } from './plugins/prisma.js';
+import { setupRateLimit } from './plugins/rate-limit.js';
 
 // Pesan error ke user wajib bahasa Indonesia, termasuk pesan bawaan zod.
 z.config(z.locales.id());
@@ -25,10 +29,14 @@ export function buildApp(config: Config) {
   app.setSerializerCompiler(serializerCompiler);
   setupErrors(app);
   setupPrisma(app, config.DATABASE_URL);
+  setupAuth(app, config.JWT_SECRET);
+  setupRateLimit(app);
 
   app.register(
     async (api) => {
       systemRoutes(api, config);
+      authRoutes(api, config);
+      meRoutes(api);
     },
     { prefix: '/api/v1' },
   );
