@@ -72,4 +72,4 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 | Tanggal | Slice | Catatan |
 |---|---|---|
 | 2026-11-04 | — | Revisi dokumen sebelum Slice 0: D-18–D-23, `totalBalance` boleh negatif, `Archive.zipPath` nullable, streak dan grafik 7 hari pindah ke Slice 2 |
-| 2026-11-04 | 0 | Backend selesai: lint, 17 test, dan build lolos. Belum dites: `Dockerfile` dan `docker-compose.yml` (butuh mini PC). Sisa: mobile (menunggu Flutter), commit pertama (menunggu identitas Git) |
+| 2026-11-04 | 0 | Backend selesai: lint, 17 test, dan build lolos. Belum dites: `Dockerfile` dan `docker-compose.yml` (butuh mini PC). Sisa: mobile (menunggu Flutter) |
