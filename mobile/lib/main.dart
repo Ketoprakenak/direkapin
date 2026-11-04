@@ -7,5 +7,8 @@ import 'app.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('id_ID');
-  runApp(const ProviderScope(child: DirekapinApp()));
+  // Retry otomatis dimatikan: layar error sudah punya tombol "Coba lagi".
+  runApp(
+    ProviderScope(retry: (_, _) => null, child: const DirekapinApp()),
+  );
 }

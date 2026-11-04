@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Token tipografi. Sumber: docs/DESIGN.md.
+/// Token tipografi dari docs/DESIGN.md, dipetakan ke slot `TextTheme`:
+/// `displayAmount` = `displayMedium`, `amount` = `titleSmall`.
 abstract final class AppText {
   static TextStyle _style(
     double size,
@@ -15,11 +16,9 @@ abstract final class AppText {
     fontFeatures: tabular ? const [FontFeature.tabularFigures()] : null,
   );
 
-  static TextStyle get displayAmount =>
-      _style(32, 40, FontWeight.w700, tabular: true);
-  static TextStyle get amount => _style(16, 24, FontWeight.w600, tabular: true);
-
   static TextTheme get textTheme => TextTheme(
+    displayMedium: _style(32, 40, FontWeight.w700, tabular: true),
+    titleSmall: _style(16, 24, FontWeight.w600, tabular: true),
     titleLarge: _style(22, 28, FontWeight.w700),
     titleMedium: _style(17, 24, FontWeight.w600),
     bodyLarge: _style(16, 24, FontWeight.w400),

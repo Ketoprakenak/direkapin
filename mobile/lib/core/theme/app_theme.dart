@@ -58,6 +58,11 @@ ThemeData buildTheme(Brightness brightness) {
         ),
       ),
     ),
+    bottomSheetTheme: const BottomSheetThemeData(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(Radii.xl)),
+      ),
+    ),
     cardTheme: CardThemeData(
       color: scheme.surface,
       elevation: 0,

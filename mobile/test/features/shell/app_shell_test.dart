@@ -5,6 +5,7 @@ import 'package:direkapin/core/api/api_client.dart';
 import 'package:direkapin/core/api/api_error.dart';
 import 'package:direkapin/core/auth/session_provider.dart';
 import 'package:direkapin/core/router/router.dart';
+import 'package:direkapin/core/theme/tokens.dart';
 import 'package:direkapin/features/auth/data/auth_repository.dart';
 import 'package:direkapin/features/auth/providers/auth_providers.dart';
 import 'package:flutter/material.dart';
@@ -60,6 +61,7 @@ void main() {
     auth = _FakeAuth();
     await tester.pumpWidget(
       ProviderScope(
+        retry: (_, _) => null,
         overrides: [
           apiClientProvider.overrideWithValue(
             Dio(BaseOptions(baseUrl: 'https://example.test'))
@@ -69,7 +71,10 @@ void main() {
         ],
         child: Consumer(
           builder: (context, ref, _) =>
-              MaterialApp.router(routerConfig: ref.watch(appRouterProvider)),
+              MaterialApp.router(
+            theme: ThemeData(extensions: const [AppColors.light]),
+            routerConfig: ref.watch(appRouterProvider),
+          ),
         ),
       ),
     );

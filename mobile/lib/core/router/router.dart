@@ -5,8 +5,14 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
+import '../../features/category/presentation/categories_screen.dart';
+import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/settings/presentation/profile_screen.dart';
 import '../../features/shell/presentation/app_shell.dart';
+import '../../features/transaction/presentation/transaction_form_screen.dart';
+import '../../features/transaction/presentation/wallet_transactions_screen.dart';
+import '../../features/wallet/presentation/transfers_screen.dart';
+import '../../features/wallet/presentation/wallets_screen.dart';
 import '../auth/session_provider.dart';
 
 part 'router.g.dart';
@@ -19,6 +25,11 @@ abstract final class Routes {
   static const calendar = 'calendar';
   static const reports = 'reports';
   static const profile = 'profile';
+  static const transactionForm = 'transactionForm';
+  static const wallets = 'wallets';
+  static const walletTransactions = 'walletTransactions';
+  static const transfers = 'transfers';
+  static const categories = 'categories';
 }
 
 const _splashPath = '/';
@@ -67,11 +78,47 @@ GoRouter appRouter(Ref ref) {
         name: Routes.register,
         builder: (context, state) => const RegisterScreen(),
       ),
+      GoRoute(
+        path: '/transaksi/baru',
+        name: Routes.transactionForm,
+        builder: (context, state) => const TransactionFormScreen(),
+      ),
+      GoRoute(
+        path: '/dompet',
+        name: Routes.wallets,
+        builder: (context, state) => const WalletsScreen(),
+        routes: [
+          GoRoute(
+            path: ':id/transaksi',
+            name: Routes.walletTransactions,
+            builder: (context, state) => WalletTransactionsScreen(
+              walletId: state.pathParameters['id']!,
+              walletName: state.uri.queryParameters['nama'] ?? 'Dompet',
+            ),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/transfer',
+        name: Routes.transfers,
+        builder: (context, state) => const TransfersScreen(),
+      ),
+      GoRoute(
+        path: '/kategori',
+        name: Routes.categories,
+        builder: (context, state) => const CategoriesScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AppShell(shell: shell),
         branches: [
           StatefulShellBranch(
-            routes: [_tab(_homePath, Routes.home, 'Beranda')],
+            routes: [
+              GoRoute(
+                path: _homePath,
+                name: Routes.home,
+                builder: (context, state) => const DashboardScreen(),
+              ),
+            ],
           ),
           StatefulShellBranch(
             routes: [_tab('/kalender', Routes.calendar, 'Kalender')],

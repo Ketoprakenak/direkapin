@@ -12,5 +12,8 @@ String formatShortDate(DateTime date) =>
 String formatMonth(DateTime date) =>
     DateFormat('MMMM y', 'id_ID').format(date);
 
+/// `Rab`
+String formatWeekday(DateTime date) => DateFormat('E', 'id_ID').format(date);
+
 /// `21.00`
 String formatTime(DateTime date) => DateFormat('HH.mm').format(date);

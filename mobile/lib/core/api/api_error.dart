@@ -1,5 +1,14 @@
 import 'package:dio/dio.dart';
 
+/// Menjalankan panggilan API, dan mengubah kegagalan Dio jadi [ApiException].
+Future<T> apiCall<T>(Future<T> Function() call) async {
+  try {
+    return await call();
+  } on DioException catch (e) {
+    throw ApiException.fromDio(e);
+  }
+}
+
 /// Bentuk `Error` dari docs/openapi.yaml. [message] aman ditampilkan ke user.
 class ApiException implements Exception {
   const ApiException(this.code, this.message, [this.details = const {}]);

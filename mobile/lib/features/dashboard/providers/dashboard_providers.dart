@@ -1,0 +1,28 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+import '../../../core/api/api_client.dart';
+import '../../../core/api/api_error.dart';
+import '../../transaction/providers/transaction_providers.dart';
+import '../../wallet/providers/wallet_providers.dart';
+import '../data/dashboard_models.dart';
+
+part 'dashboard_providers.g.dart';
+
+@riverpod
+Future<Dashboard> dashboard(Ref ref) async {
+  final dio = ref.watch(apiClientProvider);
+  return apiCall(() async {
+    final response = await dio.get<Map<String, dynamic>>('/dashboard');
+    return Dashboard.fromJson(response.data!);
+  });
+}
+
+/// Dipanggil setelah data uang berubah, supaya saldo dan Beranda langsung ter-update.
+void refreshMoney(WidgetRef ref) {
+  ref.invalidate(dashboardProvider);
+  ref.invalidate(walletsProvider);
+  ref.invalidate(transfersProvider);
+  ref.invalidate(walletTransactionsProvider);
+  ref.invalidate(lastUsedWalletIdProvider);
+}

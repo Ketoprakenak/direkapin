@@ -38,7 +38,9 @@ class _AuthFormState extends State<AuthForm> {
     try {
       await widget.onSubmit();
     } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.details.values.firstOrNull ?? e.message);
+      if (mounted) {
+        setState(() => _error = e.details.values.firstOrNull ?? e.message);
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -51,38 +53,41 @@ class _AuthFormState extends State<AuthForm> {
       body: SafeArea(
         child: Form(
           key: _formKey,
-          child: ListView(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(Spacing.lg),
-            children: [
-              const SizedBox(height: Spacing.xxl),
-              Text(widget.title, style: theme.textTheme.titleLarge),
-              const SizedBox(height: Spacing.xl),
-              for (final field in widget.fields) ...[
-                field,
-                const SizedBox(height: Spacing.md),
-              ],
-              if (_error != null) ...[
-                Text(
-                  _error!,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.error,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: Spacing.xxl),
+                Text(widget.title, style: theme.textTheme.titleLarge),
+                const SizedBox(height: Spacing.xl),
+                for (final field in widget.fields) ...[
+                  field,
+                  const SizedBox(height: Spacing.md),
+                ],
+                if (_error != null) ...[
+                  Text(
+                    _error!,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.error,
+                    ),
                   ),
+                  const SizedBox(height: Spacing.md),
+                ],
+                const SizedBox(height: Spacing.sm),
+                FilledButton(
+                  onPressed: _busy ? null : _submit,
+                  child: _busy
+                      ? const SizedBox.square(
+                          dimension: Spacing.xl,
+                          child: CircularProgressIndicator(),
+                        )
+                      : Text(widget.submitLabel),
                 ),
-                const SizedBox(height: Spacing.md),
+                const SizedBox(height: Spacing.sm),
+                widget.footer,
               ],
-              const SizedBox(height: Spacing.sm),
-              FilledButton(
-                onPressed: _busy ? null : _submit,
-                child: _busy
-                    ? const SizedBox.square(
-                        dimension: Spacing.xl,
-                        child: CircularProgressIndicator(),
-                      )
-                    : Text(widget.submitLabel),
-              ),
-              const SizedBox(height: Spacing.sm),
-              widget.footer,
-            ],
+            ),
           ),
         ),
       ),

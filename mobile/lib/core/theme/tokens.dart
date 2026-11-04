@@ -93,6 +93,13 @@ const categoryPalette = [
   Color(0xFFEC4899),
 ];
 
+/// Warna kategori/dompet dari API (`#RRGGBB`).
+Color colorFromHex(String hex) =>
+    Color(int.parse(hex.substring(1), radix: 16) | 0xFF000000);
+
+String colorToHex(Color color) =>
+    '#${(color.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}';
+
 abstract final class Spacing {
   static const double xs = 4;
   static const double sm = 8;
