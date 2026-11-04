@@ -19,11 +19,12 @@ Ref: PRD bagian 8, 16; `docs/DECISIONS.md`
 
 ## Slice 1 — Auth · Status: Sedang dikerjakan
 Ref: AUTH-01–04, US-01, US-02
-- [ ] `POST /auth/register` (kode undangan, buat dompet "Cash" + salin kategori bawaan)
-- [ ] `POST /auth/login`, `/auth/refresh` (rotasi), `/auth/logout`
-- [ ] Rate limit login 10 / 15 menit / IP
-- [ ] `GET/PATCH /me`
-- [ ] Mobile: Splash (S-01), Login (S-02), Daftar (S-03), auto refresh token, logout
+- [x] `POST /auth/register` (kode undangan, buat dompet "Cash" + salin kategori bawaan)
+- [x] `POST /auth/login`, `/auth/refresh` (rotasi), `/auth/logout`
+- [x] Rate limit login 10 / 15 menit / IP
+- [x] `GET/PATCH /me`
+- [x] Mobile: Splash (S-01), Login (S-02), Daftar (S-03), auto refresh token, logout
+- [ ] Uji daftar, login, dan logout di HP asli
 
 ## Slice 2 — Dompet, kategori, transaksi + dashboard dasar · Status: Belum mulai
 Ref: FIN-01, 03–05, 09–10, DSH-01, 02, 03, 05, 06, US-03, US-06
@@ -78,3 +79,4 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 | 2026-11-04 | 0 | APK release ter-build (47,9 MB, masih bertanda tangan debug sampai Slice 7). Slice belum ditutup: uji di HP asli dan uji compose + `Dockerfile` di mini PC |
 | 2026-11-04 | 0 | APK release jalan di HP asli menurut owner. Sisa: uji compose + `Dockerfile` di mini PC |
 | 2026-11-04 | 0 | Ditutup atas persetujuan owner; uji compose + `Dockerfile` pindah ke Slice 8 |
+| 2026-11-04 | 1 | Kode selesai: backend 47 test, mobile 37 test, lint dan analyze bersih. Sisa: uji di HP asli |
