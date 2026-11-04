@@ -20,6 +20,12 @@ export async function getMe(prisma: PrismaClient, userId: string) {
   return toUserResponse(user);
 }
 
+export async function getTimezone(prisma: PrismaClient, userId: string) {
+  const user = await prisma.user.findFirst({ where: { id: userId }, select: { timezone: true } });
+  if (!user) throw new AppError('NOT_FOUND', 404, 'Data tidak ditemukan');
+  return user.timezone;
+}
+
 export async function updateMe(
   prisma: PrismaClient,
   userId: string,

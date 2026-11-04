@@ -33,6 +33,12 @@ Kalau ada alasan kuat untuk berubah, tulis usulan di bawah bagian "Usulan" dan t
 | D-25 | Refresh token = 32 byte acak, disimpan sebagai SHA-256. `/auth/logout` tidak butuh access token | Dicek ke DB, jadi tanda tangan JWT tidak perlu. Access token bisa sudah kedaluwarsa saat logout | Refresh token JWT + `JWT_REFRESH_SECRET`; logout wajib access token |
 | D-26 | Email disimpan huruf kecil | `Desta@x.com` dan `desta@x.com` adalah satu akun | Case-sensitive |
 
+| D-27 | Dompet atau kategori di body yang bukan milik user dibalas 400 (`Pilih dompet` / `Pilih kategori`), sama dengan ID yang tidak ada. ID di URL tetap 404 | Keberadaan data orang lain tidak terbongkar, dan user dapat pesan form yang jelas | 404 untuk semua |
+| D-28 | Total saldo Beranda tidak menghitung dompet arsip | Total cocok dengan kartu dompet yang terlihat. Batasannya: sisa uang di dompet arsip tidak terlihat di total | Menghitung semua dompet |
+| D-29 | Transaksi dan transfer di dompet arsip boleh diedit selama dompetnya tidak diganti; dompet tujuan baru harus aktif | Data lama tetap bisa dikoreksi | Melarang semua edit |
+| D-30 | Streak belum putus selama hari ini belum lewat. Transfer tidak dihitung | Streak tidak terlihat 0 setiap pagi | Putus jika hari ini kosong |
+| D-31 | Dompet terpilih di form = dompet transaksi terakhir, atau dompet aktif pertama | Tanpa kolom atau penyimpanan baru | Simpan pilihan di HP |
+
 ## Dependency yang disetujui
 
 **Backend:** `fastify`, `@fastify/multipart`, `@fastify/rate-limit`, `@fastify/cors`, `@fastify/sensible`, `fastify-type-provider-zod`, `zod`, `@prisma/client`, `prisma`, `bcrypt`, `jsonwebtoken`, `sharp`, `archiver`, `node-cron`, `pino-pretty` (dev), `vitest`, `supertest`, `eslint`, `typescript-eslint`, `typescript`, `tsx`, `@types/node`, `@types/bcrypt`, `@types/jsonwebtoken`.

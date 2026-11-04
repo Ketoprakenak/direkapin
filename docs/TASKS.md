@@ -26,7 +26,7 @@ Ref: AUTH-01–04, US-01, US-02
 - [x] Mobile: Splash (S-01), Login (S-02), Daftar (S-03), auto refresh token, logout
 - [x] Uji daftar, login, dan logout di HP asli
 
-## Slice 2 — Dompet, kategori, transaksi + dashboard dasar · Status: Belum mulai
+## Slice 2 — Dompet, kategori, transaksi + dashboard dasar · Status: Sedang dikerjakan
 Ref: FIN-01, 03–05, 09–10, DSH-01, 02, 03, 05, 06, US-03, US-06
 - [ ] API wallets (saldo dihitung), transfers, categories, transactions (tanpa foto)
 - [ ] `GET /dashboard` lengkap sesuai kontrak (saldo, masuk/keluar bulan ini, ringkasan hari ini, 7 hari terakhir, streak)

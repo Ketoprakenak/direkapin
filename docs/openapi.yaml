@@ -216,6 +216,7 @@ paths:
     get:
       tags: [wallets]
       summary: Daftar dompet beserta saldo terhitung (FIN-09)
+      description: totalBalance hanya menjumlahkan dompet yang ada di items, jadi dompet arsip ikut dihitung hanya jika includeArchived=true.
       parameters:
         - name: includeArchived
           in: query
@@ -272,6 +273,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Wallet' }
+        '400': { $ref: '#/components/responses/ValidationError' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/NameTaken' }
     delete:
@@ -345,6 +347,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Transfer' }
+        '400': { $ref: '#/components/responses/ValidationError' }
         '404': { $ref: '#/components/responses/NotFound' }
     delete:
       tags: [transfers]
@@ -418,8 +421,13 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Category' }
+        '400': { $ref: '#/components/responses/ValidationError' }
         '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/NameTaken' }
+        '409':
+          description: NAME_TAKEN, atau CATEGORY_DEFAULT jika nama kategori bawaan diubah
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
     delete:
       tags: [categories]
       summary: Hapus kategori custom; transaksinya dipindah ke "Lainnya" dengan tipe sama

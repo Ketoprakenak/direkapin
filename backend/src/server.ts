@@ -4,8 +4,13 @@ import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod
 import { z } from 'zod';
 import { loadConfig, type Config } from './config.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
+import { categoryRoutes } from './modules/categories/categories.routes.js';
+import { dashboardRoutes } from './modules/dashboard/dashboard.routes.js';
 import { meRoutes } from './modules/me/me.routes.js';
 import { systemRoutes } from './modules/system/system.routes.js';
+import { transactionRoutes } from './modules/transactions/transactions.routes.js';
+import { transferRoutes } from './modules/transfers/transfers.routes.js';
+import { walletRoutes } from './modules/wallets/wallets.routes.js';
 import { setupAuth } from './plugins/auth.js';
 import { setupErrors } from './plugins/errors.js';
 import { setupPrisma } from './plugins/prisma.js';
@@ -37,6 +42,11 @@ export function buildApp(config: Config) {
       systemRoutes(api, config);
       authRoutes(api, config);
       meRoutes(api);
+      walletRoutes(api);
+      transferRoutes(api);
+      categoryRoutes(api);
+      transactionRoutes(api);
+      dashboardRoutes(api);
     },
     { prefix: '/api/v1' },
   );
