@@ -1,0 +1,42 @@
+import { fileURLToPath } from 'node:url';
+import Fastify from 'fastify';
+import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
+import { z } from 'zod';
+import { loadConfig, type Config } from './config.js';
+import { systemRoutes } from './modules/system/system.routes.js';
+import { setupErrors } from './plugins/errors.js';
+import { setupPrisma } from './plugins/prisma.js';
+
+// Pesan error ke user wajib bahasa Indonesia, termasuk pesan bawaan zod.
+z.config(z.locales.id());
+
+export function buildApp(config: Config) {
+  const app = Fastify({
+    logger:
+      config.NODE_ENV === 'test'
+        ? false
+        : {
+            level: config.LOG_LEVEL,
+            ...(config.NODE_ENV === 'development' && { transport: { target: 'pino-pretty' } }),
+          },
+  });
+
+  app.setValidatorCompiler(validatorCompiler);
+  app.setSerializerCompiler(serializerCompiler);
+  setupErrors(app);
+  setupPrisma(app, config.DATABASE_URL);
+
+  app.register(
+    async (api) => {
+      systemRoutes(api, config);
+    },
+    { prefix: '/api/v1' },
+  );
+
+  return app;
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const config = loadConfig(process.env);
+  await buildApp(config).listen({ port: config.PORT, host: '0.0.0.0' });
+}

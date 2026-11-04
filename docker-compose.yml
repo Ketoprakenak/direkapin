@@ -1,0 +1,30 @@
+# Dijalankan di mini PC. Tidak ada port yang di-publish (D-19).
+# Service cloudflared ditambahkan di Slice 8; sebelum itu API belum bisa diakses dari luar container.
+services:
+  api:
+    build: ./backend
+    env_file: .env
+    volumes:
+      - ./data:/data
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    mem_limit: 512m
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+    mem_limit: 512m
+volumes:
+  pgdata:

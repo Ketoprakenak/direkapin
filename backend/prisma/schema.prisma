@@ -1,0 +1,274 @@
+// Direkapin — model data
+// Aturan: lihat docs/DECISIONS.md (D-06 BigInt Rupiah, D-08 UTC, D-09 kategori per user,
+// D-10 FK attachment, D-16 penamaan). Jangan ubah tanpa izin owner.
+//
+// Versi Prisma dikunci di 6.x (D-18). Prisma >= 7 butuh prisma.config.ts dan driver adapter.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Enum ----------
+
+enum WalletType {
+  CASH
+  BANK
+  EWALLET
+}
+
+enum TxType {
+  INCOME
+  EXPENSE
+}
+
+enum ArchiveStatus {
+  READY
+  DOWNLOADED
+  EXPIRED
+  FAILED
+}
+
+// ---------- Akun ----------
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String   @db.VarChar(50)
+  email        String   @unique @db.VarChar(255)
+  passwordHash String
+  avatarPath   String?
+  timezone     String   @default("Asia/Jakarta") @db.VarChar(64)
+  reminderTime String   @default("21:00") @db.VarChar(5) // HH:mm, waktu lokal user
+  createdAt    DateTime @default(now()) @db.Timestamptz
+  updatedAt    DateTime @updatedAt @db.Timestamptz
+
+  refreshTokens RefreshToken[]
+  wallets       Wallet[]
+  categories    Category[]
+  transactions  Transaction[]
+  transfers     Transfer[]
+  activities    Activity[]
+  attachments   Attachment[]
+  archives      Archive[]
+  dailyNotes    DailyNote[]
+  budgets       Budget[]
+  invitesMade   InviteCode[]   @relation("InviteCreatedBy")
+  inviteUsed    InviteCode?    @relation("InviteUsedBy")
+
+  @@map("users")
+}
+
+model InviteCode {
+  code        String    @id @db.VarChar(32)
+  createdById String?   @db.Uuid
+  usedById    String?   @unique @db.Uuid
+  expiresAt   DateTime? @db.Timestamptz
+  usedAt      DateTime? @db.Timestamptz
+  createdAt   DateTime  @default(now()) @db.Timestamptz
+
+  createdBy User? @relation("InviteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  usedBy    User? @relation("InviteUsedBy", fields: [usedById], references: [id], onDelete: SetNull)
+
+  @@map("invite_codes")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime  @db.Timestamptz
+  revokedAt DateTime? @db.Timestamptz
+  createdAt DateTime  @default(now()) @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ---------- Keuangan ----------
+
+model Wallet {
+  id             String     @id @default(uuid()) @db.Uuid
+  userId         String     @db.Uuid
+  name           String     @db.VarChar(30)
+  type           WalletType
+  initialBalance BigInt     @default(0)
+  icon           String     @db.VarChar(40)
+  color          String     @db.VarChar(9) // #RRGGBB
+  isArchived     Boolean    @default(false)
+  sortOrder      Int        @default(0)
+  createdAt      DateTime   @default(now()) @db.Timestamptz
+  updatedAt      DateTime   @updatedAt @db.Timestamptz
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions  Transaction[]
+  transfersFrom Transfer[]    @relation("TransferFrom")
+  transfersTo   Transfer[]    @relation("TransferTo")
+
+  @@unique([userId, name])
+  @@map("wallets")
+}
+
+model Category {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  name      String   @db.VarChar(30)
+  type      TxType
+  icon      String   @db.VarChar(40)
+  color     String   @db.VarChar(9)
+  isDefault Boolean  @default(false) // disalin dari template saat registrasi
+  isHidden  Boolean  @default(false) // kategori bawaan hanya bisa disembunyikan
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  budgets      Budget[]
+
+  @@unique([userId, name, type])
+  @@map("categories")
+}
+
+model Transaction {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  walletId   String   @db.Uuid
+  categoryId String   @db.Uuid
+  type       TxType
+  amount     BigInt // Rupiah, > 0
+  occurredAt DateTime @db.Timestamptz
+  note       String?  @db.VarChar(1000)
+  createdAt  DateTime @default(now()) @db.Timestamptz
+  updatedAt  DateTime @updatedAt @db.Timestamptz
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet      Wallet       @relation(fields: [walletId], references: [id], onDelete: Restrict)
+  category    Category     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  attachments Attachment[]
+
+  @@index([userId, occurredAt])
+  @@index([walletId])
+  @@index([categoryId])
+  @@map("transactions")
+}
+
+model Transfer {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @db.Uuid
+  fromWalletId String   @db.Uuid
+  toWalletId   String   @db.Uuid
+  amount       BigInt
+  occurredAt   DateTime @db.Timestamptz
+  note         String?  @db.VarChar(1000)
+  createdAt    DateTime @default(now()) @db.Timestamptz
+  updatedAt    DateTime @updatedAt @db.Timestamptz
+
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fromWallet Wallet @relation("TransferFrom", fields: [fromWalletId], references: [id], onDelete: Restrict)
+  toWallet   Wallet @relation("TransferTo", fields: [toWalletId], references: [id], onDelete: Restrict)
+
+  @@index([userId, occurredAt])
+  @@map("transfers")
+}
+
+model Budget {
+  id          String @id @default(uuid()) @db.Uuid
+  userId      String @db.Uuid
+  categoryId  String @db.Uuid
+  month       String @db.VarChar(7) // YYYY-MM
+  limitAmount BigInt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, categoryId, month])
+  @@map("budgets") // P1
+}
+
+// ---------- Kegiatan ----------
+
+model Activity {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  title       String   @db.VarChar(100)
+  date        DateTime @db.Date
+  time        String?  @db.VarChar(5) // HH:mm lokal, null = tanpa jam
+  location    String?  @db.VarChar(100)
+  description String?  @db.VarChar(1000)
+  isImportant Boolean  @default(false)
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  updatedAt   DateTime @updatedAt @db.Timestamptz
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attachments Attachment[]
+
+  @@index([userId, date])
+  @@map("activities")
+}
+
+model DailyNote {
+  id     String   @id @default(uuid()) @db.Uuid
+  userId String   @db.Uuid
+  date   DateTime @db.Date
+  mood   String?  @db.VarChar(16) // emoji
+  note   String?  @db.VarChar(1000)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("daily_notes") // P1
+}
+
+// ---------- Foto & arsip ----------
+
+// Tepat satu dari transactionId / activityId terisi (dicek di service + CHECK constraint di migrasi).
+model Attachment {
+  id            String    @id @default(uuid()) @db.Uuid
+  userId        String    @db.Uuid
+  transactionId String?   @db.Uuid
+  activityId    String?   @db.Uuid
+  filePath      String? // null setelah foto asli diarsip & dihapus
+  thumbPath     String
+  mimeType      String    @db.VarChar(32)
+  sizeBytes     Int
+  width         Int
+  height        Int
+  archiveId     String?   @db.Uuid
+  archivedAt    DateTime? @db.Timestamptz
+  createdAt     DateTime  @default(now()) @db.Timestamptz
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transaction Transaction? @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  activity    Activity?    @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  archive     Archive?     @relation(fields: [archiveId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([transactionId])
+  @@index([activityId])
+  @@map("attachments")
+}
+
+model Archive {
+  id           String        @id @default(uuid()) @db.Uuid
+  userId       String        @db.Uuid
+  month        String        @db.VarChar(7) // YYYY-MM
+  zipPath      String? // null jika status FAILED
+  sizeBytes    BigInt
+  photoCount   Int
+  status       ArchiveStatus @default(READY)
+  createdAt    DateTime      @default(now()) @db.Timestamptz
+  downloadedAt DateTime?     @db.Timestamptz
+  expiresAt    DateTime      @db.Timestamptz // waktu ZIP berhasil dibuat + 30 hari
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attachments Attachment[]
+
+  @@unique([userId, month])
+  @@map("archives")
+}
