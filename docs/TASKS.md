@@ -75,3 +75,4 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 | 2026-11-04 | 0 | Backend selesai: lint, 17 test, dan build lolos. Belum dites: `Dockerfile` dan `docker-compose.yml` (butuh mini PC). Sisa: mobile (menunggu Flutter) |
 | 2026-11-04 | 0 | Mobile selesai: `flutter analyze` bersih, 16 test lolos. Slice belum ditutup: build APK dan uji di HP menunggu Android SDK; compose dan `Dockerfile` menunggu mini PC |
 | 2026-11-04 | 0 | APK release ter-build (47,9 MB, masih bertanda tangan debug sampai Slice 7). Slice belum ditutup: uji di HP asli dan uji compose + `Dockerfile` di mini PC |
+| 2026-11-04 | 0 | APK release jalan di HP asli menurut owner. Sisa: uji compose + `Dockerfile` di mini PC |
