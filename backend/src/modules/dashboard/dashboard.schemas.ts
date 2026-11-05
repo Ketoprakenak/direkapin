@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { activityResponse } from '../activities/activities.schemas.js';
 import { walletResponse } from '../wallets/wallets.schemas.js';
 
-const seriesPoint = z.object({
+export const seriesPoint = z.object({
   label: z.string(),
   income: z.number().int(),
   expense: z.number().int(),

@@ -11,6 +11,7 @@ import { calendarRoutes } from './modules/calendar/calendar.routes.js';
 import { categoryRoutes } from './modules/categories/categories.routes.js';
 import { dashboardRoutes } from './modules/dashboard/dashboard.routes.js';
 import { meRoutes } from './modules/me/me.routes.js';
+import { reportRoutes } from './modules/reports/reports.routes.js';
 import { systemRoutes } from './modules/system/system.routes.js';
 import { transactionRoutes } from './modules/transactions/transactions.routes.js';
 import { transferRoutes } from './modules/transfers/transfers.routes.js';
@@ -57,6 +58,7 @@ export function buildApp(config: Config) {
       activityRoutes(api, config);
       dashboardRoutes(api);
       calendarRoutes(api);
+      reportRoutes(api);
     },
     { prefix: '/api/v1' },
   );
