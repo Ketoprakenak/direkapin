@@ -120,6 +120,7 @@ Contoh:
 | Server offline | "Server lagi nggak bisa dihubungi. Coba lagi sebentar." |
 | Upload foto gagal | "Foto gagal diupload. Transaksi tetap tersimpan." + tombol "Coba lagi" |
 | Notifikasi harian | "Hari ini udah dicatat belum? Cuma butuh 15 detik." |
+| Versi baru | "Versi baru 1.0.0 sudah ada." + tombol "Update" dan "Nanti" |
 | Konfirmasi hapus | "Hapus transaksi ini? Foto struknya juga ikut terhapus." |
 
 ## Gerak

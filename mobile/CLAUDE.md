@@ -19,6 +19,7 @@ mobile/lib/
 │   ├── format/                 # money.dart (Rp25.000, 25rb), dates.dart (id_ID)
 │   ├── media/photo_service.dart   # pilih foto + kompres otomatis
 │   ├── notifications/          # jadwal notifikasi lokal: reminder harian + arsip
+│   ├── update/app_update.dart  # cek /version, buka link update
 │   ├── icons.dart              # map nama ikon string → IconData
 │   └── widgets/                # komponen bersama: AmountText, EmptyState, ErrorState, Skeleton, ...
 └── features/
@@ -55,7 +56,7 @@ Upload dilakukan **setelah** transaksi/kegiatan tersimpan. Upload gagal → item
 
 ## Notifikasi (D-21) — lokal saja, tanpa push server
 
-- **Reminder harian:** jadwalkan 30 hari ke depan pada `reminderTime`. Pasang ulang saat aplikasi dibuka, catatan disimpan, atau jam diubah; hari ini dilewati jika `today.hasEntry` true.
+- **Reminder harian:** jadwalkan 30 hari ke depan pada `reminderTime`. Pasang ulang saat aplikasi dibuka, catatan disimpan, atau jam diubah; hari ini dilewati jika `today.hasEntry` true. `AppShell` memicunya setiap `dashboardProvider` atau `meProvider` punya data baru.
 - **Arsip:** saat aplikasi dibuka, cek `/archives`. Arsip `READY` yang baru terlihat → notifikasi langsung + jadwalkan pengingat `createdAt` + 7 dan + 25 hari; batalkan setelah download.
 - **Tanggal 1:** jadwalkan pengingat umum pukul 09.00 untuk 3 bulan ke depan, karena HP tidak tahu ada arsip baru sebelum aplikasi dibuka.
 

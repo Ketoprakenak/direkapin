@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:direkapin/core/api/api_client.dart';
 import 'package:direkapin/core/media/photo_service.dart';
+import 'package:direkapin/core/notifications/reminder_service.dart';
 import 'package:direkapin/core/router/router.dart';
 import 'package:direkapin/core/theme/tokens.dart';
 import 'package:flutter/material.dart';
@@ -76,16 +77,57 @@ class FakeServer implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
+/// Pengganti plugin notifikasi, yang tidak ada di test.
+class FakeReminderService implements ReminderService {
+  final syncs =
+      <({String reminderTime, String timezone, String today, bool hasEntry})>[];
+  var cancelled = 0;
+  var launched = false;
+  var enabled = true;
+
+  @override
+  void Function()? onTap;
+
+  @override
+  Future<bool> launchedFromNotification() async => launched;
+
+  @override
+  Future<void> requestPermission() async {}
+
+  @override
+  Future<bool> notificationsEnabled() async => enabled;
+
+  @override
+  Future<void> sync({
+    required String reminderTime,
+    required String timezone,
+    required String today,
+    required bool hasEntry,
+  }) async {
+    syncs.add((
+      reminderTime: reminderTime,
+      timezone: timezone,
+      today: today,
+      hasEntry: hasEntry,
+    ));
+  }
+
+  @override
+  Future<void> cancel() async => cancelled++;
+}
+
 /// Tema polos: google_fonts butuh jaringan, yang tidak ada di test.
 final testTheme = ThemeData(extensions: const [AppColors.light]);
 
 Future<void> pumpRoutedApp(
   WidgetTester tester,
   FakeServer server, {
-  required String routeName,
+  // null = tetap di Beranda, tanpa menumpuk rute apa pun.
+  required String? routeName,
   Map<String, String> pathParameters = const {},
   Object? extra,
   PhotoService photoService = const PhotoService(),
+  FakeReminderService? reminders,
 }) async {
   FlutterSecureStorage.setMockInitialValues({'refreshToken': 'r'});
   await tester.pumpWidget(
@@ -93,6 +135,9 @@ Future<void> pumpRoutedApp(
       retry: (_, _) => null,
       overrides: [
         photoServiceProvider.overrideWithValue(photoService),
+        reminderServiceProvider.overrideWithValue(
+          reminders ?? FakeReminderService(),
+        ),
         apiClientProvider.overrideWithValue(
           Dio(BaseOptions(baseUrl: 'https://example.test'))
             ..httpClientAdapter = server,
@@ -107,6 +152,7 @@ Future<void> pumpRoutedApp(
     ),
   );
   await tester.pumpAndSettle();
+  if (routeName == null) return;
   final context = tester.element(find.byType(Scaffold).first);
   ProviderScope.containerOf(context)
       .read(appRouterProvider)

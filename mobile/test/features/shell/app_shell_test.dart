@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:direkapin/core/api/api_client.dart';
 import 'package:direkapin/core/api/api_error.dart';
 import 'package:direkapin/core/auth/session_provider.dart';
+import 'package:direkapin/core/notifications/reminder_service.dart';
 import 'package:direkapin/core/router/router.dart';
 import 'package:direkapin/core/theme/tokens.dart';
 import 'package:direkapin/features/auth/data/auth_repository.dart';
@@ -13,6 +14,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+
+import '../../helpers/fake_server.dart';
 
 class _OkAdapter implements HttpClientAdapter {
   @override
@@ -71,6 +74,7 @@ void main() {
               ..httpClientAdapter = _OkAdapter(),
           ),
           authRepositoryProvider.overrideWithValue(auth),
+          reminderServiceProvider.overrideWithValue(FakeReminderService()),
         ],
         child: Consumer(
           builder: (context, ref, _) =>

@@ -13,6 +13,7 @@ import '../../wallet/data/wallet_models.dart';
 import '../data/dashboard_models.dart';
 import '../providers/dashboard_providers.dart';
 import 'widgets/expense_bar_chart.dart';
+import 'widgets/update_banner.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -27,16 +28,23 @@ class DashboardScreen extends ConsumerWidget {
         tooltip: 'Tambah',
         child: const Icon(Icons.add_rounded),
       ),
-      body: dashboard.when(
-        data: (data) => RefreshIndicator(
-          onRefresh: () => ref.refresh(dashboardProvider.future),
-          child: _DashboardBody(data),
-        ),
-        error: (error, _) => ErrorState(
-          error: error,
-          onRetry: () => ref.invalidate(dashboardProvider),
-        ),
-        loading: () => const _DashboardSkeleton(),
+      body: Column(
+        children: [
+          const UpdateBanner(),
+          Expanded(
+            child: dashboard.when(
+              data: (data) => RefreshIndicator(
+                onRefresh: () => ref.refresh(dashboardProvider.future),
+                child: _DashboardBody(data),
+              ),
+              error: (error, _) => ErrorState(
+                error: error,
+                onRetry: () => ref.invalidate(dashboardProvider),
+              ),
+              loading: () => const _DashboardSkeleton(),
+            ),
+          ),
+        ],
       ),
     );
   }

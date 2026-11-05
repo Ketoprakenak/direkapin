@@ -1,9 +1,12 @@
 package id.my.direkapin.app
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.ContentValues
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaScannerConnection
+import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
@@ -14,6 +17,7 @@ import java.io.File
 import kotlin.concurrent.thread
 
 private const val GALLERY_CHANNEL = "direkapin/gallery"
+private const val LINKS_CHANNEL = "direkapin/links"
 private const val GALLERY_ALBUM = "Direkapin"
 private const val STORAGE_PERMISSION_REQUEST = 1
 
@@ -33,6 +37,16 @@ class MainActivity : FlutterActivity() {
                     } else {
                         result.error("permission_denied", "Izin penyimpanan ditolak", null)
                     }
+                }
+            }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, LINKS_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                if (call.method != "open") return@setMethodCallHandler result.notImplemented()
+                try {
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(call.argument<String>("url")!!)))
+                    result.success(null)
+                } catch (e: ActivityNotFoundException) {
+                    result.error("no_browser", e.message, null)
                 }
             }
     }

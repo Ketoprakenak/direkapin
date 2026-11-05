@@ -52,12 +52,16 @@ Kalau ada alasan kuat untuk berubah, tulis usulan di bawah bagian "Usulan" dan t
 | D-42 | Bar chart laporan hanya pengeluaran; pemasukan terlihat di total | Bulanan 31 hari terlalu sempit untuk dua batang | Dua batang per hari |
 | D-43 | Filter dompet laporan menampilkan dompet arsip; dompet asing di `wallet` menghasilkan laporan kosong, bukan 404 | Laporan lama tetap bisa dibuka; sama seperti `GET /transactions` | Sembunyikan dompet arsip, balas 404 |
 | D-44 | Geser periode laporan tidak dibatasi | Form transaksi boleh bertanggal sampai 1 tahun ke depan | Berhenti di periode sekarang |
+| D-45 | Pengingat memakai alarm exact lewat `USE_EXACT_ALARM` (`SCHEDULE_EXACT_ALARM` di Android 12), turun ke inexact jika izin dicabut | Tepat di jamnya tanpa minta izin manual. Aplikasi tidak lewat Play Store, jadi pembatasan izin ini tidak berlaku. Kalau suatu saat masuk Play Store, keputusan ini harus ditinjau | Inexact: bisa telat |
+| D-46 | Link update dibuka lewat `MethodChannel` di `MainActivity.kt` | Pola D-40, tanpa dependency baru | `url_launcher` |
+| D-47 | Jam pengingat memakai `timezone` dari `/me`, bukan zona HP | Sesuai D-08, tanpa dependency baru. Batasannya: user di luar zona profil mendapat pengingat di jam zona profil | Paket pembaca zona waktu HP |
+| D-48 | Baris "Jam pengingat" di Profil dibuat di Slice 7, sisa S-14 tetap di Slice 8 | US-09 mengharuskan jam bisa diubah | Menunggu Slice 8 |
 
 ## Dependency yang disetujui
 
 **Backend:** `fastify`, `@fastify/multipart`, `@fastify/rate-limit`, `@fastify/cors`, `@fastify/sensible`, `fastify-type-provider-zod`, `zod`, `@prisma/client`, `prisma`, `bcrypt`, `jsonwebtoken`, `sharp`, `archiver`, `node-cron`, `pino-pretty` (dev), `vitest`, `supertest`, `eslint`, `typescript-eslint`, `typescript`, `tsx`, `@types/node`, `@types/bcrypt`, `@types/jsonwebtoken`.
 
-**Mobile:** `flutter_riverpod`, `riverpod_annotation`, `riverpod_generator`, `go_router`, `dio`, `flutter_secure_storage`, `freezed`, `freezed_annotation`, `json_annotation`, `json_serializable`, `build_runner`, `intl`, `table_calendar`, `fl_chart`, `image_picker`, `flutter_image_compress`, `flutter_local_notifications`, `timezone`, `cached_network_image`, `path_provider`, `permission_handler`, `google_fonts`, `package_info_plus`, `flutter_localizations` (SDK), `flutter_lints` (dev).
+**Mobile:** `flutter_riverpod`, `riverpod_annotation`, `riverpod_generator`, `go_router`, `dio`, `flutter_secure_storage`, `freezed`, `freezed_annotation`, `json_annotation`, `json_serializable`, `build_runner`, `intl`, `table_calendar`, `fl_chart`, `image_picker`, `flutter_image_compress`, `flutter_local_notifications`, `timezone`, `cached_network_image`, `path_provider`, `permission_handler`, `google_fonts`, `package_info_plus`, `flutter_localizations` (SDK), `flutter_lints` (dev). Gradle: `desugar_jdk_libs` (wajib untuk `flutter_local_notifications`).
 
 Dependency lain → minta izin dulu.
 
