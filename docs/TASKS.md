@@ -3,7 +3,7 @@
 Satu slice per sesi Claude Code. Centang item saat selesai dan ubah status slice.
 Status: `Belum mulai` · `Sedang dikerjakan` · `Selesai`
 
-**Slice aktif:** 3
+**Slice aktif:** 4
 
 ---
 
@@ -33,11 +33,11 @@ Ref: FIN-01, 03–05, 09–10, DSH-01, 02, 03, 05, 06, US-03, US-06
 - [x] Mobile: Beranda (S-04), Form transaksi (S-08) termasuk mode Transfer, Dompet (S-12), Kategori (S-11)
 - [x] Uji catat pengeluaran, transfer, dompet, dan kategori di HP asli
 
-## Slice 3 — Kalender + Halaman Hari · Status: Sedang dikerjakan
+## Slice 3 — Kalender + Halaman Hari · Status: Selesai
 Ref: CAL-01, 03–05, US-05
 - [x] `GET /calendar?month=`, `GET /days/{date}`
 - [x] Mobile: Kalender (S-05), Halaman Hari (S-06), Detail item (S-07), edit/hapus/pindah tanggal
-- [ ] Uji kalender, edit, hapus, dan pindah tanggal di HP asli
+- [x] Uji kalender, edit, hapus, dan pindah tanggal di HP asli
 
 ## Slice 4 — Foto · Status: Belum mulai
 Ref: FIN-02, FIN-13, US-04
@@ -85,4 +85,4 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 | 2026-11-04 | 1 | Daftar, login, tetap login, dan logout jalan di HP asli menurut owner. Refresh token saat access token kedaluwarsa baru teruji otomatis |
 | 2026-11-04 | 2 | Kode selesai: backend 96 test, mobile 55 test, lint dan analyze bersih. Sisa: uji di HP asli. Edit dan hapus transaksi di aplikasi menyusul di Slice 3 |
 | 2026-11-05 | 2 | Aman di HP asli menurut owner |
-| 2026-11-05 | 3 | Kode selesai, backend 113 test. Sisa: uji di HP asli |
+| 2026-11-05 | 3 | Kode selesai: backend 113 test, mobile 71 test. Jalan di HP asli menurut owner |
