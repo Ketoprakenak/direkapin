@@ -57,7 +57,7 @@ Ref: FIN-06–08, US-07
 - [x] `GET /reports/daily|weekly|monthly` (filter dompet, transfer tidak dihitung)
 - [x] Mobile: Laporan (S-10) dengan grafik `fl_chart`
 
-## Slice 7 — Reminder, versi, CI APK · Status: Belum mulai
+## Slice 7 — Reminder, versi, CI APK · Status: Sedang dikerjakan
 Ref: ENG-01, US-09, D-21
 - [ ] Notifikasi harian lokal: jadwal 30 hari ke depan (jam dari `/me`), dipasang ulang saat aplikasi dibuka, catatan disimpan, atau jam diubah; hari ini dilewati jika sudah mencatat
 - [ ] Banner update dari `/version`
@@ -97,3 +97,4 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 | 2026-11-05 | 5 | Aman di HP asli menurut owner, termasuk pilih banyak foto. Slice ditutup |
 | 2026-11-05 | 6 | Kode selesai: backend 170 test, mobile 123 test, lint dan analyze bersih. Sisa: uji di HP asli |
 | 2026-11-05 | 6 | Aman di HP asli menurut owner. Slice ditutup |
+| 2026-11-05 | 7 | Kode selesai: mobile 142 test, analyze bersih, backend tidak berubah. Sisa: uji di HP asli; uji workflow CI menunggu repo GitHub dan keystore dari owner |
