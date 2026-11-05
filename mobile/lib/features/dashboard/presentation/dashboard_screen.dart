@@ -1,6 +1,3 @@
-import 'dart:math';
-
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -15,6 +12,7 @@ import '../../transaction/presentation/widgets/add_sheet.dart';
 import '../../wallet/data/wallet_models.dart';
 import '../data/dashboard_models.dart';
 import '../providers/dashboard_providers.dart';
+import 'widgets/expense_bar_chart.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -94,7 +92,10 @@ class _DashboardBody extends StatelessWidget {
         if (data.streak.current > 0) ...[
           Row(
             children: [
-              Icon(Icons.local_fire_department_rounded, color: colors.important),
+              Icon(
+                Icons.local_fire_department_rounded,
+                color: colors.important,
+              ),
               const SizedBox(width: Spacing.sm),
               Expanded(
                 child: Text(
@@ -108,19 +109,27 @@ class _DashboardBody extends StatelessWidget {
         ],
         Text('Pengeluaran 7 hari', style: theme.textTheme.titleMedium),
         const SizedBox(height: Spacing.md),
-        _WeekChart(data.last7Days),
+        ExpenseBarChart(
+          points: data.last7Days,
+          barWidth: Spacing.lg,
+          labelOf: (point) => formatWeekday(DateTime.parse(point.label)),
+        ),
         const SizedBox(height: Spacing.xl),
         Text('Hari ini', style: theme.textTheme.titleMedium),
         const SizedBox(height: Spacing.sm),
         if (!data.today.hasEntry)
           const EmptyState(
-            message: 'Belum ada catatan hari ini. Mulai dari pengeluaran pertamamu.',
+            message:
+                'Belum ada catatan hari ini. Mulai dari pengeluaran pertamamu.',
           )
         else ...[
           Row(
             children: [
               Expanded(
-                child: Text('Keluar hari ini', style: theme.textTheme.bodyLarge),
+                child: Text(
+                  'Keluar hari ini',
+                  style: theme.textTheme.bodyLarge,
+                ),
               ),
               AmountText(-data.today.expense),
             ],
@@ -129,8 +138,12 @@ class _DashboardBody extends StatelessWidget {
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: Icon(
-                activity.isImportant ? Icons.star_rounded : Icons.event_note_rounded,
-                color: activity.isImportant ? colors.important : colors.activity,
+                activity.isImportant
+                    ? Icons.star_rounded
+                    : Icons.event_note_rounded,
+                color: activity.isImportant
+                    ? colors.important
+                    : colors.activity,
               ),
               title: Text(activity.title),
               subtitle: Text(formatActivityTime(activity.time)),
@@ -184,7 +197,11 @@ class _BalanceCard extends StatelessWidget {
           Row(
             children: [
               monthColumn('Masuk bulan ini', data.month.income, colors.income),
-              monthColumn('Keluar bulan ini', data.month.expense, colors.expense),
+              monthColumn(
+                'Keluar bulan ini',
+                data.month.expense,
+                colors.expense,
+              ),
             ],
           ),
         ],
@@ -231,66 +248,6 @@ class _WalletCard extends StatelessWidget {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _WeekChart extends StatelessWidget {
-  const _WeekChart(this.points);
-
-  final List<SeriesPoint> points;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final expense = AppColors.of(context).expense;
-    final highest = points.fold(0, (peak, point) => max(peak, point.expense));
-    return SizedBox(
-      height: 160,
-      child: BarChart(
-        BarChartData(
-          // Nilai 1 menjaga grafik tetap valid saat semua hari kosong.
-          maxY: max(highest, 1) * 1.25,
-          gridData: const FlGridData(show: false),
-          borderData: FlBorderData(show: false),
-          titlesData: FlTitlesData(
-            leftTitles: const AxisTitles(),
-            rightTitles: const AxisTitles(),
-            topTitles: const AxisTitles(),
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                getTitlesWidget: (value, meta) => Text(
-                  formatWeekday(DateTime.parse(points[value.toInt()].label)),
-                  style: theme.textTheme.labelSmall,
-                ),
-              ),
-            ),
-          ),
-          barTouchData: BarTouchData(
-            touchTooltipData: BarTouchTooltipData(
-              getTooltipItem: (group, _, rod, _) => BarTooltipItem(
-                formatCompact(rod.toY.toInt()),
-                theme.textTheme.labelSmall ?? const TextStyle(),
-              ),
-            ),
-          ),
-          barGroups: [
-            for (final (index, point) in points.indexed)
-              BarChartGroupData(
-                x: index,
-                barRods: [
-                  BarChartRodData(
-                    toY: point.expense.toDouble(),
-                    color: expense,
-                    width: Spacing.lg,
-                    borderRadius: BorderRadius.circular(Radii.sm / 2),
-                  ),
-                ],
-              ),
-          ],
         ),
       ),
     );

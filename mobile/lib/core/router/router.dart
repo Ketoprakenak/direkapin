@@ -12,6 +12,8 @@ import '../../features/calendar/presentation/calendar_screen.dart';
 import '../../features/category/presentation/categories_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/day/presentation/day_screen.dart';
+import '../../features/report/presentation/category_transactions_screen.dart';
+import '../../features/report/presentation/report_screen.dart';
 import '../../features/settings/presentation/profile_screen.dart';
 import '../../features/shell/presentation/app_shell.dart';
 import '../../features/transaction/data/transaction_models.dart';
@@ -44,18 +46,13 @@ abstract final class Routes {
   static const photoViewer = 'photoViewer';
   static const activityForm = 'activityForm';
   static const activityDetail = 'activityDetail';
+  static const categoryTransactions = 'categoryTransactions';
 }
 
 const _splashPath = '/';
 const _loginPath = '/masuk';
 const _registerPath = '/daftar';
 const _homePath = '/beranda';
-
-GoRoute _tab(String path, String name, String title) => GoRoute(
-  path: path,
-  name: name,
-  builder: (context, state) => EmptyTab(title: title),
-);
 
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
@@ -112,6 +109,13 @@ GoRouter appRouter(Ref ref) {
         name: Routes.transferDetail,
         builder: (context, state) =>
             TransferDetailScreen(transfer: state.extra! as Transfer),
+      ),
+      GoRoute(
+        path: '/laporan/kategori',
+        name: Routes.categoryTransactions,
+        builder: (context, state) => CategoryTransactionsScreen(
+          args: state.extra! as CategoryTransactionsArgs,
+        ),
       ),
       GoRoute(
         path: '/kegiatan/baru',
@@ -185,7 +189,13 @@ GoRouter appRouter(Ref ref) {
             ],
           ),
           StatefulShellBranch(
-            routes: [_tab('/laporan', Routes.reports, 'Laporan')],
+            routes: [
+              GoRoute(
+                path: '/laporan',
+                name: Routes.reports,
+                builder: (context, state) => const ReportScreen(),
+              ),
+            ],
           ),
           StatefulShellBranch(
             routes: [

@@ -38,15 +38,3 @@ class AppShell extends StatelessWidget {
     );
   }
 }
-
-/// Isi tab kosong; diganti layar aslinya di slice masing-masing.
-class EmptyTab extends StatelessWidget {
-  const EmptyTab({super.key, required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(title: Text(title)));
-  }
-}

@@ -49,6 +49,9 @@ Kalau ada alasan kuat untuk berubah, tulis usulan di bawah bagian "Usulan" dan t
 | D-39 | Endpoint foto kegiatan (batas 5) ikut dibuat di Slice 4, tampilannya di Slice 5 | Satu endpoint yang sama di kontrak | Tunda sampai Slice 5 |
 | D-40 | Simpan foto ke galeri lewat `MethodChannel` + MediaStore di `MainActivity.kt` | Tanpa dependency baru, dan Slice 8 bisa memakai jalur yang sama untuk ZIP | Paket galeri pihak ketiga |
 | D-41 | Kegiatan hari ini di Beranda bisa di-tap ke Detail; hapus jam saat edit lewat tombol "Seharian" | S-04 tidak menyebut tap, tapi tanpa itu daftarnya buntu | Daftar Beranda tanpa aksi |
+| D-42 | Bar chart laporan hanya pengeluaran; pemasukan terlihat di total | Bulanan 31 hari terlalu sempit untuk dua batang | Dua batang per hari |
+| D-43 | Filter dompet laporan menampilkan dompet arsip; dompet asing di `wallet` menghasilkan laporan kosong, bukan 404 | Laporan lama tetap bisa dibuka; sama seperti `GET /transactions` | Sembunyikan dompet arsip, balas 404 |
+| D-44 | Geser periode laporan tidak dibatasi | Form transaksi boleh bertanggal sampai 1 tahun ke depan | Berhenti di periode sekarang |
 
 ## Dependency yang disetujui
 
