@@ -1,9 +1,16 @@
 import type { Prisma, PrismaClient } from '@prisma/client';
+import type { FastifyBaseLogger } from 'fastify';
 import type { z } from 'zod';
 import { AppError } from '../../lib/app-error.js';
 import { occurredAtFilter } from '../../lib/dates.js';
 import { toBigInt, toNumber } from '../../lib/money.js';
 import { toPage } from '../../lib/schemas.js';
+import { removeUploads } from '../../lib/storage.js';
+import {
+  attachmentFiles,
+  attachmentsInclude,
+  toAttachmentResponse,
+} from '../attachments/attachments.service.js';
 import { assertCategory } from '../categories/categories.service.js';
 import { getTimezone } from '../me/me.service.js';
 import { assertActiveWallet } from '../wallets/wallets.service.js';
@@ -13,7 +20,11 @@ import type {
   updateTransactionBody,
 } from './transactions.schemas.js';
 
-export const transactionInclude = { wallet: true, category: true } satisfies Prisma.TransactionInclude;
+export const transactionInclude = {
+  wallet: true,
+  category: true,
+  attachments: attachmentsInclude,
+} satisfies Prisma.TransactionInclude;
 type TransactionRow = Prisma.TransactionGetPayload<{ include: typeof transactionInclude }>;
 
 export function toTransactionResponse(row: TransactionRow) {
@@ -35,7 +46,7 @@ export function toTransactionResponse(row: TransactionRow) {
       icon: row.category.icon,
       color: row.category.color,
     },
-    attachments: [],
+    attachments: row.attachments.map(toAttachmentResponse),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -117,7 +128,14 @@ export async function updateTransaction(
   return toTransactionResponse(row);
 }
 
-export async function deleteTransaction(prisma: PrismaClient, userId: string, id: string) {
-  await findOwned(prisma, userId, id);
+export async function deleteTransaction(
+  prisma: PrismaClient,
+  userId: string,
+  id: string,
+  uploadDir: string,
+  log: FastifyBaseLogger,
+) {
+  const row = await findOwned(prisma, userId, id);
   await prisma.transaction.delete({ where: { id } });
+  await removeUploads(uploadDir, row.attachments.flatMap(attachmentFiles), log);
 }

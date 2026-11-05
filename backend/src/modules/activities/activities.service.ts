@@ -1,4 +1,7 @@
-import type { Activity, Prisma } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
+import { attachmentsInclude, toAttachmentResponse } from '../attachments/attachments.service.js';
+
+export const activityInclude = { attachments: attachmentsInclude } satisfies Prisma.ActivityInclude;
 
 /** Penting dulu, lalu jam naik, tanpa jam di akhir. */
 export const activityOrder = [
@@ -6,7 +9,9 @@ export const activityOrder = [
   { time: { sort: 'asc', nulls: 'last' } },
 ] satisfies Prisma.ActivityOrderByWithRelationInput[];
 
-export function toActivityResponse(activity: Activity) {
+export function toActivityResponse(
+  activity: Prisma.ActivityGetPayload<{ include: typeof activityInclude }>,
+) {
   return {
     id: activity.id,
     title: activity.title,
@@ -15,7 +20,7 @@ export function toActivityResponse(activity: Activity) {
     location: activity.location,
     description: activity.description,
     isImportant: activity.isImportant,
-    attachments: [],
+    attachments: activity.attachments.map(toAttachmentResponse),
     createdAt: activity.createdAt.toISOString(),
     updatedAt: activity.updatedAt.toISOString(),
   };

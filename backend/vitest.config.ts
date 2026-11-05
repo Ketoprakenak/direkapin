@@ -1,4 +1,6 @@
 import { existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { defineConfig } from 'vitest/config';
 
 if (existsSync('.env')) process.loadEnvFile('.env');
@@ -13,7 +15,11 @@ process.env.TEST_DATABASE_URL = testUrl.href;
 
 export default defineConfig({
   test: {
-    env: { DATABASE_URL: testUrl.href, NODE_ENV: 'test' },
+    env: {
+      DATABASE_URL: testUrl.href,
+      NODE_ENV: 'test',
+      UPLOAD_DIR: join(tmpdir(), 'direkapin-test-uploads'),
+    },
     globalSetup: './test/global-setup.ts',
     include: ['src/**/*.test.ts', 'test/**/*.test.ts'],
     fileParallelism: false,

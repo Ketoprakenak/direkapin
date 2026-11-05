@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
+import type { Config } from '../../config.js';
 import { idParams } from '../../lib/schemas.js';
 import {
   createTransactionBody,
@@ -16,7 +17,7 @@ import {
   updateTransaction,
 } from './transactions.service.js';
 
-export function transactionRoutes(app: FastifyInstance) {
+export function transactionRoutes(app: FastifyInstance, config: Config) {
   const routes = app.withTypeProvider<ZodTypeProvider>();
   const onRequest = [app.authenticate];
 
@@ -59,7 +60,13 @@ export function transactionRoutes(app: FastifyInstance) {
     '/transactions/:id',
     { onRequest, schema: { params: idParams } },
     async (request, reply) => {
-      await deleteTransaction(app.prisma, request.userId, request.params.id);
+      await deleteTransaction(
+        app.prisma,
+        request.userId,
+        request.params.id,
+        config.UPLOAD_DIR,
+        request.log,
+      );
       return reply.status(204).send();
     },
   );

@@ -7,6 +7,7 @@ import {
   pageQuery,
   walletRef,
 } from '../../lib/schemas.js';
+import { attachmentResponse } from '../attachments/attachments.schemas.js';
 import { categoryRef, txType } from '../categories/categories.schemas.js';
 
 export const listTransactionsQuery = z.object({
@@ -45,8 +46,7 @@ export const transactionResponse = z.object({
   note: z.string().nullable(),
   wallet: walletRef,
   category: categoryRef,
-  // shortcut: selalu kosong sampai upload foto ada, isi skemanya di Slice 4.
-  attachments: z.array(z.never()),
+  attachments: z.array(attachmentResponse),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

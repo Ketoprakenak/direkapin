@@ -1,7 +1,7 @@
 import type { PrismaClient } from '@prisma/client';
 import { addDays, dateRange, localDate, monthRange, toDbDate } from '../../lib/dates.js';
 import { toNumber } from '../../lib/money.js';
-import { activityOrder, toActivityResponse } from '../activities/activities.service.js';
+import { activityInclude, activityOrder, toActivityResponse } from '../activities/activities.service.js';
 import { getTimezone } from '../me/me.service.js';
 import { listWallets } from '../wallets/wallets.service.js';
 
@@ -80,6 +80,7 @@ export async function getDashboard(prisma: PrismaClient, userId: string, now = n
     recordedDays(prisma, userId, timezone),
     prisma.activity.findMany({
       where: { userId, date: toDbDate(today) },
+      include: activityInclude,
       orderBy: activityOrder,
     }),
   ]);

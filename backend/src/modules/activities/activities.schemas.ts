@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { attachmentResponse } from '../attachments/attachments.schemas.js';
 
 export const activityResponse = z.object({
   id: z.uuid(),
@@ -8,8 +9,7 @@ export const activityResponse = z.object({
   location: z.string().nullable(),
   description: z.string().nullable(),
   isImportant: z.boolean(),
-  // shortcut: selalu kosong sampai upload foto ada, isi skemanya di Slice 4.
-  attachments: z.array(z.never()),
+  attachments: z.array(attachmentResponse),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

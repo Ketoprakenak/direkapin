@@ -1,7 +1,7 @@
 import type { PrismaClient } from '@prisma/client';
 import { dateRange, firstOfNextMonth, monthRange, toDbDate } from '../../lib/dates.js';
 import { toNumber } from '../../lib/money.js';
-import { activityOrder, toActivityResponse } from '../activities/activities.service.js';
+import { activityInclude, activityOrder, toActivityResponse } from '../activities/activities.service.js';
 import { getTimezone } from '../me/me.service.js';
 import {
   toTransactionResponse,
@@ -77,6 +77,7 @@ export async function getDay(prisma: PrismaClient, userId: string, date: string)
     }),
     prisma.activity.findMany({
       where: { userId, date: toDbDate(date) },
+      include: activityInclude,
       orderBy: activityOrder,
     }),
     prisma.dailyNote.findFirst({ where: { userId, date: toDbDate(date) } }),

@@ -1,8 +1,10 @@
 import { fileURLToPath } from 'node:url';
+import multipart from '@fastify/multipart';
 import Fastify from 'fastify';
 import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { loadConfig, type Config } from './config.js';
+import { attachmentRoutes } from './modules/attachments/attachments.routes.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
 import { calendarRoutes } from './modules/calendar/calendar.routes.js';
 import { categoryRoutes } from './modules/categories/categories.routes.js';
@@ -37,6 +39,9 @@ export function buildApp(config: Config) {
   setupPrisma(app, config.DATABASE_URL);
   setupAuth(app, config.JWT_SECRET);
   setupRateLimit(app);
+  app.register(multipart, {
+    limits: { fileSize: config.MAX_UPLOAD_BYTES, files: 1, fields: 2 },
+  });
 
   app.register(
     async (api) => {
@@ -46,7 +51,8 @@ export function buildApp(config: Config) {
       walletRoutes(api);
       transferRoutes(api);
       categoryRoutes(api);
-      transactionRoutes(api);
+      transactionRoutes(api, config);
+      attachmentRoutes(api, config);
       dashboardRoutes(api);
       calendarRoutes(api);
     },
