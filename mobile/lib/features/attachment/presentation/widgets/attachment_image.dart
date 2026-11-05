@@ -40,7 +40,7 @@ class AttachmentImage extends ConsumerWidget {
           data: (bytes) => Image.memory(
             bytes,
             fit: fit,
-            semanticLabel: 'Foto struk',
+            semanticLabel: 'Foto',
             errorBuilder: (_, _, _) => const Icon(_brokenImageIcon),
           ),
         );

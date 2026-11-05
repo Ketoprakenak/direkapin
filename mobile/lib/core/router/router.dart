@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../features/activity/data/activity_models.dart';
+import '../../features/activity/presentation/activity_form_screen.dart';
 import '../../features/attachment/presentation/photo_viewer_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
@@ -40,6 +42,8 @@ abstract final class Routes {
   static const transactionDetail = 'transactionDetail';
   static const transferDetail = 'transferDetail';
   static const photoViewer = 'photoViewer';
+  static const activityForm = 'activityForm';
+  static const activityDetail = 'activityDetail';
 }
 
 const _splashPath = '/';
@@ -108,6 +112,19 @@ GoRouter appRouter(Ref ref) {
         name: Routes.transferDetail,
         builder: (context, state) =>
             TransferDetailScreen(transfer: state.extra! as Transfer),
+      ),
+      GoRoute(
+        path: '/kegiatan/baru',
+        name: Routes.activityForm,
+        builder: (context, state) => ActivityFormScreen(
+          args: state.extra as ActivityFormArgs? ?? const ActivityFormArgs(),
+        ),
+      ),
+      GoRoute(
+        path: '/kegiatan/detail',
+        name: Routes.activityDetail,
+        builder: (context, state) =>
+            ActivityDetailScreen(activity: state.extra! as Activity),
       ),
       GoRoute(
         path: '/foto',

@@ -1,80 +1,107 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/media/photo_service.dart';
 import '../../../../core/theme/tokens.dart';
-import '../../data/attachment_models.dart';
+import '../photo_edits.dart';
 import 'attachment_image.dart';
 
-/// Foto baru di form, sudah dikompres, menunggu transaksinya tersimpan.
-class PhotoDraft {
-  PhotoDraft(this.path);
-
-  final String path;
-  double? progress;
-  bool uploading = false;
-  bool uploaded = false;
-  bool failed = false;
-}
-
-/// Foto lama + foto baru + tombol tambah, untuk form transaksi.
-class PhotoPickerRow extends StatelessWidget {
+/// Foto lama + foto baru + tombol tambah, untuk form transaksi dan kegiatan.
+class PhotoPickerRow extends ConsumerWidget {
   const PhotoPickerRow({
     super.key,
-    required this.existing,
-    required this.drafts,
+    required this.edits,
+    required this.label,
     required this.limit,
-    required this.picking,
     required this.locked,
-    required this.onAdd,
-    required this.onRemoveExisting,
-    required this.onRemoveDraft,
   });
 
   static const _tileSize = Spacing.xxl * 2 + Spacing.xl;
 
-  final List<Attachment> existing;
-  final List<PhotoDraft> drafts;
+  final PhotoEdits edits;
+  final String label;
   final int limit;
-  final bool picking;
 
-  /// Transaksi sudah tersimpan: foto tidak bisa diubah lagi dari form ini.
+  /// Item sudah tersimpan: foto tidak bisa diubah lagi dari form ini.
   final bool locked;
-  final VoidCallback onAdd;
-  final void Function(Attachment attachment) onRemoveExisting;
-  final void Function(PhotoDraft draft) onRemoveDraft;
+
+  Future<void> _add(BuildContext context, WidgetRef ref) async {
+    final service = ref.read(photoServiceProvider);
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera_rounded),
+              title: const Text('Kamera'),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_rounded),
+              title: const Text('Galeri'),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null || !context.mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    edits.setPicking(true);
+    try {
+      final path = await service.pick(source);
+      if (path != null) edits.addDraft(path);
+    } on Exception {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Foto nggak bisa diambil. Cek izin kamera atau coba foto lain.',
+          ),
+        ),
+      );
+    } finally {
+      edits.setPicking(false);
+    }
+  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Foto struk (maks. $limit)', style: theme.textTheme.bodyMedium),
+        Text('$label (maks. $limit)', style: theme.textTheme.bodyMedium),
         const SizedBox(height: Spacing.sm),
         Wrap(
           spacing: Spacing.sm,
           runSpacing: Spacing.sm,
           children: [
-            for (final attachment in existing)
+            for (final attachment in edits.existing)
               _Tile(
-                onRemove: locked ? null : () => onRemoveExisting(attachment),
+                onRemove: locked
+                    ? null
+                    : () => edits.removeExisting(attachment),
                 child: AttachmentImage(id: attachment.id, thumb: true),
               ),
-            for (final draft in drafts)
+            for (final draft in edits.drafts)
               _Tile(
-                onRemove: locked ? null : () => onRemoveDraft(draft),
+                onRemove: locked ? null : () => edits.removeDraft(draft),
                 overlay: _overlay(context, draft),
                 child: Image.file(
                   File(draft.path),
                   fit: BoxFit.cover,
-                  semanticLabel: 'Foto struk baru',
+                  semanticLabel: 'Foto baru',
                   errorBuilder: (_, _, _) =>
                       const Icon(Icons.broken_image_rounded),
                 ),
               ),
-            if (!locked && existing.length + drafts.length < limit)
-              _AddTile(picking: picking, onTap: onAdd),
+            if (!locked && edits.existing.length + edits.drafts.length < limit)
+              _AddTile(picking: edits.picking, onTap: () => _add(context, ref)),
           ],
         ),
       ],
@@ -191,6 +218,64 @@ class _AddTile extends StatelessWidget {
                 ],
               ),
       ),
+    );
+  }
+}
+
+/// Status upload + Simpan; setelah foto gagal: "Coba lagi" dan "Lewati".
+class PhotoSaveButtons extends StatelessWidget {
+  const PhotoSaveButtons({
+    super.key,
+    required this.edits,
+    required this.busy,
+    required this.onSave,
+    required this.onRetry,
+    required this.onSkip,
+  });
+
+  final PhotoEdits edits;
+  final bool busy;
+  final VoidCallback onSave;
+  final VoidCallback onRetry;
+  final VoidCallback onSkip;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final error = edits.error;
+    final status = edits.status;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (error != null) ...[
+          const SizedBox(height: Spacing.sm),
+          Text(
+            error,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.error,
+            ),
+          ),
+        ],
+        if (status != null) ...[
+          const SizedBox(height: Spacing.sm),
+          Text(status, style: theme.textTheme.bodyMedium),
+        ],
+        const SizedBox(height: Spacing.md),
+        if (error != null) ...[
+          FilledButton(onPressed: onRetry, child: const Text('Coba lagi')),
+          const SizedBox(height: Spacing.sm),
+          TextButton(onPressed: onSkip, child: const Text('Lewati')),
+        ] else
+          FilledButton(
+            onPressed: busy || edits.picking ? null : onSave,
+            child: busy
+                ? const SizedBox.square(
+                    dimension: Spacing.xl,
+                    child: CircularProgressIndicator(),
+                  )
+                : const Text('Simpan'),
+          ),
+      ],
     );
   }
 }

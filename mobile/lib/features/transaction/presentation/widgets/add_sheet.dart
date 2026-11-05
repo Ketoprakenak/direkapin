@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/router.dart';
+import '../../../activity/presentation/activity_form_screen.dart';
 import '../transaction_form_screen.dart';
 
 /// Pilihan FAB: Transaksi atau Kegiatan. [date] mengisi tanggal awal form.
@@ -23,11 +24,16 @@ void showAddSheet(BuildContext context, {DateTime? date}) {
               );
             },
           ),
-          const ListTile(
-            enabled: false,
-            leading: Icon(Icons.event_note_rounded),
-            title: Text('Kegiatan'),
-            subtitle: Text('Segera hadir'),
+          ListTile(
+            leading: const Icon(Icons.event_note_rounded),
+            title: const Text('Kegiatan'),
+            onTap: () {
+              Navigator.pop(sheetContext);
+              context.pushNamed(
+                Routes.activityForm,
+                extra: ActivityFormArgs(initialDate: date),
+              );
+            },
           ),
         ],
       ),

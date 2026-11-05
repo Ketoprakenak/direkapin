@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Activity {
 
- String get id; String get title; String get date; String? get time; String? get location; String? get description; bool get isImportant;
+ String get id; String get title; String get date; String? get time; String? get location; String? get description; bool get isImportant; List<Attachment> get attachments;
 /// Create a copy of Activity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +30,20 @@ $ActivityCopyWith<Activity> get copyWith => _$ActivityCopyWithImpl<Activity>(thi
 @override
 bool operator ==(Object other) {
   final _this = this as Activity;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Activity&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.date, _this.date) || other.date == _this.date)&&(identical(other.time, _this.time) || other.time == _this.time)&&(identical(other.location, _this.location) || other.location == _this.location)&&(identical(other.description, _this.description) || other.description == _this.description)&&(identical(other.isImportant, _this.isImportant) || other.isImportant == _this.isImportant));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Activity&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.date, _this.date) || other.date == _this.date)&&(identical(other.time, _this.time) || other.time == _this.time)&&(identical(other.location, _this.location) || other.location == _this.location)&&(identical(other.description, _this.description) || other.description == _this.description)&&(identical(other.isImportant, _this.isImportant) || other.isImportant == _this.isImportant)&&const DeepCollectionEquality().equals(other.attachments, _this.attachments));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Activity;
-  return Object.hash(runtimeType,_this.id,_this.title,_this.date,_this.time,_this.location,_this.description,_this.isImportant);
+  return Object.hash(runtimeType,_this.id,_this.title,_this.date,_this.time,_this.location,_this.description,_this.isImportant,const DeepCollectionEquality().hash(_this.attachments));
 }
 
 @override
 String toString() {
   final _this = this as Activity;
-  return 'Activity(id: ${_this.id}, title: ${_this.title}, date: ${_this.date}, time: ${_this.time}, location: ${_this.location}, description: ${_this.description}, isImportant: ${_this.isImportant})';
+  return 'Activity(id: ${_this.id}, title: ${_this.title}, date: ${_this.date}, time: ${_this.time}, location: ${_this.location}, description: ${_this.description}, isImportant: ${_this.isImportant}, attachments: ${_this.attachments})';
 }
 
 
@@ -54,7 +54,7 @@ abstract mixin class $ActivityCopyWith<$Res>  {
   factory $ActivityCopyWith(Activity value, $Res Function(Activity) _then) = _$ActivityCopyWithImpl;
 @useResult
 $Res call({
- String id, String title, String date, String? time, String? location, String? description, bool isImportant
+ String id, String title, String date, String? time, String? location, String? description, bool isImportant, List<Attachment> attachments
 });
 
 
@@ -71,7 +71,7 @@ class _$ActivityCopyWithImpl<$Res>
 
 /// Create a copy of Activity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? date = null,Object? time = freezed,Object? location = freezed,Object? description = freezed,Object? isImportant = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? date = null,Object? time = freezed,Object? location = freezed,Object? description = freezed,Object? isImportant = null,Object? attachments = null,}) {
   return _then(Activity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -80,7 +80,8 @@ as String,time: freezed == time ? _self.time : time // ignore: cast_nullable_to_
 as String?,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String?,isImportant: null == isImportant ? _self.isImportant : isImportant // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,attachments: null == attachments ? _self.attachments : attachments // ignore: cast_nullable_to_non_nullable
+as List<Attachment>,
   ));
 }
 
@@ -165,10 +166,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String date,  String? time,  String? location,  String? description,  bool isImportant)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String date,  String? time,  String? location,  String? description,  bool isImportant,  List<Attachment> attachments)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Activity() when $default != null:
-return $default(_that.id,_that.title,_that.date,_that.time,_that.location,_that.description,_that.isImportant);case _:
+return $default(_that.id,_that.title,_that.date,_that.time,_that.location,_that.description,_that.isImportant,_that.attachments);case _:
   return orElse();
 
 }
@@ -186,10 +187,10 @@ return $default(_that.id,_that.title,_that.date,_that.time,_that.location,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String date,  String? time,  String? location,  String? description,  bool isImportant)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String date,  String? time,  String? location,  String? description,  bool isImportant,  List<Attachment> attachments)  $default,) {final _that = this;
 switch (_that) {
 case _Activity():
-return $default(_that.id,_that.title,_that.date,_that.time,_that.location,_that.description,_that.isImportant);case _:
+return $default(_that.id,_that.title,_that.date,_that.time,_that.location,_that.description,_that.isImportant,_that.attachments);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -206,10 +207,10 @@ return $default(_that.id,_that.title,_that.date,_that.time,_that.location,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String date,  String? time,  String? location,  String? description,  bool isImportant)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String date,  String? time,  String? location,  String? description,  bool isImportant,  List<Attachment> attachments)?  $default,) {final _that = this;
 switch (_that) {
 case _Activity() when $default != null:
-return $default(_that.id,_that.title,_that.date,_that.time,_that.location,_that.description,_that.isImportant);case _:
+return $default(_that.id,_that.title,_that.date,_that.time,_that.location,_that.description,_that.isImportant,_that.attachments);case _:
   return null;
 
 }
@@ -221,7 +222,7 @@ return $default(_that.id,_that.title,_that.date,_that.time,_that.location,_that.
 @JsonSerializable()
 
 class _Activity implements Activity {
-  const _Activity({required this.id, required this.title, required this.date, this.time, this.location, this.description, required this.isImportant});
+  const _Activity({required this.id, required this.title, required this.date, this.time, this.location, this.description, required this.isImportant, required  List<Attachment> attachments}): _attachments = attachments;
   factory _Activity.fromJson(Map<String, dynamic> json) => _$ActivityFromJson(json);
 
 @override final  String id;
@@ -231,6 +232,13 @@ class _Activity implements Activity {
 @override final  String? location;
 @override final  String? description;
 @override final  bool isImportant;
+ final  List<Attachment> _attachments;
+@override List<Attachment> get attachments {
+  if (_attachments is EqualUnmodifiableListView) return _attachments;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_attachments);
+}
+
 
 /// Create a copy of Activity
 /// with the given fields replaced by the non-null parameter values.
@@ -245,18 +253,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Activity&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.date, date) || other.date == date)&&(identical(other.time, time) || other.time == time)&&(identical(other.location, location) || other.location == location)&&(identical(other.description, description) || other.description == description)&&(identical(other.isImportant, isImportant) || other.isImportant == isImportant));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Activity&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.date, date) || other.date == date)&&(identical(other.time, time) || other.time == time)&&(identical(other.location, location) || other.location == location)&&(identical(other.description, description) || other.description == description)&&(identical(other.isImportant, isImportant) || other.isImportant == isImportant)&&const DeepCollectionEquality().equals(other.attachments, _attachments));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,title,date,time,location,description,isImportant);
+    return Object.hash(runtimeType,id,title,date,time,location,description,isImportant,const DeepCollectionEquality().hash(_attachments));
 }
 
 @override
 String toString() {
-    return 'Activity(id: $id, title: $title, date: $date, time: $time, location: $location, description: $description, isImportant: $isImportant)';
+    return 'Activity(id: $id, title: $title, date: $date, time: $time, location: $location, description: $description, isImportant: $isImportant, attachments: $attachments)';
 }
 
 
@@ -267,7 +275,7 @@ abstract mixin class _$ActivityCopyWith<$Res> implements $ActivityCopyWith<$Res>
   factory _$ActivityCopyWith(_Activity value, $Res Function(_Activity) _then) = __$ActivityCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String title, String date, String? time, String? location, String? description, bool isImportant
+ String id, String title, String date, String? time, String? location, String? description, bool isImportant, List<Attachment> attachments
 });
 
 
@@ -284,7 +292,7 @@ class __$ActivityCopyWithImpl<$Res>
 
 /// Create a copy of Activity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? date = null,Object? time = freezed,Object? location = freezed,Object? description = freezed,Object? isImportant = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? date = null,Object? time = freezed,Object? location = freezed,Object? description = freezed,Object? isImportant = null,Object? attachments = null,}) {
   return _then(_Activity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -293,7 +301,8 @@ as String,time: freezed == time ? _self.time : time // ignore: cast_nullable_to_
 as String?,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String?,isImportant: null == isImportant ? _self.isImportant : isImportant // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,attachments: null == attachments ? _self._attachments : attachments // ignore: cast_nullable_to_non_nullable
+as List<Attachment>,
   ));
 }
 

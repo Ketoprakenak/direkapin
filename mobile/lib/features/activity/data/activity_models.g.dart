@@ -14,6 +14,9 @@ _Activity _$ActivityFromJson(Map<String, dynamic> json) => _Activity(
   location: json['location'] as String?,
   description: json['description'] as String?,
   isImportant: json['isImportant'] as bool,
+  attachments: (json['attachments'] as List<dynamic>)
+      .map((e) => Attachment.fromJson(e as Map<String, dynamic>))
+      .toList(),
 );
 
 Map<String, dynamic> _$ActivityToJson(_Activity instance) => <String, dynamic>{
@@ -24,4 +27,5 @@ Map<String, dynamic> _$ActivityToJson(_Activity instance) => <String, dynamic>{
   'location': instance.location,
   'description': instance.description,
   'isImportant': instance.isImportant,
+  'attachments': instance.attachments,
 };

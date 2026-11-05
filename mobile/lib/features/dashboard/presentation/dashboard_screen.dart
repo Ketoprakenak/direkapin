@@ -133,7 +133,9 @@ class _DashboardBody extends StatelessWidget {
                 color: activity.isImportant ? colors.important : colors.activity,
               ),
               title: Text(activity.title),
-              subtitle: Text(activity.time?.replaceFirst(':', '.') ?? 'Seharian'),
+              subtitle: Text(formatActivityTime(activity.time)),
+              onTap: () =>
+                  context.pushNamed(Routes.activityDetail, extra: activity),
             ),
         ],
       ],

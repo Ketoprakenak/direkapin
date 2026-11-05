@@ -6,11 +6,10 @@ import 'package:go_router/go_router.dart';
 import '../../../core/api/api_error.dart';
 import '../../../core/format/dates.dart';
 import '../../../core/format/rupiah_input.dart';
-import '../../../core/media/photo_service.dart';
 import '../../../core/router/router.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/state_views.dart';
-import '../../attachment/data/attachment_models.dart';
+import '../../attachment/presentation/photo_edits.dart';
 import '../../attachment/presentation/widgets/photo_picker_row.dart';
 import '../../attachment/providers/attachment_providers.dart';
 import '../../category/data/category_models.dart';
@@ -65,24 +64,22 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   String? _categoryError;
   String? _error;
 
-  /// Foto lama yang masih dipertahankan; yang dibuang baru dihapus setelah Simpan.
-  late List<Attachment> _existing = [...?widget.args.transaction?.attachments];
-  final _removed = <Attachment>[];
-  final _drafts = <PhotoDraft>[];
-  bool _picking = false;
+  late final PhotoEdits _photos;
 
   /// Terisi setelah transaksi tersimpan; sejak itu Simpan tidak boleh mengirim ulang.
   String? _savedId;
-  String? _photoError;
-  String? _photoStatus;
 
   Transaction? get _transaction => widget.args.transaction;
   Transfer? get _transfer => widget.args.transfer;
   bool get _isEdit => _transaction != null || _transfer != null;
 
+  void _rebuild() => setState(() {});
+
   @override
   void initState() {
     super.initState();
+    _photos = PhotoEdits(_transaction?.attachments ?? const [])
+      ..addListener(_rebuild);
     final now = DateTime.now();
     final date = widget.args.initialDate;
     _occurredAt = date?.copyWith(hour: now.hour, minute: now.minute) ?? now;
@@ -111,6 +108,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   void dispose() {
     _amount.dispose();
     _note.dispose();
+    _photos.dispose();
     super.dispose();
   }
 
@@ -166,109 +164,17 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     });
   }
 
-  Future<void> _addPhoto() async {
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_camera_rounded),
-              title: const Text('Kamera'),
-              onTap: () => Navigator.pop(context, ImageSource.camera),
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library_rounded),
-              title: const Text('Galeri'),
-              onTap: () => Navigator.pop(context, ImageSource.gallery),
-            ),
-          ],
-        ),
-      ),
+  Future<void> _syncPhotos() async {
+    setState(() => _busy = true);
+    final done = await _photos.sync(
+      ref.read(attachmentApiProvider),
+      transactionId: _savedId,
+      subject: 'Transaksi',
     );
-    if (source == null || !mounted) return;
-
-    final messenger = ScaffoldMessenger.of(context);
-    setState(() => _picking = true);
-    String? path;
-    try {
-      path = await ref.read(photoServiceProvider).pick(source);
-    } on Exception {
-      messenger.showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Foto nggak bisa diambil. Cek izin kamera atau coba foto lain.',
-          ),
-        ),
-      );
-    }
     if (!mounted) return;
-    setState(() {
-      _picking = false;
-      if (path != null) _drafts.add(PhotoDraft(path));
-    });
-  }
-
-  /// Hapus dulu supaya slot foto kosong, lalu upload berurutan.
-  /// Yang gagal tetap tersisa untuk "Coba lagi"; transaksinya sudah aman.
-  Future<void> _syncPhotos(String transactionId) async {
-    final api = ref.read(attachmentApiProvider);
-    String? error;
-    for (final attachment in [..._removed]) {
-      try {
-        await api.delete(attachment.id);
-        _removed.remove(attachment);
-      } on ApiException {
-        error = 'Foto lama gagal dihapus. Transaksi tetap tersimpan.';
-      }
-    }
-
-    final pending = _drafts.where((draft) => !draft.uploaded).toList();
-    for (final (index, draft) in pending.indexed) {
-      if (!mounted) return;
-      setState(() {
-        draft
-          ..uploading = true
-          ..failed = false
-          ..progress = null;
-        _photoStatus = 'Mengupload foto ${index + 1} dari ${pending.length}';
-      });
-      try {
-        await api.uploadForTransaction(
-          transactionId,
-          draft.path,
-          onProgress: (progress) {
-            if (mounted) setState(() => draft.progress = progress);
-          },
-        );
-        draft.uploaded = true;
-      } on ApiException {
-        draft.failed = true;
-        error = 'Foto gagal diupload. Transaksi tetap tersimpan.';
-      } finally {
-        draft.uploading = false;
-      }
-    }
-    if (!mounted) return;
-    if (error != null) {
-      refreshMoney(ref);
-      setState(() {
-        _photoError = error;
-        _photoStatus = null;
-        _busy = false;
-      });
-      return;
-    }
-    _finish();
-  }
-
-  Future<void> _retryPhotos() async {
-    setState(() {
-      _photoError = null;
-      _busy = true;
-    });
-    await _syncPhotos(_savedId!);
+    if (done) return _finish();
+    refreshMoney(ref);
+    setState(() => _busy = false);
   }
 
   void _finish() {
@@ -339,7 +245,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     if (!mounted) return;
     if (savedId == null) return _finish();
     setState(() => _savedId = savedId);
-    await _syncPhotos(savedId);
+    await _syncPhotos();
   }
 
   @override
@@ -519,18 +425,10 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                   if (_mode != _Mode.transfer) ...[
                     const SizedBox(height: Spacing.sm),
                     PhotoPickerRow(
-                      existing: _existing,
-                      drafts: _drafts,
+                      edits: _photos,
+                      label: 'Foto struk',
                       limit: _photoLimit,
-                      picking: _picking,
                       locked: _savedId != null,
-                      onAdd: _addPhoto,
-                      onRemoveExisting: (attachment) => setState(() {
-                        _existing = [..._existing]..remove(attachment);
-                        _removed.add(attachment);
-                      }),
-                      onRemoveDraft: (draft) =>
-                          setState(() => _drafts.remove(draft)),
                     ),
                   ],
                 ],
@@ -545,37 +443,13 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                 ),
               ),
             ],
-            if (_photoError != null) ...[
-              const SizedBox(height: Spacing.sm),
-              Text(
-                _photoError!,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.error,
-                ),
-              ),
-            ],
-            if (_photoStatus != null) ...[
-              const SizedBox(height: Spacing.sm),
-              Text(_photoStatus!, style: theme.textTheme.bodyMedium),
-            ],
-            const SizedBox(height: Spacing.md),
-            if (_photoError != null) ...[
-              FilledButton(
-                onPressed: _retryPhotos,
-                child: const Text('Coba lagi'),
-              ),
-              const SizedBox(height: Spacing.sm),
-              TextButton(onPressed: _finish, child: const Text('Lewati')),
-            ] else
-              FilledButton(
-                onPressed: _busy || _picking ? null : () => _submit(wallets),
-                child: _busy
-                    ? const SizedBox.square(
-                        dimension: Spacing.xl,
-                        child: CircularProgressIndicator(),
-                      )
-                    : const Text('Simpan'),
-              ),
+            PhotoSaveButtons(
+              edits: _photos,
+              busy: _busy,
+              onSave: () => _submit(wallets),
+              onRetry: _syncPhotos,
+              onSkip: _finish,
+            ),
           ],
         ),
       ),

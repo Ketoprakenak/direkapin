@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../../attachment/data/attachment_models.dart';
+
 part 'activity_models.freezed.dart';
 part 'activity_models.g.dart';
 
@@ -13,6 +15,7 @@ abstract class Activity with _$Activity {
     String? location,
     String? description,
     required bool isImportant,
+    required List<Attachment> attachments,
   }) = _Activity;
 
   factory Activity.fromJson(Map<String, dynamic> json) =>

@@ -25,6 +25,9 @@ class FakeServer implements HttpClientAdapter {
   /// Path penulisan yang gagal dengan status 500.
   final failingPaths = <String>{};
 
+  /// Path penulisan yang gagal dengan body error ini.
+  final pathFailures = <String, ({int status, Map<String, Object?> body})>{};
+
   @override
   Future<ResponseBody> fetch(
     RequestOptions options,
@@ -42,6 +45,10 @@ class FakeServer implements HttpClientAdapter {
       final failure = writeFailure;
       if (failure != null) return _json(failure.body, failure.status);
       if (failingPaths.contains(options.path)) return _json(const {}, 500);
+      final pathFailure = pathFailures[options.path];
+      if (pathFailure != null) {
+        return _json(pathFailure.body, pathFailure.status);
+      }
       return _json(const {'id': 'id-baru'}, 200);
     }
     final response = responses[options.path];

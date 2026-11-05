@@ -25,3 +25,7 @@ String monthKey(DateTime date) =>
 
 /// `21.00`
 String formatTime(DateTime date) => DateFormat('HH.mm').format(date);
+
+/// `21.00` dari jam kegiatan `21:00`; tanpa jam = `Seharian`.
+String formatActivityTime(String? time) =>
+    time?.replaceFirst(':', '.') ?? 'Seharian';

@@ -47,7 +47,7 @@ Ref: FIN-02, FIN-13, US-04
 - [x] Simpan foto ke galeri dari viewer (FIN-16, permintaan owner setelah slice ditutup)
 - Uji HP lolos. Upload gagal setelah transaksi tersimpan hanya teruji lewat widget test: upload di WiFi lokal terlalu cepat untuk diputus tangan.
 
-## Slice 5 — Kegiatan · Status: Belum mulai
+## Slice 5 — Kegiatan · Status: Sedang dikerjakan
 Ref: ACT-01–04, US-08
 - [ ] API activities
 - [ ] Mobile: Form kegiatan (S-09), tampil di Halaman Hari & kalender (bintang untuk penting)
@@ -91,3 +91,5 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 | 2026-11-05 | 4 | Kode selesai: backend 133 test, mobile 87 test, lint dan analyze bersih. `.gitignore` `data/` ternyata menyembunyikan `mobile/lib/features/*/data`, sudah diperbaiki |
 | 2026-11-05 | 4 | Aman di HP asli menurut owner. Upload gagal setelah transaksi tersimpan hanya teruji lewat widget test |
 | 2026-11-05 | 4 | Tambahan FIN-16: simpan foto ke galeri, menunggu uji HP |
+| 2026-11-05 | 4 | FIN-16 aman di HP asli menurut owner |
+| 2026-11-05 | 5 | Kode selesai: backend 151 test, mobile 105 test, lint dan analyze bersih. Sisa: uji di HP asli |

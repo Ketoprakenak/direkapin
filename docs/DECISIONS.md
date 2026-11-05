@@ -48,6 +48,7 @@ Kalau ada alasan kuat untuk berubah, tulis usulan di bawah bagian "Usulan" dan t
 | D-38 | Upload berurutan; batas foto dicek tanpa kunci di server | Maks. 4 user dan aplikasi tidak upload paralel | Kunci baris per transaksi |
 | D-39 | Endpoint foto kegiatan (batas 5) ikut dibuat di Slice 4, tampilannya di Slice 5 | Satu endpoint yang sama di kontrak | Tunda sampai Slice 5 |
 | D-40 | Simpan foto ke galeri lewat `MethodChannel` + MediaStore di `MainActivity.kt` | Tanpa dependency baru, dan Slice 8 bisa memakai jalur yang sama untuk ZIP | Paket galeri pihak ketiga |
+| D-41 | Kegiatan hari ini di Beranda bisa di-tap ke Detail; hapus jam saat edit lewat tombol "Seharian" | S-04 tidak menyebut tap, tapi tanpa itu daftarnya buntu | Daftar Beranda tanpa aksi |
 
 ## Dependency yang disetujui
 

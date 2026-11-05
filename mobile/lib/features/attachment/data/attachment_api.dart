@@ -9,15 +9,18 @@ class AttachmentApi {
 
   final Dio _dio;
 
-  Future<void> uploadForTransaction(
-    String transactionId,
+  /// Isi tepat satu dari [transactionId] atau [activityId].
+  Future<void> upload(
     String filePath, {
+    String? transactionId,
+    String? activityId,
     required void Function(double progress) onProgress,
   }) => apiCall(
     () => _dio.post<void>(
       '/attachments',
       data: FormData.fromMap({
-        'transactionId': transactionId,
+        'transactionId': ?transactionId,
+        'activityId': ?activityId,
         'file': MultipartFile.fromFileSync(
           filePath,
           filename: 'foto.jpg',
