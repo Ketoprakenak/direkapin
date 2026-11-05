@@ -13,14 +13,14 @@ import {
   type updateTransferBody,
 } from './transfers.schemas.js';
 
-const include = { fromWallet: true, toWallet: true } satisfies Prisma.TransferInclude;
-type TransferRow = Prisma.TransferGetPayload<{ include: typeof include }>;
+export const transferInclude = { fromWallet: true, toWallet: true } satisfies Prisma.TransferInclude;
+type TransferRow = Prisma.TransferGetPayload<{ include: typeof transferInclude }>;
 
 function ref(wallet: TransferRow['fromWallet']) {
   return { id: wallet.id, name: wallet.name, icon: wallet.icon, color: wallet.color };
 }
 
-function toResponse(transfer: TransferRow) {
+export function toTransferResponse(transfer: TransferRow) {
   return {
     id: transfer.id,
     fromWallet: ref(transfer.fromWallet),
@@ -49,13 +49,13 @@ export async function listTransfers(
       occurredAt: occurredAtFilter(query.from, query.to, timezone),
       ...(query.wallet && { OR: [{ fromWalletId: query.wallet }, { toWalletId: query.wallet }] }),
     },
-    include,
+    include: transferInclude,
     orderBy: [{ occurredAt: 'desc' }, { id: 'desc' }],
     take: query.limit + 1,
     ...(query.cursor && { cursor: { id: query.cursor }, skip: 1 }),
   });
   const page = toPage(rows, query.limit);
-  return { items: page.items.map(toResponse), nextCursor: page.nextCursor };
+  return { items: page.items.map(toTransferResponse), nextCursor: page.nextCursor };
 }
 
 export async function createTransfer(
@@ -67,9 +67,9 @@ export async function createTransfer(
   await assertActiveWallet(prisma, userId, input.toWalletId, 'toWalletId');
   const transfer = await prisma.transfer.create({
     data: { ...input, userId, amount: toBigInt(input.amount) },
-    include,
+    include: transferInclude,
   });
-  return toResponse(transfer);
+  return toTransferResponse(transfer);
 }
 
 export async function updateTransfer(
@@ -100,9 +100,9 @@ export async function updateTransfer(
       ...input,
       ...(input.amount !== undefined && { amount: toBigInt(input.amount) }),
     },
-    include,
+    include: transferInclude,
   });
-  return toResponse(transfer);
+  return toTransferResponse(transfer);
 }
 
 export async function deleteTransfer(prisma: PrismaClient, userId: string, id: string) {

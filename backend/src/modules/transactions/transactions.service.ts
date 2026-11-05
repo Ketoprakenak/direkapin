@@ -13,10 +13,10 @@ import type {
   updateTransactionBody,
 } from './transactions.schemas.js';
 
-const include = { wallet: true, category: true } satisfies Prisma.TransactionInclude;
-type TransactionRow = Prisma.TransactionGetPayload<{ include: typeof include }>;
+export const transactionInclude = { wallet: true, category: true } satisfies Prisma.TransactionInclude;
+type TransactionRow = Prisma.TransactionGetPayload<{ include: typeof transactionInclude }>;
 
-function toResponse(row: TransactionRow) {
+export function toTransactionResponse(row: TransactionRow) {
   return {
     id: row.id,
     type: row.type,
@@ -42,7 +42,7 @@ function toResponse(row: TransactionRow) {
 }
 
 async function findOwned(prisma: PrismaClient, userId: string, id: string) {
-  const row = await prisma.transaction.findFirst({ where: { id, userId }, include });
+  const row = await prisma.transaction.findFirst({ where: { id, userId }, include: transactionInclude });
   if (!row) throw new AppError('NOT_FOUND', 404, 'Data tidak ditemukan');
   return row;
 }
@@ -62,17 +62,17 @@ export async function listTransactions(
       ...(query.type && { type: query.type }),
       ...(query.q && { note: { contains: query.q, mode: 'insensitive' as const } }),
     },
-    include,
+    include: transactionInclude,
     orderBy: [{ occurredAt: 'desc' }, { id: 'desc' }],
     take: query.limit + 1,
     ...(query.cursor && { cursor: { id: query.cursor }, skip: 1 }),
   });
   const page = toPage(rows, query.limit);
-  return { items: page.items.map(toResponse), nextCursor: page.nextCursor };
+  return { items: page.items.map(toTransactionResponse), nextCursor: page.nextCursor };
 }
 
 export async function getTransaction(prisma: PrismaClient, userId: string, id: string) {
-  return toResponse(await findOwned(prisma, userId, id));
+  return toTransactionResponse(await findOwned(prisma, userId, id));
 }
 
 export async function createTransaction(
@@ -84,9 +84,9 @@ export async function createTransaction(
   await assertCategory(prisma, userId, input.categoryId, input.type);
   const row = await prisma.transaction.create({
     data: { ...input, userId, amount: toBigInt(input.amount) },
-    include,
+    include: transactionInclude,
   });
-  return toResponse(row);
+  return toTransactionResponse(row);
 }
 
 export async function updateTransaction(
@@ -112,9 +112,9 @@ export async function updateTransaction(
       ...input,
       ...(input.amount !== undefined && { amount: toBigInt(input.amount) }),
     },
-    include,
+    include: transactionInclude,
   });
-  return toResponse(row);
+  return toTransactionResponse(row);
 }
 
 export async function deleteTransaction(prisma: PrismaClient, userId: string, id: string) {

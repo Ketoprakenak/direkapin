@@ -95,7 +95,7 @@ Nilai `icon` di database = nama ikon tanpa `Icons.` (contoh `restaurant_rounded`
 | Pemilih kategori | Grid 4 kolom ikon + label `labelSmall`, terpilih = border `primary` 2 px |
 | Toggle tipe | Segmented: Keluar · Masuk · Transfer (Keluar default) |
 | FAB | `primary`, ikon `add_rounded`; tap → bottom sheet 2 pilihan: Transaksi, Kegiatan |
-| Snackbar | Muncul setelah simpan/hapus, dengan aksi "Batal" untuk hapus (undo 4 detik) |
+| Snackbar | Muncul setelah simpan/hapus. Hapus memakai dialog konfirmasi, tanpa undo |
 | Skeleton | Kotak `surfaceVariant` dengan shimmer ringan, bentuk sama dengan konten asli |
 
 ## Format

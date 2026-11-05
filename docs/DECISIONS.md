@@ -39,6 +39,10 @@ Kalau ada alasan kuat untuk berubah, tulis usulan di bawah bagian "Usulan" dan t
 | D-30 | Streak belum putus selama hari ini belum lewat. Transfer tidak dihitung | Streak tidak terlihat 0 setiap pagi | Putus jika hari ini kosong |
 | D-31 | Dompet terpilih di form = dompet transaksi terakhir, atau dompet aktif pertama | Tanpa kolom atau penyimpanan baru | Simpan pilihan di HP |
 
+| D-32 | Hapus transaksi/transfer cukup dialog konfirmasi, tanpa undo | US-05 minta konfirmasi; undo butuh penundaan hapus | Konfirmasi + undo 4 detik |
+| D-33 | Transfer tidak punya titik kalender, dan tanggal yang hanya berisi transfer tidak masuk `/calendar`. Tetap tampil di Halaman Hari | CAL-01 hanya menyebut pemasukan, pengeluaran, kegiatan | Titik khusus transfer |
+| D-34 | Saat edit, kategori tersembunyi dan dompet arsip yang sedang dipakai tetap muncul di pilihan | Form tidak kehilangan nilai aslinya (D-29) | Memaksa memilih ulang |
+
 ## Dependency yang disetujui
 
 **Backend:** `fastify`, `@fastify/multipart`, `@fastify/rate-limit`, `@fastify/cors`, `@fastify/sensible`, `fastify-type-provider-zod`, `zod`, `@prisma/client`, `prisma`, `bcrypt`, `jsonwebtoken`, `sharp`, `archiver`, `node-cron`, `pino-pretty` (dev), `vitest`, `supertest`, `eslint`, `typescript-eslint`, `typescript`, `tsx`, `@types/node`, `@types/bcrypt`, `@types/jsonwebtoken`.

@@ -1,24 +1,11 @@
 import { z } from 'zod';
+import { activityResponse } from '../activities/activities.schemas.js';
 import { walletResponse } from '../wallets/wallets.schemas.js';
 
 const seriesPoint = z.object({
   label: z.string(),
   income: z.number().int(),
   expense: z.number().int(),
-});
-
-const activity = z.object({
-  id: z.uuid(),
-  title: z.string(),
-  date: z.string(),
-  time: z.string().nullable(),
-  location: z.string().nullable(),
-  description: z.string().nullable(),
-  isImportant: z.boolean(),
-  // shortcut: selalu kosong sampai upload foto ada, isi skemanya di Slice 4.
-  attachments: z.array(z.never()),
-  createdAt: z.string(),
-  updatedAt: z.string(),
 });
 
 export const dashboardResponse = z.object({
@@ -32,7 +19,7 @@ export const dashboardResponse = z.object({
   today: z.object({
     date: z.string(),
     expense: z.number().int(),
-    activities: z.array(activity),
+    activities: z.array(activityResponse),
     hasEntry: z.boolean(),
   }),
   last7Days: z.array(seriesPoint),

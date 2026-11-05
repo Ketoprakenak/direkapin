@@ -4,6 +4,7 @@ import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod
 import { z } from 'zod';
 import { loadConfig, type Config } from './config.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
+import { calendarRoutes } from './modules/calendar/calendar.routes.js';
 import { categoryRoutes } from './modules/categories/categories.routes.js';
 import { dashboardRoutes } from './modules/dashboard/dashboard.routes.js';
 import { meRoutes } from './modules/me/me.routes.js';
@@ -47,6 +48,7 @@ export function buildApp(config: Config) {
       categoryRoutes(api);
       transactionRoutes(api);
       dashboardRoutes(api);
+      calendarRoutes(api);
     },
     { prefix: '/api/v1' },
   );

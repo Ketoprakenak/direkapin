@@ -1,6 +1,7 @@
 import type { PrismaClient } from '@prisma/client';
 import { addDays, dateRange, localDate, monthRange, toDbDate } from '../../lib/dates.js';
 import { toNumber } from '../../lib/money.js';
+import { activityOrder, toActivityResponse } from '../activities/activities.service.js';
 import { getTimezone } from '../me/me.service.js';
 import { listWallets } from '../wallets/wallets.service.js';
 
@@ -79,7 +80,7 @@ export async function getDashboard(prisma: PrismaClient, userId: string, now = n
     recordedDays(prisma, userId, timezone),
     prisma.activity.findMany({
       where: { userId, date: toDbDate(today) },
-      orderBy: [{ isImportant: 'desc' }, { time: { sort: 'asc', nulls: 'last' } }],
+      orderBy: activityOrder,
     }),
   ]);
 
@@ -95,18 +96,7 @@ export async function getDashboard(prisma: PrismaClient, userId: string, now = n
     today: {
       date: today,
       expense: last7Days.at(-1)?.expense ?? 0,
-      activities: activities.map((activity) => ({
-        id: activity.id,
-        title: activity.title,
-        date: today,
-        time: activity.time,
-        location: activity.location,
-        description: activity.description,
-        isImportant: activity.isImportant,
-        attachments: [],
-        createdAt: activity.createdAt.toISOString(),
-        updatedAt: activity.updatedAt.toISOString(),
-      })),
+      activities: activities.map(toActivityResponse),
       hasEntry: days.includes(today),
     },
     last7Days,

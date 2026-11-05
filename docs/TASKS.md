@@ -33,7 +33,7 @@ Ref: FIN-01, 03–05, 09–10, DSH-01, 02, 03, 05, 06, US-03, US-06
 - [x] Mobile: Beranda (S-04), Form transaksi (S-08) termasuk mode Transfer, Dompet (S-12), Kategori (S-11)
 - [x] Uji catat pengeluaran, transfer, dompet, dan kategori di HP asli
 
-## Slice 3 — Kalender + Halaman Hari · Status: Belum mulai
+## Slice 3 — Kalender + Halaman Hari · Status: Sedang dikerjakan
 Ref: CAL-01, 03–05, US-05
 - [ ] `GET /calendar?month=`, `GET /days/{date}`
 - [ ] Mobile: Kalender (S-05), Halaman Hari (S-06), Detail item (S-07), edit/hapus/pindah tanggal

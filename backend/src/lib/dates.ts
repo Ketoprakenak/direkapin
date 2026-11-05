@@ -56,14 +56,18 @@ export function localDate(instant: Date, timeZone: string): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone }).format(instant);
 }
 
+/** Tanggal 1 bulan berikutnya dari [date]. */
+export function firstOfNextMonth(date: string): string {
+  const next = new Date(`${date.slice(0, 7)}-01T00:00:00Z`);
+  next.setUTCMonth(next.getUTCMonth() + 1);
+  return next.toISOString().slice(0, 10);
+}
+
 /** Rentang satu bulan yang memuat [date], dalam bentuk `{ gte, lt }` UTC. */
 export function monthRange(date: string, timeZone: string) {
-  const first = `${date.slice(0, 7)}-01`;
-  const next = new Date(`${first}T00:00:00Z`);
-  next.setUTCMonth(next.getUTCMonth() + 1);
   return {
-    gte: startOfDay(first, timeZone),
-    lt: startOfDay(next.toISOString().slice(0, 10), timeZone),
+    gte: startOfDay(`${date.slice(0, 7)}-01`, timeZone),
+    lt: startOfDay(firstOfNextMonth(date), timeZone),
   };
 }
 
