@@ -3,7 +3,7 @@
 Satu slice per sesi Claude Code. Centang item saat selesai dan ubah status slice.
 Status: `Belum mulai` · `Sedang dikerjakan` · `Selesai`
 
-**Slice aktif:** 4
+**Slice aktif:** 5
 
 ---
 
@@ -39,11 +39,12 @@ Ref: CAL-01, 03–05, US-05
 - [x] Mobile: Kalender (S-05), Halaman Hari (S-06), Detail item (S-07), edit/hapus/pindah tanggal
 - [x] Uji kalender, edit, hapus, dan pindah tanggal di HP asli
 
-## Slice 4 — Foto · Status: Sedang dikerjakan
+## Slice 4 — Foto · Status: Selesai
 Ref: FIN-02, FIN-13, US-04
-- [ ] `POST /attachments` (multipart, tolak > 2 MB, `sharp` resize ulang > 1 MB, buat thumbnail)
-- [ ] `GET /attachments/{id}?size=thumb|full` ber-token, `DELETE`
-- [ ] Mobile: ambil kamera/galeri → kompres otomatis → upload dengan progress → retry jika gagal; thumbnail + viewer
+- [x] `POST /attachments` (multipart, tolak > 2 MB, `sharp` resize ulang > 1 MB, buat thumbnail)
+- [x] `GET /attachments/{id}?size=thumb|full` ber-token, `DELETE`
+- [x] Mobile: ambil kamera/galeri → kompres otomatis → upload dengan progress → retry jika gagal; thumbnail + viewer
+- Uji HP lolos. Upload gagal setelah transaksi tersimpan hanya teruji lewat widget test: upload di WiFi lokal terlalu cepat untuk diputus tangan.
 
 ## Slice 5 — Kegiatan · Status: Belum mulai
 Ref: ACT-01–04, US-08
