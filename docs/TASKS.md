@@ -3,7 +3,7 @@
 Satu slice per sesi Claude Code. Centang item saat selesai dan ubah status slice.
 Status: `Belum mulai` · `Sedang dikerjakan` · `Selesai`
 
-**Slice aktif:** 6
+**Slice aktif:** 7
 
 ---
 
@@ -52,10 +52,10 @@ Ref: ACT-01–04, US-08
 - [x] API activities
 - [x] Mobile: Form kegiatan (S-09), tampil di Halaman Hari & kalender (bintang untuk penting)
 
-## Slice 6 — Laporan · Status: Sedang dikerjakan
+## Slice 6 — Laporan · Status: Selesai
 Ref: FIN-06–08, US-07
-- [ ] `GET /reports/daily|weekly|monthly` (filter dompet, transfer tidak dihitung)
-- [ ] Mobile: Laporan (S-10) dengan grafik `fl_chart`
+- [x] `GET /reports/daily|weekly|monthly` (filter dompet, transfer tidak dihitung)
+- [x] Mobile: Laporan (S-10) dengan grafik `fl_chart`
 
 ## Slice 7 — Reminder, versi, CI APK · Status: Belum mulai
 Ref: ENG-01, US-09, D-21
@@ -96,3 +96,4 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 | 2026-11-05 | 5 | Tambahan permintaan owner: galeri bisa pilih banyak foto. Sisa: uji di HP asli |
 | 2026-11-05 | 5 | Aman di HP asli menurut owner, termasuk pilih banyak foto. Slice ditutup |
 | 2026-11-05 | 6 | Kode selesai: backend 170 test, mobile 123 test, lint dan analyze bersih. Sisa: uji di HP asli |
+| 2026-11-05 | 6 | Aman di HP asli menurut owner. Slice ditutup |
