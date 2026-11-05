@@ -20,10 +20,13 @@ class _FakePhotos implements PhotoService {
   final String? path;
 
   @override
-  Future<String?> pick(ImageSource source) async {
+  Future<({List<String> paths, int skipped})> pick(
+    ImageSource source, {
+    required int limit,
+  }) async {
     final result = path;
     if (result == null) throw Exception('izin ditolak');
-    return result;
+    return (paths: [result], skipped: 0);
   }
 }
 
@@ -80,6 +83,51 @@ void main() {
 
     test('kompres gagal mengembalikan null', () async {
       expect(await compressUntilSmall((_) async => null), isNull);
+    });
+  });
+
+  group('compressPicked', () {
+    final files = [XFile('a'), XFile('b'), XFile('c')];
+
+    test('mengompres semua foto sesuai urutan', () async {
+      final result = await compressPicked(files, 3, (file) async => file.path);
+      expect(result.paths, ['a', 'b', 'c']);
+      expect(result.skipped, 0);
+    });
+
+    test(
+      'foto di atas batas dilewati, walau pemilih mengabaikan limit',
+      () async {
+        final result = await compressPicked(
+          files,
+          2,
+          (file) async => file.path,
+        );
+        expect(result.paths, ['a', 'b']);
+        expect(result.skipped, 1);
+      },
+    );
+
+    test('foto rusak dilewati, yang lain tetap dipakai', () async {
+      final result = await compressPicked(files, 3, (file) async {
+        if (file.path == 'b') throw Exception('rusak');
+        return file.path;
+      });
+      expect(result.paths, ['a', 'c']);
+      expect(result.skipped, 1);
+    });
+
+    test('semua gagal melempar error', () async {
+      expect(
+        compressPicked(files, 3, (_) async => throw Exception('rusak')),
+        throwsException,
+      );
+    });
+
+    test('batal memilih mengembalikan daftar kosong', () async {
+      final result = await compressPicked([], 3, (file) async => file.path);
+      expect(result.paths, isEmpty);
+      expect(result.skipped, 0);
     });
   });
 

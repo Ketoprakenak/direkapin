@@ -11,12 +11,21 @@ import 'package:intl/date_symbol_data_local.dart';
 import '../../helpers/fake_server.dart';
 
 class _FakePhotos implements PhotoService {
-  _FakePhotos(this.path);
+  _FakePhotos(this.path, {this.count = 1, this.skipped = 0});
 
   final String path;
+  final int count;
+  final int skipped;
+  int? lastLimit;
 
   @override
-  Future<String?> pick(ImageSource source) async => path;
+  Future<({List<String> paths, int skipped})> pick(
+    ImageSource source, {
+    required int limit,
+  }) async {
+    lastLimit = limit;
+    return (paths: List.filled(count, path), skipped: skipped);
+  }
 }
 
 Map<String, Object?> attachmentJson(String id) => {
@@ -229,6 +238,54 @@ void main() {
 
         expect(find.text('Tambah foto'), findsNothing);
         expect(find.text('Foto kegiatan (maks. 5)'), findsOneWidget);
+      });
+
+      testWidgets('pilih banyak: semua masuk, limit = sisa slot', (
+        tester,
+      ) async {
+        final photos = _FakePhotos(photoPath, count: 3);
+        final server = FakeServer({});
+        final activity = Activity.fromJson(
+          activityJson(attachments: [attachmentJson('a0')]),
+        );
+        await pumpRoutedApp(
+          tester,
+          server,
+          routeName: Routes.activityForm,
+          extra: ActivityFormArgs(activity: activity),
+          photoService: photos,
+        );
+        await addPhoto(tester);
+
+        expect(photos.lastLimit, 4);
+        expect(find.byTooltip('Hapus foto'), findsNWidgets(4));
+
+        await tapText(tester, 'Simpan');
+        expect(paths(server), [
+          'PATCH /activities/k1',
+          'POST /attachments',
+          'POST /attachments',
+          'POST /attachments',
+        ]);
+      });
+
+      testWidgets('foto yang dilewati diberitahukan', (tester) async {
+        await pumpRoutedApp(
+          tester,
+          FakeServer({}),
+          routeName: Routes.activityForm,
+          photoService: _FakePhotos(photoPath, count: 1, skipped: 2),
+        );
+        await addPhoto(tester);
+
+        expect(
+          find.text(
+            '2 foto nggak ikut ditambahkan. '
+            'Sudah lewat batas 5 foto, atau filenya rusak.',
+          ),
+          findsOneWidget,
+        );
+        expect(find.byTooltip('Hapus foto'), findsOneWidget);
       });
 
       testWidgets('server menolak foto ke-6: pesannya ditampilkan', (

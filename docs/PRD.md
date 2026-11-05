@@ -107,7 +107,7 @@ Prioritas: **P0** wajib di MVP, **P1** setelah MVP stabil, **P2** nice-to-have.
 | ID | Kebutuhan | Prioritas |
 | --- | --- | --- |
 | FIN-01 | Tambah transaksi: dompet, tipe (masuk/keluar), nominal, kategori, tanggal, jam, catatan | P0 |
-| FIN-02 | Lampirkan foto struk dari kamera atau galeri (maks. 3 foto); kompresi otomatis sesuai FIN-13 | P0 |
+| FIN-02 | Lampirkan foto struk dari kamera atau galeri, galeri boleh pilih beberapa sekaligus (maks. 3 foto); kompresi otomatis sesuai FIN-13 | P0 |
 | FIN-03 | Edit semua field per transaksi: dompet, kategori, nominal, tanggal, catatan, foto | P0 |
 | FIN-04 | Hapus transaksi (dengan konfirmasi) | P0 |
 | FIN-05 | Kategori bawaan (Makan, Transport, Kuliah, Hiburan, Belanja, Tagihan, Gaji/Uang saku, Lainnya) + CRUD kategori custom dengan ikon & warna | P0 |
@@ -129,7 +129,7 @@ Prioritas: **P0** wajib di MVP, **P1** setelah MVP stabil, **P2** nice-to-have.
 | --- | --- | --- |
 | ACT-01 | Tambah catatan kegiatan: judul, tanggal, jam (opsional), lokasi, deskripsi | P0 |
 | ACT-02 | Tandai kegiatan "penting" (bintang) agar menonjol di kalender | P0 |
-| ACT-03 | Lampirkan foto kegiatan (maks. 5 foto), dikompres otomatis seperti FIN-13 | P0 |
+| ACT-03 | Lampirkan foto kegiatan, galeri boleh pilih beberapa sekaligus (maks. 5 foto), dikompres otomatis seperti FIN-13 | P0 |
 | ACT-04 | Edit dan hapus kegiatan | P0 |
 | ACT-05 | Mood harian (emoji) di Halaman Hari | P1 |
 | ACT-06 | Galeri "Kenangan": semua foto kegiatan per bulan | P2 |

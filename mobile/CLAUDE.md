@@ -46,7 +46,7 @@ mobile/lib/
 ## Foto (FIN-13) — tidak boleh ada kompres manual
 
 `core/media/photo_service.dart` adalah satu-satunya jalan mengambil foto:
-1. `image_picker` (kamera/galeri) dengan `maxWidth: 1600`, `imageQuality: 85`.
+1. `image_picker` (kamera satu foto, galeri boleh pilih banyak sesuai sisa slot) dengan `maxWidth: 1600`, `imageQuality: 85`.
 2. `flutter_image_compress` → JPEG, `minWidth/minHeight` sesuai rasio, lebar maks. 1600, quality 80; jika hasil > 400 KB ulangi dengan quality 70, lalu 60.
 3. HEIC dikonversi ke JPEG di langkah yang sama; metadata EXIF lokasi dibuang.
 4. Kembalikan file hasil kompres + ukuran; UI tidak pernah melihat file asli.

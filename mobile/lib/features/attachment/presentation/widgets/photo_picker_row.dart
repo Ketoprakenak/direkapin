@@ -29,6 +29,7 @@ class PhotoPickerRow extends ConsumerWidget {
 
   Future<void> _add(BuildContext context, WidgetRef ref) async {
     final service = ref.read(photoServiceProvider);
+    final remaining = limit - edits.existing.length - edits.drafts.length;
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       builder: (context) => SafeArea(
@@ -54,8 +55,18 @@ class PhotoPickerRow extends ConsumerWidget {
     final messenger = ScaffoldMessenger.of(context);
     edits.setPicking(true);
     try {
-      final path = await service.pick(source);
-      if (path != null) edits.addDraft(path);
+      final result = await service.pick(source, limit: remaining);
+      result.paths.forEach(edits.addDraft);
+      if (result.skipped > 0) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              '${result.skipped} foto nggak ikut ditambahkan. '
+              'Sudah lewat batas $limit foto, atau filenya rusak.',
+            ),
+          ),
+        );
+      }
     } on Exception {
       messenger.showSnackBar(
         const SnackBar(
