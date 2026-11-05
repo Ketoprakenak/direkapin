@@ -42,7 +42,9 @@ class AuthInterceptor extends QueuedInterceptor {
       final token = await _validAccessToken(options);
       if (token == null) return handler.next(err);
       options.headers['Authorization'] = 'Bearer $token';
-      // shortcut: FormData tidak bisa dikirim dua kali, upload foto (Slice 4) perlu membuat ulang datanya.
+      // FormData hanya bisa dikirim sekali, jadi retry memakai salinannya.
+      final data = options.data;
+      if (data is FormData) options.data = data.clone();
       handler.resolve(await _client.fetch<dynamic>(options));
     } on DioException catch (e) {
       // Hanya penolakan dari server yang mengakhiri sesi; server offline tidak.

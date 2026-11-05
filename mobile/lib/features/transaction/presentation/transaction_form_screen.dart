@@ -6,9 +6,13 @@ import 'package:go_router/go_router.dart';
 import '../../../core/api/api_error.dart';
 import '../../../core/format/dates.dart';
 import '../../../core/format/rupiah_input.dart';
+import '../../../core/media/photo_service.dart';
 import '../../../core/router/router.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../attachment/data/attachment_models.dart';
+import '../../attachment/presentation/widgets/photo_picker_row.dart';
+import '../../attachment/providers/attachment_providers.dart';
 import '../../category/data/category_models.dart';
 import '../../dashboard/providers/dashboard_providers.dart';
 import '../../wallet/data/wallet_models.dart';
@@ -19,9 +23,15 @@ import 'widgets/category_grid.dart';
 
 enum _Mode { expense, income, transfer }
 
+const _photoLimit = 3;
+
 /// Tambah baru (opsional dengan [initialDate]), atau edit [transaction] / [transfer].
 class TransactionFormArgs {
-  const TransactionFormArgs({this.transaction, this.transfer, this.initialDate});
+  const TransactionFormArgs({
+    this.transaction,
+    this.transfer,
+    this.initialDate,
+  });
 
   final Transaction? transaction;
   final Transfer? transfer;
@@ -29,7 +39,10 @@ class TransactionFormArgs {
 }
 
 class TransactionFormScreen extends ConsumerStatefulWidget {
-  const TransactionFormScreen({super.key, this.args = const TransactionFormArgs()});
+  const TransactionFormScreen({
+    super.key,
+    this.args = const TransactionFormArgs(),
+  });
 
   final TransactionFormArgs args;
 
@@ -51,6 +64,17 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   bool _busy = false;
   String? _categoryError;
   String? _error;
+
+  /// Foto lama yang masih dipertahankan; yang dibuang baru dihapus setelah Simpan.
+  late List<Attachment> _existing = [...?widget.args.transaction?.attachments];
+  final _removed = <Attachment>[];
+  final _drafts = <PhotoDraft>[];
+  bool _picking = false;
+
+  /// Terisi setelah transaksi tersimpan; sejak itu Simpan tidak boleh mengirim ulang.
+  String? _savedId;
+  String? _photoError;
+  String? _photoStatus;
 
   Transaction? get _transaction => widget.args.transaction;
   Transfer? get _transfer => widget.args.transfer;
@@ -135,11 +159,128 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     );
     if (picked == null) return;
     setState(() {
-      _occurredAt = _occurredAt.copyWith(hour: picked.hour, minute: picked.minute);
+      _occurredAt = _occurredAt.copyWith(
+        hour: picked.hour,
+        minute: picked.minute,
+      );
     });
   }
 
-  Future<void> _send(String walletId, Map<String, Object?> common) async {
+  Future<void> _addPhoto() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera_rounded),
+              title: const Text('Kamera'),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_rounded),
+              title: const Text('Galeri'),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _picking = true);
+    String? path;
+    try {
+      path = await ref.read(photoServiceProvider).pick(source);
+    } on Exception {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Foto nggak bisa diambil. Cek izin kamera atau coba foto lain.',
+          ),
+        ),
+      );
+    }
+    if (!mounted) return;
+    setState(() {
+      _picking = false;
+      if (path != null) _drafts.add(PhotoDraft(path));
+    });
+  }
+
+  /// Hapus dulu supaya slot foto kosong, lalu upload berurutan.
+  /// Yang gagal tetap tersisa untuk "Coba lagi"; transaksinya sudah aman.
+  Future<void> _syncPhotos(String transactionId) async {
+    final api = ref.read(attachmentApiProvider);
+    String? error;
+    for (final attachment in [..._removed]) {
+      try {
+        await api.delete(attachment.id);
+        _removed.remove(attachment);
+      } on ApiException {
+        error = 'Foto lama gagal dihapus. Transaksi tetap tersimpan.';
+      }
+    }
+
+    final pending = _drafts.where((draft) => !draft.uploaded).toList();
+    for (final (index, draft) in pending.indexed) {
+      if (!mounted) return;
+      setState(() {
+        draft
+          ..uploading = true
+          ..failed = false
+          ..progress = null;
+        _photoStatus = 'Mengupload foto ${index + 1} dari ${pending.length}';
+      });
+      try {
+        await api.uploadForTransaction(
+          transactionId,
+          draft.path,
+          onProgress: (progress) {
+            if (mounted) setState(() => draft.progress = progress);
+          },
+        );
+        draft.uploaded = true;
+      } on ApiException {
+        draft.failed = true;
+        error = 'Foto gagal diupload. Transaksi tetap tersimpan.';
+      } finally {
+        draft.uploading = false;
+      }
+    }
+    if (!mounted) return;
+    if (error != null) {
+      refreshMoney(ref);
+      setState(() {
+        _photoError = error;
+        _photoStatus = null;
+        _busy = false;
+      });
+      return;
+    }
+    _finish();
+  }
+
+  Future<void> _retryPhotos() async {
+    setState(() {
+      _photoError = null;
+      _busy = true;
+    });
+    await _syncPhotos(_savedId!);
+  }
+
+  void _finish() {
+    refreshMoney(ref);
+    final subject = _mode == _Mode.transfer ? 'Transfer' : 'Transaksi';
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('$subject tersimpan')));
+    context.pop(true);
+  }
+
+  /// ID transaksi yang tersimpan; null untuk transfer.
+  Future<String?> _send(String walletId, Map<String, Object?> common) async {
     final transactions = ref.read(transactionApiProvider);
     final wallets = ref.read(walletApiProvider);
     if (_mode == _Mode.transfer) {
@@ -152,7 +293,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       await (transfer == null
           ? wallets.createTransfer(data)
           : wallets.updateTransfer(transfer.id, data));
-      return;
+      return null;
     }
     final data = {
       ...common,
@@ -161,9 +302,9 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       'type': (_mode == _Mode.income ? TxType.income : TxType.expense).apiValue,
     };
     final transaction = _transaction;
-    await (transaction == null
-        ? transactions.create(data)
-        : transactions.update(transaction.id, data));
+    if (transaction == null) return transactions.create(data);
+    await transactions.update(transaction.id, data);
+    return transaction.id;
   }
 
   Future<void> _submit(List<Wallet> wallets) async {
@@ -183,13 +324,9 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       // Saat edit, catatan kosong berarti dihapus.
       if (note.isNotEmpty) 'note': note else if (_isEdit) 'note': null,
     };
-    final messenger = ScaffoldMessenger.of(context);
+    final String? savedId;
     try {
-      await _send(_selectedWallet(wallets), common);
-      refreshMoney(ref);
-      final subject = _mode == _Mode.transfer ? 'Transfer' : 'Transaksi';
-      messenger.showSnackBar(SnackBar(content: Text('$subject tersimpan')));
-      if (mounted) context.pop(true);
+      savedId = await _send(_selectedWallet(wallets), common);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -197,44 +334,56 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
           _busy = false;
         });
       }
+      return;
     }
+    if (!mounted) return;
+    if (savedId == null) return _finish();
+    setState(() => _savedId = savedId);
+    await _syncPhotos(savedId);
   }
 
   @override
   Widget build(BuildContext context) {
     final wallets = ref.watch(walletsProvider(includeArchived: _isEdit));
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _isEdit
-              ? (_transfer != null ? 'Ubah transfer' : 'Ubah transaksi')
-              : 'Tambah transaksi',
+    return PopScope(
+      // Transaksi sudah tersimpan: keluar harus lewat _finish supaya layar asal ikut segar.
+      canPop: _savedId == null,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && !_busy) _finish();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            _isEdit
+                ? (_transfer != null ? 'Ubah transfer' : 'Ubah transaksi')
+                : 'Tambah transaksi',
+          ),
         ),
-      ),
-      body: wallets.when(
-        error: (error, _) => ErrorState(
-          error: error,
-          onRetry: () => ref.invalidate(walletsProvider),
+        body: wallets.when(
+          error: (error, _) => ErrorState(
+            error: error,
+            onRetry: () => ref.invalidate(walletsProvider),
+          ),
+          loading: () => const ListSkeleton(),
+          data: (all) {
+            final options = _options(all);
+            if (options.isNotEmpty) return _buildForm(options);
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const EmptyState(
+                    message: 'Belum ada dompet aktif. Tambah dompet dulu, yuk.',
+                  ),
+                  TextButton(
+                    onPressed: () => context.pushNamed(Routes.wallets),
+                    child: const Text('Kelola dompet'),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
-        loading: () => const ListSkeleton(),
-        data: (all) {
-          final options = _options(all);
-          if (options.isNotEmpty) return _buildForm(options);
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const EmptyState(
-                  message: 'Belum ada dompet aktif. Tambah dompet dulu, yuk.',
-                ),
-                TextButton(
-                  onPressed: () => context.pushNamed(Routes.wallets),
-                  child: const Text('Kelola dompet'),
-                ),
-              ],
-            ),
-          );
-        },
       ),
     );
   }
@@ -255,106 +404,137 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SegmentedButton<_Mode>(
-              showSelectedIcon: false,
-              segments: [
-                ButtonSegment(
-                  value: _Mode.expense,
-                  enabled: _transfer == null,
-                  label: const Text('Keluar'),
-                ),
-                ButtonSegment(
-                  value: _Mode.income,
-                  enabled: _transfer == null,
-                  label: const Text('Masuk'),
-                ),
-                ButtonSegment(
-                  value: _Mode.transfer,
-                  enabled: _transaction == null,
-                  label: const Text('Transfer'),
-                ),
-              ],
-              selected: {_mode},
-              onSelectionChanged: (selected) => setState(() {
-                _mode = selected.first;
-                _categoryId = null;
-                _categoryError = null;
-              }),
-            ),
-            const SizedBox(height: Spacing.lg),
-            TextFormField(
-              controller: _amount,
-              keyboardType: TextInputType.number,
-              textAlign: TextAlign.end,
-              style: theme.textTheme.displayMedium,
-              autofocus: !_isEdit,
-              inputFormatters: const [RupiahInputFormatter()],
-              decoration: InputDecoration(
-                labelText: 'Nominal',
-                prefixText: 'Rp',
-                prefixStyle: theme.textTheme.displayMedium,
+            IgnorePointer(
+              ignoring: _savedId != null,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SegmentedButton<_Mode>(
+                    showSelectedIcon: false,
+                    segments: [
+                      ButtonSegment(
+                        value: _Mode.expense,
+                        enabled: _transfer == null,
+                        label: const Text('Keluar'),
+                      ),
+                      ButtonSegment(
+                        value: _Mode.income,
+                        enabled: _transfer == null,
+                        label: const Text('Masuk'),
+                      ),
+                      ButtonSegment(
+                        value: _Mode.transfer,
+                        enabled: _transaction == null,
+                        label: const Text('Transfer'),
+                      ),
+                    ],
+                    selected: {_mode},
+                    onSelectionChanged: (selected) => setState(() {
+                      _mode = selected.first;
+                      _categoryId = null;
+                      _categoryError = null;
+                    }),
+                  ),
+                  const SizedBox(height: Spacing.lg),
+                  TextFormField(
+                    controller: _amount,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.end,
+                    style: theme.textTheme.displayMedium,
+                    autofocus: !_isEdit,
+                    inputFormatters: const [RupiahInputFormatter()],
+                    decoration: InputDecoration(
+                      labelText: 'Nominal',
+                      prefixText: 'Rp',
+                      prefixStyle: theme.textTheme.displayMedium,
+                    ),
+                    validator: (value) {
+                      final amount = parseRupiah(value ?? '');
+                      return amount == null || amount <= 0
+                          ? 'Nominal harus lebih dari 0'
+                          : null;
+                    },
+                  ),
+                  const SizedBox(height: Spacing.md),
+                  DropdownButtonFormField<String>(
+                    key: ValueKey(fromWallet),
+                    initialValue: fromWallet,
+                    items: items,
+                    decoration: InputDecoration(
+                      labelText: _mode == _Mode.transfer
+                          ? 'Dari dompet'
+                          : 'Dompet',
+                    ),
+                    onChanged: (value) => setState(() => _walletId = value),
+                  ),
+                  const SizedBox(height: Spacing.md),
+                  if (_mode == _Mode.transfer)
+                    DropdownButtonFormField<String>(
+                      initialValue: _toWalletId,
+                      items: items,
+                      decoration: const InputDecoration(labelText: 'Ke dompet'),
+                      onChanged: (value) => setState(() => _toWalletId = value),
+                      validator: (value) {
+                        if (value == null) return 'Pilih dompet';
+                        return value == fromWallet
+                            ? 'Dompet asal dan tujuan harus berbeda'
+                            : null;
+                      },
+                    )
+                  else
+                    CategoryGrid(
+                      type: _mode == _Mode.income
+                          ? TxType.income
+                          : TxType.expense,
+                      selectedId: _categoryId,
+                      keepId: _transaction?.category.id,
+                      errorText: _categoryError,
+                      onSelected: (id) => setState(() {
+                        _categoryId = id;
+                        _categoryError = null;
+                      }),
+                    ),
+                  const SizedBox(height: Spacing.sm),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.calendar_today_rounded),
+                    title: Text(formatLongDate(_occurredAt)),
+                    onTap: _pickDate,
+                  ),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.schedule_rounded),
+                    title: Text(formatTime(_occurredAt)),
+                    onTap: _pickTime,
+                  ),
+                  TextFormField(
+                    controller: _note,
+                    maxLength: 1000,
+                    maxLines: null,
+                    maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                    decoration: const InputDecoration(
+                      labelText: 'Catatan (opsional)',
+                    ),
+                  ),
+                  if (_mode != _Mode.transfer) ...[
+                    const SizedBox(height: Spacing.sm),
+                    PhotoPickerRow(
+                      existing: _existing,
+                      drafts: _drafts,
+                      limit: _photoLimit,
+                      picking: _picking,
+                      locked: _savedId != null,
+                      onAdd: _addPhoto,
+                      onRemoveExisting: (attachment) => setState(() {
+                        _existing = [..._existing]..remove(attachment);
+                        _removed.add(attachment);
+                      }),
+                      onRemoveDraft: (draft) =>
+                          setState(() => _drafts.remove(draft)),
+                    ),
+                  ],
+                ],
               ),
-              validator: (value) {
-                final amount = parseRupiah(value ?? '');
-                return amount == null || amount <= 0
-                    ? 'Nominal harus lebih dari 0'
-                    : null;
-              },
-            ),
-            const SizedBox(height: Spacing.md),
-            DropdownButtonFormField<String>(
-              key: ValueKey(fromWallet),
-              initialValue: fromWallet,
-              items: items,
-              decoration: InputDecoration(
-                labelText: _mode == _Mode.transfer ? 'Dari dompet' : 'Dompet',
-              ),
-              onChanged: (value) => setState(() => _walletId = value),
-            ),
-            const SizedBox(height: Spacing.md),
-            if (_mode == _Mode.transfer)
-              DropdownButtonFormField<String>(
-                initialValue: _toWalletId,
-                items: items,
-                decoration: const InputDecoration(labelText: 'Ke dompet'),
-                onChanged: (value) => setState(() => _toWalletId = value),
-                validator: (value) {
-                  if (value == null) return 'Pilih dompet';
-                  return value == fromWallet
-                      ? 'Dompet asal dan tujuan harus berbeda'
-                      : null;
-                },
-              )
-            else
-              CategoryGrid(
-                type: _mode == _Mode.income ? TxType.income : TxType.expense,
-                selectedId: _categoryId,
-                keepId: _transaction?.category.id,
-                errorText: _categoryError,
-                onSelected: (id) => setState(() {
-                  _categoryId = id;
-                  _categoryError = null;
-                }),
-              ),
-            const SizedBox(height: Spacing.sm),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.calendar_today_rounded),
-              title: Text(formatLongDate(_occurredAt)),
-              onTap: _pickDate,
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.schedule_rounded),
-              title: Text(formatTime(_occurredAt)),
-              onTap: _pickTime,
-            ),
-            TextFormField(
-              controller: _note,
-              maxLength: 1000,
-              maxLines: null,
-              maxLengthEnforcement: MaxLengthEnforcement.enforced,
-              decoration: const InputDecoration(labelText: 'Catatan (opsional)'),
             ),
             if (_error != null) ...[
               const SizedBox(height: Spacing.sm),
@@ -365,16 +545,37 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                 ),
               ),
             ],
+            if (_photoError != null) ...[
+              const SizedBox(height: Spacing.sm),
+              Text(
+                _photoError!,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.error,
+                ),
+              ),
+            ],
+            if (_photoStatus != null) ...[
+              const SizedBox(height: Spacing.sm),
+              Text(_photoStatus!, style: theme.textTheme.bodyMedium),
+            ],
             const SizedBox(height: Spacing.md),
-            FilledButton(
-              onPressed: _busy ? null : () => _submit(wallets),
-              child: _busy
-                  ? const SizedBox.square(
-                      dimension: Spacing.xl,
-                      child: CircularProgressIndicator(),
-                    )
-                  : const Text('Simpan'),
-            ),
+            if (_photoError != null) ...[
+              FilledButton(
+                onPressed: _retryPhotos,
+                child: const Text('Coba lagi'),
+              ),
+              const SizedBox(height: Spacing.sm),
+              TextButton(onPressed: _finish, child: const Text('Lewati')),
+            ] else
+              FilledButton(
+                onPressed: _busy || _picking ? null : () => _submit(wallets),
+                child: _busy
+                    ? const SizedBox.square(
+                        dimension: Spacing.xl,
+                        child: CircularProgressIndicator(),
+                      )
+                    : const Text('Simpan'),
+              ),
           ],
         ),
       ),

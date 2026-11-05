@@ -7,6 +7,7 @@ import '../../../core/router/router.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/money_widgets.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../attachment/presentation/widgets/attachment_image.dart';
 import '../../category/data/category_models.dart';
 import '../data/transaction_models.dart';
 import '../providers/transaction_providers.dart';
@@ -68,7 +69,14 @@ class TransactionTile extends StatelessWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      trailing: AmountText(amount, signed: true),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AmountText(amount, signed: true),
+          if (transaction.attachments.isNotEmpty)
+            ListThumbnail(transaction.attachments),
+        ],
+      ),
       onTap: () => context.pushNamed(Routes.transactionDetail, extra: transaction),
     );
   }

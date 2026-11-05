@@ -7,6 +7,8 @@ import '../../../core/format/dates.dart';
 import '../../../core/router/router.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/money_widgets.dart';
+import '../../attachment/data/attachment_models.dart';
+import '../../attachment/presentation/widgets/attachment_image.dart';
 import '../../category/data/category_models.dart';
 import '../../dashboard/providers/dashboard_providers.dart';
 import '../../wallet/data/wallet_models.dart';
@@ -34,6 +36,7 @@ class TransactionDetailScreen extends ConsumerWidget {
         'Kategori': transaction.category.name,
         'Dompet': transaction.wallet.name,
       },
+      attachments: transaction.attachments,
       formArgs: TransactionFormArgs(transaction: transaction),
       deleteMessage: 'Hapus transaksi ini? Foto struknya juga ikut terhapus.',
       deletedMessage: 'Transaksi terhapus',
@@ -75,6 +78,7 @@ class _DetailView extends ConsumerWidget {
     required this.occurredAt,
     required this.note,
     required this.rows,
+    this.attachments = const [],
     required this.formArgs,
     required this.deleteMessage,
     required this.deletedMessage,
@@ -87,6 +91,7 @@ class _DetailView extends ConsumerWidget {
   final DateTime occurredAt;
   final String? note;
   final Map<String, String> rows;
+  final List<Attachment> attachments;
   final TransactionFormArgs formArgs;
   final String deleteMessage;
   final String deletedMessage;
@@ -157,6 +162,11 @@ class _DetailView extends ConsumerWidget {
                 ],
               ),
             ),
+          if (attachments.isNotEmpty) ...[
+            const SizedBox(height: Spacing.sm),
+            PhotoGallery(attachments),
+            const SizedBox(height: Spacing.md),
+          ],
           const SizedBox(height: Spacing.md),
           FilledButton(
             onPressed: () => _edit(context),

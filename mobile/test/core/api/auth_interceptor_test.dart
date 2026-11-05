@@ -30,6 +30,7 @@ class _FakeServer implements HttpClientAdapter {
       }
       return _json({'accessToken': 'baru', 'refreshToken': 'r2'}, refreshStatus!);
     }
+    await requestStream?.drain<void>();
     final authorization = options.headers['Authorization'] as String?;
     seenAuthorization.add(authorization);
     if (options.path == '/auth/login') return _json({}, 401);
@@ -97,6 +98,20 @@ void main() {
     expect(await tokens.readAccessToken(), 'baru');
     expect(await tokens.readRefreshToken(), 'r2');
     expect(expiredCalls, 0);
+  });
+
+  test('upload FormData tetap terkirim saat diulang setelah 401', () async {
+    setUpClient(stale);
+    final response = await dio.post<void>(
+      '/x',
+      data: FormData.fromMap({
+        'transactionId': 't1',
+        'file': MultipartFile.fromBytes([1, 2, 3], filename: 'foto.jpg'),
+      }),
+    );
+
+    expect(response.statusCode, 200);
+    expect(server.seenAuthorization, ['Bearer lama', 'Bearer baru']);
   });
 
   test('request barengan hanya memicu satu refresh', () async {

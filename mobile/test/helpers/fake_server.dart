@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:direkapin/core/api/api_client.dart';
+import 'package:direkapin/core/media/photo_service.dart';
 import 'package:direkapin/core/router/router.dart';
 import 'package:direkapin/core/theme/tokens.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,9 @@ class FakeServer implements HttpClientAdapter {
   /// Jika terisi, penulisan berikutnya gagal dengan body error ini.
   ({int status, Map<String, Object?> body})? writeFailure;
 
+  /// Path penulisan yang gagal dengan status 500.
+  final failingPaths = <String>{};
+
   @override
   Future<ResponseBody> fetch(
     RequestOptions options,
@@ -31,11 +35,14 @@ class FakeServer implements HttpClientAdapter {
       writes.add((
         method: options.method,
         path: options.path,
-        body: options.data as Map<String, dynamic>?,
+        body: options.data is Map<String, dynamic>
+            ? options.data as Map<String, dynamic>
+            : null,
       ));
       final failure = writeFailure;
       if (failure != null) return _json(failure.body, failure.status);
-      return _json(const {}, 200);
+      if (failingPaths.contains(options.path)) return _json(const {}, 500);
+      return _json(const {'id': 'id-baru'}, 200);
     }
     final response = responses[options.path];
     if (response == null) return _json(const {'items': []}, 200);
@@ -71,12 +78,14 @@ Future<void> pumpRoutedApp(
   required String routeName,
   Map<String, String> pathParameters = const {},
   Object? extra,
+  PhotoService photoService = const PhotoService(),
 }) async {
   FlutterSecureStorage.setMockInitialValues({'refreshToken': 'r'});
   await tester.pumpWidget(
     ProviderScope(
       retry: (_, _) => null,
       overrides: [
+        photoServiceProvider.overrideWithValue(photoService),
         apiClientProvider.overrideWithValue(
           Dio(BaseOptions(baseUrl: 'https://example.test'))
             ..httpClientAdapter = server,

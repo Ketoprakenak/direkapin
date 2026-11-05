@@ -39,7 +39,7 @@ Ref: CAL-01, 03–05, US-05
 - [x] Mobile: Kalender (S-05), Halaman Hari (S-06), Detail item (S-07), edit/hapus/pindah tanggal
 - [x] Uji kalender, edit, hapus, dan pindah tanggal di HP asli
 
-## Slice 4 — Foto · Status: Belum mulai
+## Slice 4 — Foto · Status: Sedang dikerjakan
 Ref: FIN-02, FIN-13, US-04
 - [ ] `POST /attachments` (multipart, tolak > 2 MB, `sharp` resize ulang > 1 MB, buat thumbnail)
 - [ ] `GET /attachments/{id}?size=thumb|full` ber-token, `DELETE`

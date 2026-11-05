@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../features/attachment/presentation/photo_viewer_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
@@ -38,6 +39,7 @@ abstract final class Routes {
   static const day = 'day';
   static const transactionDetail = 'transactionDetail';
   static const transferDetail = 'transferDetail';
+  static const photoViewer = 'photoViewer';
 }
 
 const _splashPath = '/';
@@ -106,6 +108,12 @@ GoRouter appRouter(Ref ref) {
         name: Routes.transferDetail,
         builder: (context, state) =>
             TransferDetailScreen(transfer: state.extra! as Transfer),
+      ),
+      GoRoute(
+        path: '/foto',
+        name: Routes.photoViewer,
+        builder: (context, state) =>
+            PhotoViewerScreen(args: state.extra! as PhotoViewerArgs),
       ),
       GoRoute(
         path: '/hari/:date',

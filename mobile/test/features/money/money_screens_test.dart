@@ -125,6 +125,7 @@ void main() {
                 'note': null,
                 'wallet': {'id': 'w2', 'name': 'Bank', 'icon': 'x', 'color': '#14B8A6'},
                 'category': {'id': 'c1', 'name': 'Makan', 'icon': 'x', 'color': '#F97316'},
+                'attachments': <Object>[],
               },
             ],
             'nextCursor': null,

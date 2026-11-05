@@ -42,6 +42,11 @@ Kalau ada alasan kuat untuk berubah, tulis usulan di bawah bagian "Usulan" dan t
 | D-32 | Hapus transaksi/transfer cukup dialog konfirmasi, tanpa undo | US-05 minta konfirmasi; undo butuh penundaan hapus | Konfirmasi + undo 4 detik |
 | D-33 | Transfer tidak punya titik kalender, dan tanggal yang hanya berisi transfer tidak masuk `/calendar`. Tetap tampil di Halaman Hari | CAL-01 hanya menyebut pemasukan, pengeluaran, kegiatan | Titik khusus transfer |
 | D-34 | Saat edit, kategori tersembunyi dan dompet arsip yang sedang dipakai tetap muncul di pilihan | Form tidak kehilangan nilai aslinya (D-29) | Memaksa memilih ulang |
+| D-35 | Foto ditampilkan lewat `dio` + cache memori, bukan `cached_network_image` | Token ikut terpasang dan di-refresh saat 401 | `cached_network_image` |
+| D-36 | PNG diubah ke JPEG di server | Kontrak `GET /attachments/{id}` hanya JPEG dan WebP | Simpan PNG apa adanya |
+| D-37 | Upload gagal: transaksi tetap tersimpan, form terbuka dengan "Coba lagi" dan "Lewati"; antrean tidak disimpan | Sederhana; data uang tidak pernah bergantung pada foto | Antrean upload di latar belakang |
+| D-38 | Upload berurutan; batas foto dicek tanpa kunci di server | Maks. 4 user dan aplikasi tidak upload paralel | Kunci baris per transaksi |
+| D-39 | Endpoint foto kegiatan (batas 5) ikut dibuat di Slice 4, tampilannya di Slice 5 | Satu endpoint yang sama di kontrak | Tunda sampai Slice 5 |
 
 ## Dependency yang disetujui
 
