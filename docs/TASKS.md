@@ -3,7 +3,7 @@
 Satu slice per sesi Claude Code. Centang item saat selesai dan ubah status slice.
 Status: `Belum mulai` · `Sedang dikerjakan` · `Selesai`
 
-**Slice aktif:** 5
+**Slice aktif:** 6
 
 ---
 
@@ -47,10 +47,10 @@ Ref: FIN-02, FIN-13, US-04
 - [x] Simpan foto ke galeri dari viewer (FIN-16, permintaan owner setelah slice ditutup)
 - Uji HP lolos. Upload gagal setelah transaksi tersimpan hanya teruji lewat widget test: upload di WiFi lokal terlalu cepat untuk diputus tangan.
 
-## Slice 5 — Kegiatan · Status: Sedang dikerjakan
+## Slice 5 — Kegiatan · Status: Selesai
 Ref: ACT-01–04, US-08
-- [ ] API activities
-- [ ] Mobile: Form kegiatan (S-09), tampil di Halaman Hari & kalender (bintang untuk penting)
+- [x] API activities
+- [x] Mobile: Form kegiatan (S-09), tampil di Halaman Hari & kalender (bintang untuk penting)
 
 ## Slice 6 — Laporan · Status: Belum mulai
 Ref: FIN-06–08, US-07
@@ -94,3 +94,4 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 | 2026-11-05 | 4 | FIN-16 aman di HP asli menurut owner |
 | 2026-11-05 | 5 | Kode selesai: backend 151 test, mobile 105 test, lint dan analyze bersih. Sisa: uji di HP asli |
 | 2026-11-05 | 5 | Tambahan permintaan owner: galeri bisa pilih banyak foto. Sisa: uji di HP asli |
+| 2026-11-05 | 5 | Aman di HP asli menurut owner, termasuk pilih banyak foto. Slice ditutup |
