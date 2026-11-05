@@ -44,6 +44,7 @@ Ref: FIN-02, FIN-13, US-04
 - [x] `POST /attachments` (multipart, tolak > 2 MB, `sharp` resize ulang > 1 MB, buat thumbnail)
 - [x] `GET /attachments/{id}?size=thumb|full` ber-token, `DELETE`
 - [x] Mobile: ambil kamera/galeri → kompres otomatis → upload dengan progress → retry jika gagal; thumbnail + viewer
+- [x] Simpan foto ke galeri dari viewer (FIN-16, permintaan owner setelah slice ditutup)
 - Uji HP lolos. Upload gagal setelah transaksi tersimpan hanya teruji lewat widget test: upload di WiFi lokal terlalu cepat untuk diputus tangan.
 
 ## Slice 5 — Kegiatan · Status: Belum mulai
@@ -87,3 +88,6 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 | 2026-11-04 | 2 | Kode selesai: backend 96 test, mobile 55 test, lint dan analyze bersih. Sisa: uji di HP asli. Edit dan hapus transaksi di aplikasi menyusul di Slice 3 |
 | 2026-11-05 | 2 | Aman di HP asli menurut owner |
 | 2026-11-05 | 3 | Kode selesai: backend 113 test, mobile 71 test. Jalan di HP asli menurut owner |
+| 2026-11-05 | 4 | Kode selesai: backend 133 test, mobile 87 test, lint dan analyze bersih. `.gitignore` `data/` ternyata menyembunyikan `mobile/lib/features/*/data`, sudah diperbaiki |
+| 2026-11-05 | 4 | Aman di HP asli menurut owner. Upload gagal setelah transaksi tersimpan hanya teruji lewat widget test |
+| 2026-11-05 | 4 | Tambahan FIN-16: simpan foto ke galeri, menunggu uji HP |

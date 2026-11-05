@@ -121,6 +121,7 @@ Prioritas: **P0** wajib di MVP, **P1** setelah MVP stabil, **P2** nice-to-have.
 | FIN-13 | Kompresi otomatis: setiap foto (kamera/galeri) langsung di-resize maks. 1600 px dan dikompres ke JPEG/WebP kualitas ~75–80% (target ≤ 400 KB) di HP sebelum upload, tanpa langkah manual dari user | P0 |
 | FIN-14 | Export laporan ke CSV / PDF | P2 |
 | FIN-15 | Transaksi berulang (mis. kos bulanan) | P2 |
+| FIN-16 | Simpan foto dari server ke galeri HP (album Direkapin), mis. setelah foto aslinya terhapus dari HP. Yang tersimpan versi kompres; foto yang sudah diarsip diambil dari ZIP arsip | P1 |
 
 ### 4.5 Modul kegiatan
 

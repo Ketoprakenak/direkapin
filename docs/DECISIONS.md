@@ -47,6 +47,7 @@ Kalau ada alasan kuat untuk berubah, tulis usulan di bawah bagian "Usulan" dan t
 | D-37 | Upload gagal: transaksi tetap tersimpan, form terbuka dengan "Coba lagi" dan "Lewati"; antrean tidak disimpan | Sederhana; data uang tidak pernah bergantung pada foto | Antrean upload di latar belakang |
 | D-38 | Upload berurutan; batas foto dicek tanpa kunci di server | Maks. 4 user dan aplikasi tidak upload paralel | Kunci baris per transaksi |
 | D-39 | Endpoint foto kegiatan (batas 5) ikut dibuat di Slice 4, tampilannya di Slice 5 | Satu endpoint yang sama di kontrak | Tunda sampai Slice 5 |
+| D-40 | Simpan foto ke galeri lewat `MethodChannel` + MediaStore di `MainActivity.kt` | Tanpa dependency baru, dan Slice 8 bisa memakai jalur yang sama untuk ZIP | Paket galeri pihak ketiga |
 
 ## Dependency yang disetujui
 

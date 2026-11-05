@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:direkapin/core/media/photo_service.dart';
 import 'package:direkapin/core/router/router.dart';
@@ -8,6 +7,7 @@ import 'package:direkapin/features/attachment/presentation/photo_viewer_screen.d
 import 'package:direkapin/features/transaction/data/transaction_models.dart';
 import 'package:direkapin/features/transaction/presentation/transaction_form_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart' show XFile;
 import 'package:intl/date_symbol_data_local.dart';
@@ -305,6 +305,105 @@ void main() {
   });
 
   group('Tampilan foto', () {
+    const channel = MethodChannel('direkapin/gallery');
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+
+    tearDown(() => messenger.setMockMethodCallHandler(channel, null));
+
+    Future<void> tapSaveToGallery(WidgetTester tester) async {
+      await tester.tap(find.byTooltip('Simpan ke galeri'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('simpan ke galeri mengirim foto penuh', (tester) async {
+      MethodCall? received;
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        received = call;
+        return null;
+      });
+      await pumpRoutedApp(
+        tester,
+        FakeServer({}),
+        routeName: Routes.photoViewer,
+        extra: PhotoViewerArgs(
+          attachments: [Attachment.fromJson(attachmentJson('a1'))],
+        ),
+      );
+
+      await tapSaveToGallery(tester);
+
+      expect(received?.method, 'saveJpeg');
+      final arguments = received?.arguments as Map<Object?, Object?>;
+      expect(arguments['fileName'], 'direkapin_a1.jpg');
+      expect(arguments['bytes'], isA<Uint8List>());
+      expect(find.text('Foto tersimpan di galeri'), findsOneWidget);
+    });
+
+    testWidgets('izin ditolak menampilkan pesan, tombol bisa dipakai lagi', (
+      tester,
+    ) async {
+      messenger.setMockMethodCallHandler(
+        channel,
+        (_) async => throw PlatformException(code: 'permission_denied'),
+      );
+      await pumpRoutedApp(
+        tester,
+        FakeServer({}),
+        routeName: Routes.photoViewer,
+        extra: PhotoViewerArgs(
+          attachments: [Attachment.fromJson(attachmentJson('a1'))],
+        ),
+      );
+
+      await tapSaveToGallery(tester);
+
+      expect(
+        find.text(
+          'Izin penyimpanan ditolak. Izinkan dulu di pengaturan HP, ya.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.byIcon(Icons.download_rounded), findsOneWidget);
+    });
+
+    testWidgets('gagal mengambil foto dari server menampilkan pesan', (
+      tester,
+    ) async {
+      var called = false;
+      messenger.setMockMethodCallHandler(channel, (_) async {
+        called = true;
+        return null;
+      });
+      await pumpRoutedApp(
+        tester,
+        FakeServer({'/attachments/a1': 500}),
+        routeName: Routes.photoViewer,
+        extra: PhotoViewerArgs(
+          attachments: [Attachment.fromJson(attachmentJson('a1'))],
+        ),
+      );
+
+      await tapSaveToGallery(tester);
+
+      expect(called, isFalse);
+      expect(find.text('Foto tersimpan di galeri'), findsNothing);
+    });
+
+    testWidgets('foto diarsip tidak punya tombol simpan', (tester) async {
+      await pumpRoutedApp(
+        tester,
+        FakeServer({}),
+        routeName: Routes.photoViewer,
+        extra: PhotoViewerArgs(
+          attachments: [
+            Attachment.fromJson(attachmentJson('a1', archived: true)),
+          ],
+        ),
+      );
+      expect(find.byTooltip('Simpan ke galeri'), findsNothing);
+    });
+
     testWidgets('Detail menampilkan galeri, tap membuka viewer', (
       tester,
     ) async {
