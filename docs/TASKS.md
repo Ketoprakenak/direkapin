@@ -3,7 +3,7 @@
 Satu slice per sesi Claude Code. Centang item saat selesai dan ubah status slice.
 Status: `Belum mulai` · `Sedang dikerjakan` · `Selesai`
 
-**Slice aktif:** 2
+**Slice aktif:** 3
 
 ---
 
@@ -26,12 +26,12 @@ Ref: AUTH-01–04, US-01, US-02
 - [x] Mobile: Splash (S-01), Login (S-02), Daftar (S-03), auto refresh token, logout
 - [x] Uji daftar, login, dan logout di HP asli
 
-## Slice 2 — Dompet, kategori, transaksi + dashboard dasar · Status: Sedang dikerjakan
+## Slice 2 — Dompet, kategori, transaksi + dashboard dasar · Status: Selesai
 Ref: FIN-01, 03–05, 09–10, DSH-01, 02, 03, 05, 06, US-03, US-06
 - [x] API wallets (saldo dihitung), transfers, categories, transactions (tanpa foto)
 - [x] `GET /dashboard` lengkap sesuai kontrak (saldo, masuk/keluar bulan ini, ringkasan hari ini, 7 hari terakhir, streak)
 - [x] Mobile: Beranda (S-04), Form transaksi (S-08) termasuk mode Transfer, Dompet (S-12), Kategori (S-11)
-- [ ] Uji catat pengeluaran, transfer, dompet, dan kategori di HP asli
+- [x] Uji catat pengeluaran, transfer, dompet, dan kategori di HP asli
 
 ## Slice 3 — Kalender + Halaman Hari · Status: Belum mulai
 Ref: CAL-01, 03–05, US-05
@@ -83,3 +83,4 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 | 2026-11-04 | 1 | Kode selesai: backend 47 test, mobile 37 test, lint dan analyze bersih. Sisa: uji di HP asli |
 | 2026-11-04 | 1 | Daftar, login, tetap login, dan logout jalan di HP asli menurut owner. Refresh token saat access token kedaluwarsa baru teruji otomatis |
 | 2026-11-04 | 2 | Kode selesai: backend 96 test, mobile 55 test, lint dan analyze bersih. Sisa: uji di HP asli. Edit dan hapus transaksi di aplikasi menyusul di Slice 3 |
+| 2026-11-05 | 2 | Aman di HP asli menurut owner |
