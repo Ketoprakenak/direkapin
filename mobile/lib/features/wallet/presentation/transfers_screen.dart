@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/format/dates.dart';
+import '../../../core/router/router.dart';
 import '../../../core/widgets/money_widgets.dart';
 import '../../../core/widgets/state_views.dart';
+import '../data/wallet_models.dart';
 import '../providers/wallet_providers.dart';
 
 class TransfersScreen extends ConsumerWidget {
@@ -23,23 +26,34 @@ class TransfersScreen extends ConsumerWidget {
             ? const Center(child: EmptyState(message: 'Belum ada transfer.'))
             : ListView.builder(
                 itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final transfer = items[index];
-                  final when = transfer.occurredAt.toLocal();
-                  return ListTile(
-                    leading: IconCircle(
-                      icon: transfer.toWallet.icon,
-                      color: transfer.toWallet.color,
-                    ),
-                    title: Text('${transfer.fromWallet.name} ke ${transfer.toWallet.name}'),
-                    subtitle: Text(
-                      transfer.note ?? '${formatShortDate(when)}, ${formatTime(when)}',
-                    ),
-                    trailing: AmountText(transfer.amount),
-                  );
-                },
+                itemBuilder: (context, index) => TransferTile(items[index]),
               ),
       ),
+    );
+  }
+}
+
+class TransferTile extends StatelessWidget {
+  const TransferTile(this.transfer, {super.key});
+
+  final Transfer transfer;
+
+  @override
+  Widget build(BuildContext context) {
+    final when = transfer.occurredAt.toLocal();
+    return ListTile(
+      leading: IconCircle(
+        icon: transfer.toWallet.icon,
+        color: transfer.toWallet.color,
+      ),
+      title: Text('${transfer.fromWallet.name} ke ${transfer.toWallet.name}'),
+      subtitle: Text(
+        transfer.note ?? '${formatShortDate(when)}, ${formatTime(when)}',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: AmountText(transfer.amount),
+      onTap: () => context.pushNamed(Routes.transferDetail, extra: transfer),
     );
   }
 }

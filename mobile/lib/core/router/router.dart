@@ -5,12 +5,17 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
+import '../../features/calendar/presentation/calendar_screen.dart';
 import '../../features/category/presentation/categories_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
+import '../../features/day/presentation/day_screen.dart';
 import '../../features/settings/presentation/profile_screen.dart';
 import '../../features/shell/presentation/app_shell.dart';
+import '../../features/transaction/data/transaction_models.dart';
+import '../../features/transaction/presentation/item_detail_screen.dart';
 import '../../features/transaction/presentation/transaction_form_screen.dart';
 import '../../features/transaction/presentation/wallet_transactions_screen.dart';
+import '../../features/wallet/data/wallet_models.dart';
 import '../../features/wallet/presentation/transfers_screen.dart';
 import '../../features/wallet/presentation/wallets_screen.dart';
 import '../auth/session_provider.dart';
@@ -30,6 +35,9 @@ abstract final class Routes {
   static const walletTransactions = 'walletTransactions';
   static const transfers = 'transfers';
   static const categories = 'categories';
+  static const day = 'day';
+  static const transactionDetail = 'transactionDetail';
+  static const transferDetail = 'transferDetail';
 }
 
 const _splashPath = '/';
@@ -81,7 +89,29 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/transaksi/baru',
         name: Routes.transactionForm,
-        builder: (context, state) => const TransactionFormScreen(),
+        builder: (context, state) => TransactionFormScreen(
+          args:
+              state.extra as TransactionFormArgs? ??
+              const TransactionFormArgs(),
+        ),
+      ),
+      GoRoute(
+        path: '/transaksi/detail',
+        name: Routes.transactionDetail,
+        builder: (context, state) =>
+            TransactionDetailScreen(transaction: state.extra! as Transaction),
+      ),
+      GoRoute(
+        path: '/transfer/detail',
+        name: Routes.transferDetail,
+        builder: (context, state) =>
+            TransferDetailScreen(transfer: state.extra! as Transfer),
+      ),
+      GoRoute(
+        path: '/hari/:date',
+        name: Routes.day,
+        builder: (context, state) =>
+            DayScreen(date: state.pathParameters['date']!),
       ),
       GoRoute(
         path: '/dompet',
@@ -121,7 +151,13 @@ GoRouter appRouter(Ref ref) {
             ],
           ),
           StatefulShellBranch(
-            routes: [_tab('/kalender', Routes.calendar, 'Kalender')],
+            routes: [
+              GoRoute(
+                path: '/kalender',
+                name: Routes.calendar,
+                builder: (context, state) => const CalendarScreen(),
+              ),
+            ],
           ),
           StatefulShellBranch(
             routes: [_tab('/laporan', Routes.reports, 'Laporan')],

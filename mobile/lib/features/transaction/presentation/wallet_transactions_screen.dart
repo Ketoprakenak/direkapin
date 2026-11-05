@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/format/dates.dart';
+import '../../../core/router/router.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/money_widgets.dart';
 import '../../../core/widgets/state_views.dart';
@@ -67,6 +69,7 @@ class TransactionTile extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
       ),
       trailing: AmountText(amount, signed: true),
+      onTap: () => context.pushNamed(Routes.transactionDetail, extra: transaction),
     );
   }
 }

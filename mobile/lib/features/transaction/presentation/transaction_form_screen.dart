@@ -13,13 +13,25 @@ import '../../category/data/category_models.dart';
 import '../../dashboard/providers/dashboard_providers.dart';
 import '../../wallet/data/wallet_models.dart';
 import '../../wallet/providers/wallet_providers.dart';
+import '../data/transaction_models.dart';
 import '../providers/transaction_providers.dart';
 import 'widgets/category_grid.dart';
 
 enum _Mode { expense, income, transfer }
 
+/// Tambah baru (opsional dengan [initialDate]), atau edit [transaction] / [transfer].
+class TransactionFormArgs {
+  const TransactionFormArgs({this.transaction, this.transfer, this.initialDate});
+
+  final Transaction? transaction;
+  final Transfer? transfer;
+  final DateTime? initialDate;
+}
+
 class TransactionFormScreen extends ConsumerStatefulWidget {
-  const TransactionFormScreen({super.key});
+  const TransactionFormScreen({super.key, this.args = const TransactionFormArgs()});
+
+  final TransactionFormArgs args;
 
   @override
   ConsumerState<TransactionFormScreen> createState() =>
@@ -35,16 +47,60 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   String? _walletId;
   String? _toWalletId;
   String? _categoryId;
-  DateTime _occurredAt = DateTime.now();
+  late DateTime _occurredAt;
   bool _busy = false;
   String? _categoryError;
   String? _error;
+
+  Transaction? get _transaction => widget.args.transaction;
+  Transfer? get _transfer => widget.args.transfer;
+  bool get _isEdit => _transaction != null || _transfer != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    final date = widget.args.initialDate;
+    _occurredAt = date?.copyWith(hour: now.hour, minute: now.minute) ?? now;
+
+    final transaction = _transaction;
+    if (transaction != null) {
+      _mode = transaction.type == TxType.income ? _Mode.income : _Mode.expense;
+      _walletId = transaction.wallet.id;
+      _categoryId = transaction.category.id;
+      _occurredAt = transaction.occurredAt.toLocal();
+      _amount.text = rupiahInputText(transaction.amount);
+      _note.text = transaction.note ?? '';
+    }
+    final transfer = _transfer;
+    if (transfer != null) {
+      _mode = _Mode.transfer;
+      _walletId = transfer.fromWallet.id;
+      _toWalletId = transfer.toWallet.id;
+      _occurredAt = transfer.occurredAt.toLocal();
+      _amount.text = rupiahInputText(transfer.amount);
+      _note.text = transfer.note ?? '';
+    }
+  }
 
   @override
   void dispose() {
     _amount.dispose();
     _note.dispose();
     super.dispose();
+  }
+
+  /// Dompet arsip hanya muncul jika sedang dipakai data yang diedit (D-34).
+  List<Wallet> _options(List<Wallet> wallets) {
+    final current = {
+      _transaction?.wallet.id,
+      _transfer?.fromWallet.id,
+      _transfer?.toWallet.id,
+    };
+    return [
+      for (final wallet in wallets)
+        if (!wallet.isArchived || current.contains(wallet.id)) wallet,
+    ];
   }
 
   /// Pilihan user, atau dompet transaksi terakhir, atau dompet aktif pertama (D-31).
@@ -79,11 +135,35 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     );
     if (picked == null) return;
     setState(() {
-      _occurredAt = _occurredAt.copyWith(
-        hour: picked.hour,
-        minute: picked.minute,
-      );
+      _occurredAt = _occurredAt.copyWith(hour: picked.hour, minute: picked.minute);
     });
+  }
+
+  Future<void> _send(String walletId, Map<String, Object?> common) async {
+    final transactions = ref.read(transactionApiProvider);
+    final wallets = ref.read(walletApiProvider);
+    if (_mode == _Mode.transfer) {
+      final data = {
+        ...common,
+        'fromWalletId': walletId,
+        'toWalletId': _toWalletId,
+      };
+      final transfer = _transfer;
+      await (transfer == null
+          ? wallets.createTransfer(data)
+          : wallets.updateTransfer(transfer.id, data));
+      return;
+    }
+    final data = {
+      ...common,
+      'walletId': walletId,
+      'categoryId': _categoryId,
+      'type': (_mode == _Mode.income ? TxType.income : TxType.expense).apiValue,
+    };
+    final transaction = _transaction;
+    await (transaction == null
+        ? transactions.create(data)
+        : transactions.update(transaction.id, data));
   }
 
   Future<void> _submit(List<Wallet> wallets) async {
@@ -96,40 +176,20 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     if (!formValid || categoryMissing || _busy) return;
 
     setState(() => _busy = true);
-    final walletId = _selectedWallet(wallets);
-    final common = {
+    final note = _note.text.trim();
+    final common = <String, Object?>{
       'amount': parseRupiah(_amount.text),
       'occurredAt': _occurredAt.toUtc().toIso8601String(),
-      if (_note.text.trim().isNotEmpty) 'note': _note.text.trim(),
+      // Saat edit, catatan kosong berarti dihapus.
+      if (note.isNotEmpty) 'note': note else if (_isEdit) 'note': null,
     };
     final messenger = ScaffoldMessenger.of(context);
     try {
-      if (_mode == _Mode.transfer) {
-        await ref.read(walletApiProvider).createTransfer({
-          ...common,
-          'fromWalletId': walletId,
-          'toWalletId': _toWalletId,
-        });
-      } else {
-        await ref.read(transactionApiProvider).create({
-          ...common,
-          'walletId': walletId,
-          'categoryId': _categoryId,
-          'type':
-              (_mode == _Mode.income ? TxType.income : TxType.expense).apiValue,
-        });
-      }
+      await _send(_selectedWallet(wallets), common);
       refreshMoney(ref);
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            _mode == _Mode.transfer
-                ? 'Transfer tersimpan'
-                : 'Transaksi tersimpan',
-          ),
-        ),
-      );
-      if (mounted) context.pop();
+      final subject = _mode == _Mode.transfer ? 'Transfer' : 'Transaksi';
+      messenger.showSnackBar(SnackBar(content: Text('$subject tersimpan')));
+      if (mounted) context.pop(true);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -142,32 +202,39 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final wallets = ref.watch(walletsProvider());
+    final wallets = ref.watch(walletsProvider(includeArchived: _isEdit));
     return Scaffold(
-      appBar: AppBar(title: const Text('Tambah transaksi')),
+      appBar: AppBar(
+        title: Text(
+          _isEdit
+              ? (_transfer != null ? 'Ubah transfer' : 'Ubah transaksi')
+              : 'Tambah transaksi',
+        ),
+      ),
       body: wallets.when(
         error: (error, _) => ErrorState(
           error: error,
           onRetry: () => ref.invalidate(walletsProvider),
         ),
         loading: () => const ListSkeleton(),
-        data: (wallets) => wallets.isEmpty
-            ? Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const EmptyState(
-                      message:
-                          'Belum ada dompet aktif. Tambah dompet dulu, yuk.',
-                    ),
-                    TextButton(
-                      onPressed: () => context.pushNamed(Routes.wallets),
-                      child: const Text('Kelola dompet'),
-                    ),
-                  ],
+        data: (all) {
+          final options = _options(all);
+          if (options.isNotEmpty) return _buildForm(options);
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const EmptyState(
+                  message: 'Belum ada dompet aktif. Tambah dompet dulu, yuk.',
                 ),
-              )
-            : _buildForm(wallets),
+                TextButton(
+                  onPressed: () => context.pushNamed(Routes.wallets),
+                  child: const Text('Kelola dompet'),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -190,10 +257,22 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
           children: [
             SegmentedButton<_Mode>(
               showSelectedIcon: false,
-              segments: const [
-                ButtonSegment(value: _Mode.expense, label: Text('Keluar')),
-                ButtonSegment(value: _Mode.income, label: Text('Masuk')),
-                ButtonSegment(value: _Mode.transfer, label: Text('Transfer')),
+              segments: [
+                ButtonSegment(
+                  value: _Mode.expense,
+                  enabled: _transfer == null,
+                  label: const Text('Keluar'),
+                ),
+                ButtonSegment(
+                  value: _Mode.income,
+                  enabled: _transfer == null,
+                  label: const Text('Masuk'),
+                ),
+                ButtonSegment(
+                  value: _Mode.transfer,
+                  enabled: _transaction == null,
+                  label: const Text('Transfer'),
+                ),
               ],
               selected: {_mode},
               onSelectionChanged: (selected) => setState(() {
@@ -208,7 +287,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
               keyboardType: TextInputType.number,
               textAlign: TextAlign.end,
               style: theme.textTheme.displayMedium,
-              autofocus: true,
+              autofocus: !_isEdit,
               inputFormatters: const [RupiahInputFormatter()],
               decoration: InputDecoration(
                 labelText: 'Nominal',
@@ -250,6 +329,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
               CategoryGrid(
                 type: _mode == _Mode.income ? TxType.income : TxType.expense,
                 selectedId: _categoryId,
+                keepId: _transaction?.category.id,
                 errorText: _categoryError,
                 onSelected: (id) => setState(() {
                   _categoryId = id;
@@ -274,9 +354,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
               maxLength: 1000,
               maxLines: null,
               maxLengthEnforcement: MaxLengthEnforcement.enforced,
-              decoration: const InputDecoration(
-                labelText: 'Catatan (opsional)',
-              ),
+              decoration: const InputDecoration(labelText: 'Catatan (opsional)'),
             ),
             if (_error != null) ...[
               const SizedBox(height: Spacing.sm),

@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 class _OkAdapter implements HttpClientAdapter {
   @override
@@ -53,6 +54,8 @@ class _FakeAuth implements AuthRepository {
 }
 
 void main() {
+  setUpAll(() => initializeDateFormatting('id_ID'));
+
   late _FakeAuth auth;
 
   // Tema polos: google_fonts butuh jaringan, yang tidak ada di test.

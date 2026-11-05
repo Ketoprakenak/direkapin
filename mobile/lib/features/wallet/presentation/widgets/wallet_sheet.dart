@@ -31,12 +31,7 @@ class _WalletSheetState extends ConsumerState<_WalletSheet> {
   late final _balance = TextEditingController(
     text: widget.wallet == null
         ? ''
-        : const RupiahInputFormatter(allowNegative: true)
-              .formatEditUpdate(
-                TextEditingValue.empty,
-                TextEditingValue(text: '${widget.wallet!.initialBalance}'),
-              )
-              .text,
+        : rupiahInputText(widget.wallet!.initialBalance),
   );
   late WalletType _type = widget.wallet?.type ?? WalletType.cash;
   late String _color = widget.wallet?.color ?? colorToHex(categoryPalette[4]);

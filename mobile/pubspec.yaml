@@ -21,6 +21,7 @@ dependencies:
   intl: ^0.20.3
   json_annotation: ^4.12.0
   riverpod_annotation: ^4.0.7
+  table_calendar: ^3.3.0
 
 dev_dependencies:
   flutter_test:

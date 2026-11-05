@@ -11,6 +11,7 @@ import '../../../core/router/router.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/money_widgets.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../transaction/presentation/widgets/add_sheet.dart';
 import '../../wallet/data/wallet_models.dart';
 import '../data/dashboard_models.dart';
 import '../providers/dashboard_providers.dart';
@@ -24,7 +25,7 @@ class DashboardScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Beranda')),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddSheet(context),
+        onPressed: () => showAddSheet(context),
         tooltip: 'Tambah',
         child: const Icon(Icons.add_rounded),
       ),
@@ -38,33 +39,6 @@ class DashboardScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(dashboardProvider),
         ),
         loading: () => const _DashboardSkeleton(),
-      ),
-    );
-  }
-
-  void _showAddSheet(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (sheetContext) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.receipt_long_rounded),
-              title: const Text('Transaksi'),
-              onTap: () {
-                Navigator.pop(sheetContext);
-                context.pushNamed(Routes.transactionForm);
-              },
-            ),
-            const ListTile(
-              enabled: false,
-              leading: Icon(Icons.event_note_rounded),
-              title: Text('Kegiatan'),
-              subtitle: Text('Segera hadir'),
-            ),
-          ],
-        ),
       ),
     );
   }

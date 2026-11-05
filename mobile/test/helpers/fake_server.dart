@@ -41,7 +41,10 @@ class FakeServer implements HttpClientAdapter {
     if (response == null) return _json(const {'items': []}, 200);
     if (response is int) {
       return _json(const {
-        'error': {'code': 'INTERNAL_ERROR', 'message': 'Terjadi kesalahan di server'},
+        'error': {
+          'code': 'INTERNAL_ERROR',
+          'message': 'Terjadi kesalahan di server',
+        },
       }, response);
     }
     return _json(response, 200);
@@ -66,6 +69,8 @@ Future<void> pumpRoutedApp(
   WidgetTester tester,
   FakeServer server, {
   required String routeName,
+  Map<String, String> pathParameters = const {},
+  Object? extra,
 }) async {
   FlutterSecureStorage.setMockInitialValues({'refreshToken': 'r'});
   await tester.pumpWidget(
@@ -87,7 +92,9 @@ Future<void> pumpRoutedApp(
   );
   await tester.pumpAndSettle();
   final context = tester.element(find.byType(Scaffold).first);
-  ProviderScope.containerOf(context).read(appRouterProvider).pushNamed(routeName);
+  ProviderScope.containerOf(context)
+      .read(appRouterProvider)
+      .pushNamed(routeName, pathParameters: pathParameters, extra: extra);
   await tester.pumpAndSettle();
 }
 

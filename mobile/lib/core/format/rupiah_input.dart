@@ -13,6 +13,10 @@ int? parseRupiah(String text) {
   return text.trimLeft().startsWith(RegExp('[-−]')) ? -value : value;
 }
 
+/// Teks awal input dari nilai yang sudah ada: `-5.000`.
+String rupiahInputText(int amount) =>
+    '${amount < 0 ? '-' : ''}${_thousands.format(amount.abs())}';
+
 /// Pemisah ribuan otomatis saat mengetik.
 class RupiahInputFormatter extends TextInputFormatter {
   const RupiahInputFormatter({this.allowNegative = false});
