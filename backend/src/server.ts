@@ -4,6 +4,7 @@ import Fastify from 'fastify';
 import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { loadConfig, type Config } from './config.js';
+import { activityRoutes } from './modules/activities/activities.routes.js';
 import { attachmentRoutes } from './modules/attachments/attachments.routes.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
 import { calendarRoutes } from './modules/calendar/calendar.routes.js';
@@ -53,6 +54,7 @@ export function buildApp(config: Config) {
       categoryRoutes(api);
       transactionRoutes(api, config);
       attachmentRoutes(api, config);
+      activityRoutes(api, config);
       dashboardRoutes(api);
       calendarRoutes(api);
     },
