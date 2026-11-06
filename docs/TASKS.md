@@ -3,7 +3,7 @@
 Satu slice per sesi Claude Code. Centang item saat selesai dan ubah status slice.
 Status: `Belum mulai` · `Sedang dikerjakan` · `Selesai`
 
-**Slice aktif:** 7
+**Slice aktif:** 8
 
 ---
 
@@ -57,11 +57,11 @@ Ref: FIN-06–08, US-07
 - [x] `GET /reports/daily|weekly|monthly` (filter dompet, transfer tidak dihitung)
 - [x] Mobile: Laporan (S-10) dengan grafik `fl_chart`
 
-## Slice 7 — Reminder, versi, CI APK · Status: Sedang dikerjakan
+## Slice 7 — Reminder, versi, CI APK · Status: Selesai
 Ref: ENG-01, US-09, D-21
 - [x] Notifikasi harian lokal: jadwal 30 hari ke depan (jam dari `/me`), dipasang ulang saat aplikasi dibuka, catatan disimpan, atau jam diubah; hari ini dilewati jika sudah mencatat
 - [x] Banner update dari `/version`
-- [ ] GitHub Actions: build APK release bertanda tangan saat push tag `v*` → GitHub Releases
+- [x] GitHub Actions: build APK release bertanda tangan saat push tag `v*` → GitHub Releases
 
 ## Slice 8 — Backup, arsip, deploy · Status: Belum mulai
 Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
@@ -99,3 +99,4 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 | 2026-11-05 | 6 | Aman di HP asli menurut owner. Slice ditutup |
 | 2026-11-05 | 7 | Kode selesai: mobile 142 test, analyze bersih, backend tidak berubah. Sisa: uji di HP asli; uji workflow CI menunggu repo GitHub dan keystore dari owner |
 | 2026-11-05 | 7 | Reminder dan banner aman di HP asli menurut owner. Sisa: uji workflow CI, menunggu repo GitHub dan keystore dari owner |
+| 2026-11-06 | 7 | Workflow `v0.7.0` sukses, APK terpasang di HP asli menurut owner. Login dengan APK ini belum bisa sampai deploy Slice 8; tanda tangan APK tidak diverifikasi terpisah. Slice ditutup |
