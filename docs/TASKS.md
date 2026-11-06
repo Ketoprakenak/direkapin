@@ -67,9 +67,10 @@ Ref: ENG-01, US-09, D-21
 Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 - [x] Job `pg_dump` harian (simpan 14 hari)
 - [x] Job arsip harian idempoten (D-23) + `GET /archives`, `GET /archives/{id}/download`, penghapusan foto asli (D-22)
-- [ ] Mobile: Arsip (S-13), Profil & Pengaturan (S-14), notifikasi arsip lokal (saat terdeteksi, hari ke-7, ke-25, tanggal 1)
-- [ ] Uji `Dockerfile` dan `docker-compose.yml` di mini PC (ditunda dari Slice 0)
-- [ ] Deploy: `cloudflared` di compose, panduan setup di README (berkas sudah ada, belum dicoba di mini PC)
+- [x] Mobile: Arsip (S-13), Profil & Pengaturan (S-14), notifikasi arsip lokal (saat terdeteksi, hari ke-7, ke-25, tanggal 1)
+- [ ] Uji Arsip dan Profil di HP asli lewat APK `v0.8.0`
+- [x] Uji `Dockerfile` dan `docker-compose.yml` di mini PC (ditunda dari Slice 0)
+- [x] Deploy: `cloudflared` di compose, panduan setup di README
 - [ ] Checklist rilis PRD bagian 17 lolos → tag `v1.0.0`
 
 ---
@@ -101,3 +102,4 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 | 2026-11-05 | 7 | Reminder dan banner aman di HP asli menurut owner. Sisa: uji workflow CI, menunggu repo GitHub dan keystore dari owner |
 | 2026-11-06 | 7 | Workflow `v0.7.0` sukses, APK terpasang di HP asli menurut owner. Login dengan APK ini belum bisa sampai deploy Slice 8; tanda tangan APK tidak diverifikasi terpisah. Slice ditutup |
 | 2026-11-06 | 8 | Kode selesai: backend 187 test, mobile 164 test, lint dan analyze bersih. `Dockerfile`, compose, dan tunnel belum dicoba. Sisa: uji Arsip dan Profil di HP asli, lalu deploy dan checklist rilis di mini PC |
+| 2026-11-06 | 8 | Deploy jalan: `/health` dan `/version` lolos lewat tunnel. Seed, job backup, dan reboot lolos menurut owner. Workflow `v0.8.0` sukses, APK belum dites di HP. Backend 186 lolos + 1 dilewati, mobile 164 lolos. Sisa: uji HP, job arsip di container, restore backup, salinan mingguan, checklist PRD bagian 17 (butuh kode undangan kedua dan foto uji bertanggal M-2) |

@@ -113,6 +113,12 @@ curl https://api.appdirekapin.my.id/api/v1/health
 
 Migrasi jalan otomatis saat container `api` start. Seed menampilkan kode undangan owner satu kali.
 
+Seed hanya membuat kode pertama. Untuk user berikutnya, buat satu kode per akun, lalu kirim kodenya lewat jalur pribadi:
+
+```bash
+docker compose exec db psql -U direkapin -d direkapin -Atc "INSERT INTO invite_codes (code) VALUES (upper(replace(gen_random_uuid()::text,'-',''))) RETURNING code;"
+```
+
 ### Backup
 
 Job di dalam `api` membuat `pg_dump` tiap hari pukul 01.00 ke `data/backups/` dan menyimpan 14 hari terakhir. Job arsip foto jalan pukul 02.00. Keduanya bisa dipicu manual:

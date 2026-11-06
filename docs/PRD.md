@@ -298,7 +298,7 @@ Kontrak detail (request, response, error) ada di `docs/openapi.yaml`. Semua endp
 
 1. Mini PC (12 GB RAM, SSD 512 GB, Intel Celeron) menyala 24 jam; atur BIOS agar otomatis menyala setelah mati listrik dan Docker auto-start saat boot.
 2. `docker compose` berisi 3 service: `api` (Node.js), `db` (PostgreSQL 16), `cloudflared` (Cloudflare Tunnel). Semua pakai `restart: unless-stopped` dan `mem_limit`.
-3. Beli domain (mis. `direkapin.my.id`), pindahkan DNS ke Cloudflare (free plan), buat tunnel di Zero Trust, lalu arahkan `api.direkapin.my.id` ke `http://api:3000`.
+3. Domain `appdirekapin.my.id` (D-55), DNS di Cloudflare (free plan), tunnel di Zero Trust mengarahkan `api.appdirekapin.my.id` ke `http://api:3000`.
 4. Tidak ada port yang dibuka di router; port database hanya di jaringan internal Docker.
 5. Token tunnel dan secret lain disimpan di `.env`, tidak di-commit ke GitHub.
 6. Foto disimpan di volume `/data/uploads`, arsip ZIP di `/data/archives`.
@@ -345,7 +345,7 @@ Durasi adalah estimasi untuk dikerjakan sendiri sambil kuliah (±10 jam/minggu);
 
 | Topik | Keputusan |
 | --- | --- |
-| Nama aplikasi | Direkapin; domain menyusul (mis. `direkapin.my.id`) |
+| Nama aplikasi | Direkapin; domain `appdirekapin.my.id` (D-55) |
 | Dompet | Dompet terpisah (cash, bank, e-wallet) masuk MVP |
 | Kegiatan | Cukup catatan harian; jadwal + reminder per kegiatan tidak di MVP |
 | Jumlah user | Owner + 1–3 teman (maks. 4 user) |
@@ -492,7 +492,7 @@ direkapin/
 │   └── TASKS.md
 ├── docker-compose.yml
 ├── .env.example
-├── .github/workflows/release-apk.yml
+├── .github/workflows/release.yml
 ├── CLAUDE.md
 └── README.md                # cara install APK + setup server
 ```
