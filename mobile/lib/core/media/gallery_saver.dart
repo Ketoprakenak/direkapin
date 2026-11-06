@@ -7,3 +7,7 @@ const _channel = MethodChannel('direkapin/gallery');
 // shortcut: selalu JPEG karena aplikasi hanya mengupload JPEG, deteksi formatnya kalau ada klien lain yang mengirim WebP.
 Future<void> saveJpegToGallery(Uint8List bytes, String fileName) => _channel
     .invokeMethod<void>('saveJpeg', {'bytes': bytes, 'fileName': fileName});
+
+/// Menyalin file ZIP di [path] ke folder Download/Direkapin. Error sama seperti di atas.
+Future<void> saveFileToDownloads(String path, String fileName) => _channel
+    .invokeMethod<void>('saveZip', {'path': path, 'fileName': fileName});

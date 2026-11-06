@@ -29,6 +29,9 @@ class FakeServer implements HttpClientAdapter {
   /// Path penulisan yang gagal dengan body error ini.
   final pathFailures = <String, ({int status, Map<String, Object?> body})>{};
 
+  /// Path GET yang dibalas error dengan body ini.
+  final errors = <String, ({int status, Map<String, Object?> body})>{};
+
   @override
   Future<ResponseBody> fetch(
     RequestOptions options,
@@ -52,6 +55,8 @@ class FakeServer implements HttpClientAdapter {
       }
       return _json(const {'id': 'id-baru'}, 200);
     }
+    final error = errors[options.path];
+    if (error != null) return _json(error.body, error.status);
     final response = responses[options.path];
     if (response == null) return _json(const {'items': []}, 200);
     if (response is int) {
@@ -83,13 +88,25 @@ class FakeReminderService implements ReminderService {
       <({String reminderTime, String timezone, String today, bool hasEntry})>[];
   var cancelled = 0;
   var launched = false;
+  String? launchedPayload;
+  final archiveSyncs = <List<ReadyArchive>>[];
+  final archiveTimezones = <String>[];
   var enabled = true;
 
   @override
-  void Function()? onTap;
+  void Function(String? payload)? onTap;
 
   @override
-  Future<bool> launchedFromNotification() async => launched;
+  Future<({bool launched, String? payload})> launchDetails() async => (
+    launched: launched || launchedPayload != null,
+    payload: launchedPayload,
+  );
+
+  @override
+  Future<void> syncArchives(List<ReadyArchive> ready, String timezone) async {
+    archiveSyncs.add(ready);
+    archiveTimezones.add(timezone);
+  }
 
   @override
   Future<void> requestPermission() async {}
@@ -128,12 +145,14 @@ Future<void> pumpRoutedApp(
   Object? extra,
   PhotoService photoService = const PhotoService(),
   FakeReminderService? reminders,
+  List<Object> overrides = const [],
 }) async {
   FlutterSecureStorage.setMockInitialValues({'refreshToken': 'r'});
   await tester.pumpWidget(
     ProviderScope(
       retry: (_, _) => null,
       overrides: [
+        ...overrides.cast(),
         photoServiceProvider.overrideWithValue(photoService),
         reminderServiceProvider.overrideWithValue(
           reminders ?? FakeReminderService(),

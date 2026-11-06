@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../features/activity/data/activity_models.dart';
 import '../../features/activity/presentation/activity_form_screen.dart';
+import '../../features/archive/presentation/archive_screen.dart';
 import '../../features/attachment/presentation/photo_viewer_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
@@ -47,6 +48,7 @@ abstract final class Routes {
   static const activityForm = 'activityForm';
   static const activityDetail = 'activityDetail';
   static const categoryTransactions = 'categoryTransactions';
+  static const archives = 'archives';
 }
 
 const _splashPath = '/';
@@ -141,6 +143,11 @@ GoRouter appRouter(Ref ref) {
         name: Routes.day,
         builder: (context, state) =>
             DayScreen(date: state.pathParameters['date']!),
+      ),
+      GoRoute(
+        path: '/arsip',
+        name: Routes.archives,
+        builder: (context, state) => const ArchiveScreen(),
       ),
       GoRoute(
         path: '/dompet',

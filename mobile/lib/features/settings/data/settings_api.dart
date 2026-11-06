@@ -13,6 +13,10 @@ class SettingsApi {
     return User.fromJson(response.data!);
   });
 
+  Future<void> updateName(String name) => apiCall(() async {
+    await _dio.patch<void>('/me', data: {'name': name});
+  });
+
   Future<void> updateReminderTime(String time) => apiCall(() async {
     await _dio.patch<void>('/me', data: {'reminderTime': time});
   });

@@ -8,6 +8,8 @@ import '../../../core/auth/session_provider.dart';
 import '../../../core/format/dates.dart';
 import '../../../core/notifications/reminder_service.dart';
 import '../../../core/router/router.dart';
+import '../../archive/data/archive_models.dart';
+import '../../archive/providers/archive_providers.dart';
 import '../../dashboard/providers/dashboard_providers.dart';
 import '../../settings/providers/settings_providers.dart';
 
@@ -27,22 +29,30 @@ class _AppShellState extends ConsumerState<AppShell> {
   @override
   void initState() {
     super.initState();
-    _reminders = ref.read(reminderServiceProvider)..onTap = _openToday;
+    _reminders = ref.read(reminderServiceProvider)..onTap = _openFrom;
     // Izin bisa diubah dari pengaturan HP selagi aplikasi di latar belakang.
     _lifecycle = AppLifecycleListener(
-      onResume: () => ref.invalidate(notificationsEnabledProvider),
+      onResume: () {
+        ref.invalidate(notificationsEnabledProvider);
+        ref.invalidate(archivesProvider);
+      },
     );
     unawaited(_start());
   }
 
   Future<void> _start() async {
-    if (await _reminders.launchedFromNotification()) _openToday();
+    final launch = await _reminders.launchDetails();
+    if (launch.launched) _openFrom(launch.payload);
     await _reminders.requestPermission();
     if (mounted) ref.invalidate(notificationsEnabledProvider);
   }
 
-  void _openToday() {
+  void _openFrom(String? payload) {
     if (!mounted) return;
+    if (payload == archivePayload) {
+      ref.read(appRouterProvider).pushNamed(Routes.archives);
+      return;
+    }
     ref
         .read(appRouterProvider)
         .pushNamed(
@@ -68,6 +78,20 @@ class _AppShellState extends ConsumerState<AppShell> {
     );
   }
 
+  void _syncArchives() {
+    final archives = ref.read(archivesProvider);
+    final me = ref.read(meProvider);
+    // Gagal memuat: jadwal lama tetap dipakai.
+    if (archives.isLoading || archives.hasError || !archives.hasValue) return;
+    if (me.isLoading || me.hasError || !me.hasValue) return;
+    final ready = [
+      for (final archive in archives.requireValue)
+        if (archive.status == ArchiveStatus.ready)
+          (id: archive.id, month: archive.month, createdAt: archive.createdAt),
+    ];
+    unawaited(_reminders.syncArchives(ready, me.requireValue.timezone));
+  }
+
   @override
   void dispose() {
     _lifecycle.dispose();
@@ -78,7 +102,11 @@ class _AppShellState extends ConsumerState<AppShell> {
   @override
   Widget build(BuildContext context) {
     ref.listen(dashboardProvider, (_, _) => _syncReminders());
-    ref.listen(meProvider, (_, _) => _syncReminders());
+    ref.listen(meProvider, (_, _) {
+      _syncReminders();
+      _syncArchives();
+    });
+    ref.listen(archivesProvider, (_, _) => _syncArchives());
     // Mencakup tombol Keluar dan sesi kedaluwarsa.
     ref.listen(sessionProvider, (_, next) {
       if (next.value == false) unawaited(_reminders.cancel());

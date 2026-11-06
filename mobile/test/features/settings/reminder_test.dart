@@ -80,6 +80,50 @@ void main() {
     });
   });
 
+  group('jadwal arsip', () {
+    late tz.Location jakarta;
+    setUp(() => jakarta = tz.getLocation('Asia/Jakarta'));
+
+    test('pengingat umum: 3 kali tanggal 1 pukul 09.00, lintas tahun', () {
+      final dates = monthlyArchiveDates(
+        tz.TZDateTime(jakarta, 2026, 11, 15, 8),
+      );
+      expect(dates, [
+        tz.TZDateTime(jakarta, 2026, 12, 1, 9),
+        tz.TZDateTime(jakarta, 2027, 1, 1, 9),
+        tz.TZDateTime(jakarta, 2027, 2, 1, 9),
+      ]);
+    });
+
+    test('pengingat umum: tanggal 1 sebelum jam 9 ikut dijadwalkan', () {
+      final dates = monthlyArchiveDates(tz.TZDateTime(jakarta, 2026, 12, 1, 8));
+      expect(dates.first, tz.TZDateTime(jakarta, 2026, 12, 1, 9));
+      expect(dates, hasLength(3));
+    });
+
+    test('hari ke-7 dan ke-25 dari tanggal lokal arsip', () {
+      // 19.00 UTC = 2 November 02.00 di Jakarta.
+      final created = DateTime.utc(2026, 11, 1, 19);
+      final items = archiveReminderDates(
+        created,
+        tz.TZDateTime(jakarta, 2026, 11, 2, 3),
+      );
+      expect(items.map((item) => item.date), [
+        tz.TZDateTime(jakarta, 2026, 11, 9, 9),
+        tz.TZDateTime(jakarta, 2026, 11, 27, 9),
+      ]);
+      expect(items.map((item) => item.daysLeft), [23, 5]);
+    });
+
+    test('yang sudah lewat dilewati', () {
+      final items = archiveReminderDates(
+        DateTime.utc(2026, 11, 1, 19),
+        tz.TZDateTime(jakarta, 2026, 11, 20),
+      );
+      expect(items.map((item) => item.daysLeft), [5]);
+    });
+  });
+
   test('isNewerVersion membandingkan angka, bukan teks', () {
     expect(isNewerVersion('1.10.0', '1.9.0'), isTrue);
     expect(isNewerVersion('1.0.0', '0.1.0'), isTrue);
@@ -183,7 +227,7 @@ void main() {
         reminders: reminders,
       );
 
-      reminders.onTap!();
+      reminders.onTap!(null);
       await tester.pumpAndSettle();
 
       final router = ProviderScope.containerOf(

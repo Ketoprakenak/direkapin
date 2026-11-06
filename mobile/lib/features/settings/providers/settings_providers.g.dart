@@ -82,3 +82,53 @@ final class MeProvider
 }
 
 String _$meHash() => r'7edcf29d5facef5e8a43b91a4d729fdf020c237f';
+
+/// Disimpan di HP (D-50), dan tetap ada setelah keluar akun.
+
+@ProviderFor(AppThemeMode)
+final appThemeModeProvider = AppThemeModeProvider._();
+
+/// Disimpan di HP (D-50), dan tetap ada setelah keluar akun.
+final class AppThemeModeProvider
+    extends $AsyncNotifierProvider<AppThemeMode, ThemeMode> {
+  /// Disimpan di HP (D-50), dan tetap ada setelah keluar akun.
+  AppThemeModeProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'appThemeModeProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$appThemeModeHash();
+
+  @$internal
+  @override
+  AppThemeMode create() => AppThemeMode();
+}
+
+String _$appThemeModeHash() => r'7b562ce5b46358e60953e91aad5f66b0d8e5e4a7';
+
+/// Disimpan di HP (D-50), dan tetap ada setelah keluar akun.
+
+abstract class _$AppThemeMode extends $AsyncNotifier<ThemeMode> {
+  FutureOr<ThemeMode> build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<ThemeMode>, ThemeMode>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<ThemeMode>, ThemeMode>,
+              AsyncValue<ThemeMode>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}

@@ -28,12 +28,21 @@ class MainActivity : FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, GALLERY_CHANNEL)
             .setMethodCallHandler { call, result ->
-                if (call.method != "saveJpeg") return@setMethodCallHandler result.notImplemented()
-                val bytes = call.argument<ByteArray>("bytes")!!
                 val fileName = call.argument<String>("fileName")!!
+                val save: () -> Unit = when (call.method) {
+                    "saveJpeg" -> {
+                        val bytes = call.argument<ByteArray>("bytes")!!
+                        ({ saveJpeg(bytes, fileName) })
+                    }
+                    "saveZip" -> {
+                        val source = File(call.argument<String>("path")!!)
+                        ({ saveZip(source, fileName) })
+                    }
+                    else -> return@setMethodCallHandler result.notImplemented()
+                }
                 withStoragePermission { granted ->
                     if (granted) {
-                        saveInBackground(bytes, fileName, result)
+                        saveInBackground(save, result)
                     } else {
                         result.error("permission_denied", "Izin penyimpanan ditolak", null)
                     }
@@ -75,14 +84,26 @@ class MainActivity : FlutterActivity() {
         waitingForPermission = null
     }
 
-    private fun saveInBackground(bytes: ByteArray, fileName: String, result: MethodChannel.Result) {
+    private fun saveJpeg(bytes: ByteArray, fileName: String) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            saveToMediaStore(bytes, fileName)
+        } else {
+            saveToPublicFolder(bytes, fileName)
+        }
+    }
+
+    private fun saveZip(source: File, fileName: String) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            saveZipToMediaStore(source, fileName)
+        } else {
+            saveZipToPublicFolder(source, fileName)
+        }
+    }
+
+    private fun saveInBackground(save: () -> Unit, result: MethodChannel.Result) {
         thread {
             try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    saveToMediaStore(bytes, fileName)
-                } else {
-                    saveToPublicFolder(bytes, fileName)
-                }
+                save()
                 runOnUiThread { result.success(null) }
             } catch (e: Exception) {
                 runOnUiThread { result.error("save_failed", e.message, null) }
@@ -109,6 +130,35 @@ class MainActivity : FlutterActivity() {
             contentResolver.delete(uri, null, null)
             throw e
         }
+    }
+
+    private fun saveZipToMediaStore(source: File, fileName: String) {
+        val values = ContentValues().apply {
+            put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+            put(MediaStore.Downloads.MIME_TYPE, "application/zip")
+            put(MediaStore.Downloads.RELATIVE_PATH, "${Environment.DIRECTORY_DOWNLOADS}/$GALLERY_ALBUM")
+            put(MediaStore.Downloads.IS_PENDING, 1)
+        }
+        val uri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+            ?: throw IllegalStateException("MediaStore menolak file baru")
+        try {
+            contentResolver.openOutputStream(uri)!!.use { output ->
+                source.inputStream().use { it.copyTo(output) }
+            }
+            values.clear()
+            values.put(MediaStore.Downloads.IS_PENDING, 0)
+            contentResolver.update(uri, values, null, null)
+        } catch (e: Exception) {
+            contentResolver.delete(uri, null, null)
+            throw e
+        }
+    }
+
+    @Suppress("DEPRECATION") // Android 8-9 belum punya RELATIVE_PATH.
+    private fun saveZipToPublicFolder(source: File, fileName: String) {
+        val downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        val folder = File(downloads, GALLERY_ALBUM).apply { mkdirs() }
+        source.copyTo(File(folder, fileName), overwrite = true)
     }
 
     @Suppress("DEPRECATION") // Android 8-9 belum punya RELATIVE_PATH.
