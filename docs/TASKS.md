@@ -63,13 +63,13 @@ Ref: ENG-01, US-09, D-21
 - [x] Banner update dari `/version`
 - [x] GitHub Actions: build APK release bertanda tangan saat push tag `v*` → GitHub Releases
 
-## Slice 8 — Backup, arsip, deploy · Status: Belum mulai
+## Slice 8 — Backup, arsip, deploy · Status: Sedang dikerjakan
 Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
-- [ ] Job `pg_dump` harian (simpan 14 hari)
-- [ ] Job arsip harian idempoten (D-23) + `GET /archives`, `GET /archives/{id}/download`, penghapusan foto asli (D-22)
+- [x] Job `pg_dump` harian (simpan 14 hari)
+- [x] Job arsip harian idempoten (D-23) + `GET /archives`, `GET /archives/{id}/download`, penghapusan foto asli (D-22)
 - [ ] Mobile: Arsip (S-13), Profil & Pengaturan (S-14), notifikasi arsip lokal (saat terdeteksi, hari ke-7, ke-25, tanggal 1)
 - [ ] Uji `Dockerfile` dan `docker-compose.yml` di mini PC (ditunda dari Slice 0)
-- [ ] Deploy: `cloudflared` di compose, panduan setup di README
+- [ ] Deploy: `cloudflared` di compose, panduan setup di README (berkas sudah ada, belum dicoba di mini PC)
 - [ ] Checklist rilis PRD bagian 17 lolos → tag `v1.0.0`
 
 ---
@@ -100,3 +100,4 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 | 2026-11-05 | 7 | Kode selesai: mobile 142 test, analyze bersih, backend tidak berubah. Sisa: uji di HP asli; uji workflow CI menunggu repo GitHub dan keystore dari owner |
 | 2026-11-05 | 7 | Reminder dan banner aman di HP asli menurut owner. Sisa: uji workflow CI, menunggu repo GitHub dan keystore dari owner |
 | 2026-11-06 | 7 | Workflow `v0.7.0` sukses, APK terpasang di HP asli menurut owner. Login dengan APK ini belum bisa sampai deploy Slice 8; tanda tangan APK tidak diverifikasi terpisah. Slice ditutup |
+| 2026-11-06 | 8 | Kode selesai: backend 187 test, mobile 164 test, lint dan analyze bersih. `Dockerfile`, compose, dan tunnel belum dicoba. Sisa: uji Arsip dan Profil di HP asli, lalu deploy dan checklist rilis di mini PC |

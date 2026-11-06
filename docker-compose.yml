@@ -1,5 +1,5 @@
 # Dijalankan di mini PC. Tidak ada port yang di-publish (D-19).
-# Service cloudflared ditambahkan di Slice 8; sebelum itu API belum bisa diakses dari luar container.
+# Akses dari luar hanya lewat cloudflared, yang meneruskan ke http://api:3000.
 services:
   api:
     build: ./backend
@@ -26,5 +26,14 @@ services:
       retries: 10
     restart: unless-stopped
     mem_limit: 512m
+  cloudflared:
+    image: cloudflare/cloudflared:2026.10.7
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CF_TUNNEL_TOKEN}
+    depends_on:
+      - api
+    restart: unless-stopped
+    mem_limit: 128m
 volumes:
   pgdata:
