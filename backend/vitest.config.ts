@@ -19,6 +19,7 @@ export default defineConfig({
       DATABASE_URL: testUrl.href,
       NODE_ENV: 'test',
       UPLOAD_DIR: join(tmpdir(), 'direkapin-test-uploads'),
+      ARCHIVE_DIR: join(tmpdir(), 'direkapin-test-archives'),
     },
     globalSetup: './test/global-setup.ts',
     include: ['src/**/*.test.ts', 'test/**/*.test.ts'],

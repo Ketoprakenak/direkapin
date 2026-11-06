@@ -71,6 +71,13 @@ export function monthRange(date: string, timeZone: string) {
   };
 }
 
+/** Bulan `YYYY-MM` digeser [delta] bulan. */
+export function shiftMonth(month: string, delta: number): string {
+  const result = new Date(`${month}-01T00:00:00Z`);
+  result.setUTCMonth(result.getUTCMonth() + delta);
+  return result.toISOString().slice(0, 7);
+}
+
 /** Nilai untuk kolom `@db.Date`. */
 export function toDbDate(date: string): Date {
   return new Date(`${date}T00:00:00Z`);

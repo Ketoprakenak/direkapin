@@ -56,10 +56,16 @@ Kalau ada alasan kuat untuk berubah, tulis usulan di bawah bagian "Usulan" dan t
 | D-46 | Link update dibuka lewat `MethodChannel` di `MainActivity.kt` | Pola D-40, tanpa dependency baru | `url_launcher` |
 | D-47 | Jam pengingat memakai `timezone` dari `/me`, bukan zona HP | Sesuai D-08, tanpa dependency baru. Batasannya: user di luar zona profil mendapat pengingat di jam zona profil | Paket pembaca zona waktu HP |
 | D-48 | Baris "Jam pengingat" di Profil dibuat di Slice 7, sisa S-14 tetap di Slice 8 | US-09 mengharuskan jam bisa diubah | Menunggu Slice 8 |
+| D-49 | S-14 tanpa foto profil, memakai inisial nama | `openapi.yaml` tidak punya endpoint foto profil. `User.avatarPath` dibiarkan | Menambah endpoint upload avatar |
+| D-50 | Tema Sistem / Terang / Gelap disimpan di HP lewat `flutter_secure_storage` | `/me` tidak punya field tema, dan tanpa dependency baru | Field tema di server; `shared_preferences` |
+| D-51 | Foto penuh tetap bisa dibuka sampai foto aslinya dihapus. Info "Foto asli ada di arsip bulan X" baru muncul setelah itu | ARC-04 baru menghapus setelah download atau hari ke-30 | Menutup foto penuh sejak arsip dibuat |
+| D-52 | Salinan mingguan ke disk eksternal / cloud dilakukan manual lewat panduan README | Tujuannya belum ada. Batasannya: selama belum disalin, backup dan data asli ada di SSD yang sama | Job otomatis |
+| D-53 | ARC-06, user read-only untuk MCP Postgres, dan download arsip di latar belakang ditunda setelah v1.0. Aplikasi ditutup saat download = ulangi dari awal | P1 atau di luar Slice 8; data tetap aman karena status baru berubah setelah stream utuh | Dikerjakan di Slice 8 |
+| D-54 | Job arsip mengejar semua bulan sampai M-2 yang punya foto belum diarsip. Satu file foto hilang membuat arsip bulan itu `FAILED` dan dicoba lagi besok | Mini PC bisa mati lewat pergantian bulan; ZIP tidak pernah tampil lengkap padahal kurang | Hanya M-2; melewati file yang hilang |
 
 ## Dependency yang disetujui
 
-**Backend:** `fastify`, `@fastify/multipart`, `@fastify/rate-limit`, `@fastify/cors`, `@fastify/sensible`, `fastify-type-provider-zod`, `zod`, `@prisma/client`, `prisma`, `bcrypt`, `jsonwebtoken`, `sharp`, `archiver`, `node-cron`, `pino-pretty` (dev), `vitest`, `supertest`, `eslint`, `typescript-eslint`, `typescript`, `tsx`, `@types/node`, `@types/bcrypt`, `@types/jsonwebtoken`.
+**Backend:** `fastify`, `@fastify/multipart`, `@fastify/rate-limit`, `@fastify/cors`, `@fastify/sensible`, `fastify-type-provider-zod`, `zod`, `@prisma/client`, `prisma`, `bcrypt`, `jsonwebtoken`, `sharp`, `archiver`, `node-cron`, `pino-pretty` (dev), `vitest`, `supertest`, `eslint`, `typescript-eslint`, `typescript`, `tsx`, `@types/node`, `@types/bcrypt`, `@types/jsonwebtoken`, `@types/archiver`.
 
 **Mobile:** `flutter_riverpod`, `riverpod_annotation`, `riverpod_generator`, `go_router`, `dio`, `flutter_secure_storage`, `freezed`, `freezed_annotation`, `json_annotation`, `json_serializable`, `build_runner`, `intl`, `table_calendar`, `fl_chart`, `image_picker`, `flutter_image_compress`, `flutter_local_notifications`, `timezone`, `cached_network_image`, `path_provider`, `permission_handler`, `google_fonts`, `package_info_plus`, `flutter_localizations` (SDK), `flutter_lints` (dev). Gradle: `desugar_jdk_libs` (wajib untuk `flutter_local_notifications`).
 

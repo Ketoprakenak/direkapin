@@ -4,7 +4,9 @@ import Fastify from 'fastify';
 import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { loadConfig, type Config } from './config.js';
+import { startScheduler } from './jobs/scheduler.js';
 import { activityRoutes } from './modules/activities/activities.routes.js';
+import { archiveRoutes } from './modules/archives/archives.routes.js';
 import { attachmentRoutes } from './modules/attachments/attachments.routes.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
 import { calendarRoutes } from './modules/calendar/calendar.routes.js';
@@ -59,6 +61,7 @@ export function buildApp(config: Config) {
       dashboardRoutes(api);
       calendarRoutes(api);
       reportRoutes(api);
+      archiveRoutes(api, config);
     },
     { prefix: '/api/v1' },
   );
@@ -68,5 +71,7 @@ export function buildApp(config: Config) {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const config = loadConfig(process.env);
-  await buildApp(config).listen({ port: config.PORT, host: '0.0.0.0' });
+  const app = buildApp(config);
+  startScheduler(app, config);
+  await app.listen({ port: config.PORT, host: '0.0.0.0' });
 }

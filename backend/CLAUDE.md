@@ -33,7 +33,8 @@ backend/
 │   └── jobs/
 │       ├── scheduler.ts        # node-cron, TZ dari env
 │       ├── backup.job.ts       # pg_dump harian 01:00, simpan 14 hari
-│       └── archive.job.ts      # harian 02:00, idempoten: arsip M-2 yang belum ada/FAILED + bereskan yang kedaluwarsa
+│       ├── archive.job.ts      # harian 02:00, idempoten: arsip M-2 yang belum ada/FAILED + bereskan yang kedaluwarsa
+│       └── run.ts              # pemicu manual: npm run job -- archive|backup
 ├── test/
 │   └── helpers.ts              # buildTestApp(), createUser(), authHeader()
 └── Dockerfile
@@ -69,6 +70,7 @@ npm run dev          # tsx watch src/server.ts
 npm test             # vitest run
 npm run lint         # eslint . && tsc --noEmit
 npm run build        # tsc → dist/
+npm run job -- archive   # jalankan job sekarang (archive atau backup; backup butuh pg_dump di PATH)
 npx prisma migrate dev --name <nama>
 npx prisma db seed
 ```
