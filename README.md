@@ -94,9 +94,9 @@ Setelah terbit, ubah `LATEST_APK_VERSION` di `.env` mini PC lalu jalankan ulang 
 
 ### 2. Siapkan Cloudflare Tunnel
 
-1. Pindahkan DNS domain `direkapin.my.id` ke Cloudflare.
+1. Pindahkan DNS domain `appdirekapin.my.id` ke Cloudflare.
 2. Di Cloudflare Zero Trust, buka Networks > Tunnels dan buat tunnel jenis `cloudflared`.
-3. Tambahkan public hostname `api.direkapin.my.id` dengan service `http://api:3000`.
+3. Tambahkan public hostname `api.appdirekapin.my.id` dengan service `http://api:3000`.
 4. Salin token tunnel untuk `CF_TUNNEL_TOKEN` di `.env`.
 
 Tidak ada port yang perlu dibuka di router.
@@ -108,7 +108,7 @@ Salin `.env.example` ke `.env`, isi semua nilainya dengan host `db` di `DATABASE
 ```bash
 docker compose up -d --build
 docker compose exec api node dist/prisma/seed.js
-curl https://api.direkapin.my.id/api/v1/health
+curl https://api.appdirekapin.my.id/api/v1/health
 ```
 
 Migrasi jalan otomatis saat container `api` start. Seed menampilkan kode undangan owner satu kali.

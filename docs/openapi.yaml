@@ -14,7 +14,7 @@ info:
     - Data milik user lain dibalas 404 NOT_FOUND.
     - Semua error memakai skema Error.
 servers:
-  - url: https://api.direkapin.my.id/api/v1
+  - url: https://api.appdirekapin.my.id/api/v1
   - url: http://localhost:3000/api/v1
 
 security:

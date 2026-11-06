@@ -64,7 +64,7 @@ jobs:
           flutter build apk --release
           --build-name="$VERSION"
           --build-number="$GITHUB_RUN_NUMBER"
-          --dart-define=API_URL=https://api.direkapin.my.id
+          --dart-define=API_URL=https://api.appdirekapin.my.id
 
       - name: Terbitkan ke GitHub Releases
         env:

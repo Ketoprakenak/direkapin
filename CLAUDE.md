@@ -49,7 +49,7 @@ flutter pub get
 flutter test
 flutter analyze
 dart run build_runner build --delete-conflicting-outputs
-flutter build apk --release --dart-define=API_URL=https://api.direkapin.my.id
+flutter build apk --release --dart-define=API_URL=https://api.appdirekapin.my.id
 
 # Infra (dari root, di mini PC; laptop tidak butuh Docker)
 docker compose up -d --build     # semua service

@@ -74,5 +74,5 @@ dart run build_runner build --delete-conflicting-outputs
 flutter analyze
 flutter test
 flutter run --dart-define=API_URL=http://<ip-laptop-dev>:3000   # backend dari npm run dev; HTTP hanya untuk build debug
-flutter build apk --release --dart-define=API_URL=https://api.direkapin.my.id
+flutter build apk --release --dart-define=API_URL=https://api.appdirekapin.my.id
 ```

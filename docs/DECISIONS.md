@@ -62,6 +62,7 @@ Kalau ada alasan kuat untuk berubah, tulis usulan di bawah bagian "Usulan" dan t
 | D-52 | Salinan mingguan ke disk eksternal / cloud dilakukan manual lewat panduan README | Tujuannya belum ada. Batasannya: selama belum disalin, backup dan data asli ada di SSD yang sama | Job otomatis |
 | D-53 | ARC-06, user read-only untuk MCP Postgres, dan download arsip di latar belakang ditunda setelah v1.0. Aplikasi ditutup saat download = ulangi dari awal | P1 atau di luar Slice 8; data tetap aman karena status baru berubah setelah stream utuh | Dikerjakan di Slice 8 |
 | D-54 | Job arsip mengejar semua bulan sampai M-2 yang punya foto belum diarsip. Satu file foto hilang membuat arsip bulan itu `FAILED` dan dicoba lagi besok | Mini PC bisa mati lewat pergantian bulan; ZIP tidak pernah tampil lengkap padahal kurang | Hanya M-2; melewati file yang hilang |
+| D-55 | Domain produksi `appdirekapin.my.id`; API di `api.appdirekapin.my.id`. Package name Android tetap `id.my.direkapin.app` | `direkapin.my.id` sudah milik orang lain, dan package name tidak terikat kepemilikan domain | `direkapin.my.id`, `direkapin.biz.id`, `direkapin.online` |
 
 ## Dependency yang disetujui
 
