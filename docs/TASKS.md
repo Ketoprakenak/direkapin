@@ -3,7 +3,7 @@
 Satu slice per sesi Claude Code. Centang item saat selesai dan ubah status slice.
 Status: `Belum mulai` · `Sedang dikerjakan` · `Selesai`
 
-**Slice aktif:** 8
+**Slice aktif:** — (v1.0.0 rilis)
 
 ---
 
@@ -63,7 +63,7 @@ Ref: ENG-01, US-09, D-21
 - [x] Banner update dari `/version`
 - [x] GitHub Actions: build APK release bertanda tangan saat push tag `v*` → GitHub Releases
 
-## Slice 8 — Backup, arsip, deploy · Status: Sedang dikerjakan
+## Slice 8 — Backup, arsip, deploy · Status: Selesai
 Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 - [x] Job `pg_dump` harian (simpan 14 hari)
 - [x] Job arsip harian idempoten (D-23) + `GET /archives`, `GET /archives/{id}/download`, penghapusan foto asli (D-22)
@@ -71,7 +71,7 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 - [x] Uji Profil dan daftar Arsip kosong di HP asli lewat APK `v0.8.0` menurut owner; download ZIP diuji di checklist rilis
 - [x] Uji `Dockerfile` dan `docker-compose.yml` di mini PC (ditunda dari Slice 0)
 - [x] Deploy: `cloudflared` di compose, panduan setup di README
-- [ ] Checklist rilis PRD bagian 17 lolos → tag `v1.0.0`
+- [x] Checklist rilis PRD bagian 17 lolos → tag `v1.0.0`
 
 ---
 
@@ -114,3 +114,4 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 | 2026-11-09 | 8 | Notifikasi pengingat jam 09.00 muncul setiap hari yang belum ada catatan sejak APK terpasang, menurut owner. Sisa checklist PRD bagian 17 yang butuh HP kedua ditunda sampai HP tersedia |
 | 2026-11-09 | 8 | Menurut owner: download arsip diputus di tengah, status tetap `READY`, download ulang berhasil dan tersimpan di HP; pengingat tidak muncul di hari yang sudah ada catatan; uji di HP kedua (install APK, kamera, upload, notifikasi) dicek satu per satu dan lancar. Semua skenario PRD bagian 17 lolos; tinggal merge ke `main` dan tag `v1.0.0` |
 | 2026-11-09 | 8 | Data uji dibersihkan atas permintaan owner: 2 akun uji dan semua datanya dihapus (users, dompet, kategori, foto, arsip = 0), folder `uploads`, `archives`, dan backup lama dikosongkan. Owner daftar ulang dengan kode undangan baru |
+| 2026-11-09 | 8 | Tag `v1.0.0` di `c4f162d`: workflow sukses, `direkapin-1.0.0.apk` (62,6 MB) terbit di GitHub Releases. Slice ditutup. Sisa owner: `LATEST_APK_VERSION=1.0.0` di `.env` mini PC |
