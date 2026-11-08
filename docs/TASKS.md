@@ -68,7 +68,7 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 - [x] Job `pg_dump` harian (simpan 14 hari)
 - [x] Job arsip harian idempoten (D-23) + `GET /archives`, `GET /archives/{id}/download`, penghapusan foto asli (D-22)
 - [x] Mobile: Arsip (S-13), Profil & Pengaturan (S-14), notifikasi arsip lokal (saat terdeteksi, hari ke-7, ke-25, tanggal 1)
-- [ ] Uji Arsip dan Profil di HP asli lewat APK `v0.8.0`
+- [x] Uji Profil dan daftar Arsip kosong di HP asli lewat APK `v0.8.0` menurut owner; download ZIP diuji di checklist rilis
 - [x] Uji `Dockerfile` dan `docker-compose.yml` di mini PC (ditunda dari Slice 0)
 - [x] Deploy: `cloudflared` di compose, panduan setup di README
 - [ ] Checklist rilis PRD bagian 17 lolos → tag `v1.0.0`
@@ -103,3 +103,12 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 | 2026-11-06 | 7 | Workflow `v0.7.0` sukses, APK terpasang di HP asli menurut owner. Login dengan APK ini belum bisa sampai deploy Slice 8; tanda tangan APK tidak diverifikasi terpisah. Slice ditutup |
 | 2026-11-06 | 8 | Kode selesai: backend 187 test, mobile 164 test, lint dan analyze bersih. `Dockerfile`, compose, dan tunnel belum dicoba. Sisa: uji Arsip dan Profil di HP asli, lalu deploy dan checklist rilis di mini PC |
 | 2026-11-06 | 8 | Deploy jalan: `/health` dan `/version` lolos lewat tunnel. Seed, job backup, dan reboot lolos menurut owner. Workflow `v0.8.0` sukses, APK belum dites di HP. Backend 186 lolos + 1 dilewati, mobile 164 lolos. Sisa: uji HP, job arsip di container, restore backup, salinan mingguan, checklist PRD bagian 17 (butuh kode undangan kedua dan foto uji bertanggal M-2) |
+| 2026-11-07 | 8 | Job arsip dan ZIP gagal lalu pulih lolos di mini PC menurut owner. Hasil restore backup dan putus download belum dilaporkan. Atas keputusan owner, sisa uji manual ditunda sampai ada HP kedua karena baru ada 1 HP. Slice tetap aktif, `v1.0.0` belum di-tag |
+| 2026-11-07 | 8 | Restore backup baru ke database kosong cocok dengan database asli (3 transaksi, 5 foto, 1 user). Salinan pertama `data/` dan `.env` ke disk laptop selesai menurut owner. Job otomatis 01.00 belum terbukti. Satu akun di server hanya untuk uji, dihapus setelah uji selesai |
+| 2026-11-08 | 8 | Uji akses silang lolos: akun A mendapat 404 untuk transaksi, foto, dan download arsip milik akun B; `/me` 200. Diuji lewat `http://localhost:3000` di dalam container `api`, karena FortiGate di jaringan mini PC mencegat HTTPS ke `api.appdirekapin.my.id` (sertifikat ditandatangani ulang). HP di WiFi itu kemungkinan juga gagal konek, belum dicek |
+| 2026-11-08 | 8 | Kompres foto lolos di HP asli: foto kamera 9 MB tersimpan 291.879 byte, 1200×1600 |
+| 2026-11-08 | 8 | Upload gagal: transaksi tetap tersimpan dan app tidak crash saat offline. Upload foto selesai sebelum sempat diputus, jadi tombol "Coba lagi" hanya teruji lewat widget test; owner menerimanya sebagai lolos. Batasan diketahui: jika koneksi putus saat transaksi dikirim, transaksi bisa tersimpan di server tetapi app menampilkan error dan foto tidak di-upload; Simpan ulang membuat transaksi dobel. Perbaikan butuh idempotency key (ubah kontrak), ditunda |
+| 2026-11-08 | 8 | Laporan bulanan November 2026 di app cocok dengan hitungan SQL (masuk 500.000, keluar 155.000 per kategori) menurut owner |
+| 2026-11-09 | 8 | Saldo setelah 50 transaksi + 5 transfer (skrip lewat API di container, catatan `UJI-SALDO`): saldo API dua dompet sama dengan hitungan skrip. Tampilan saldo di app belum dikonfirmasi |
+| 2026-11-09 | 8 | Menurut owner: saldo di app sama dengan API; pindah tanggal transaksi memindahkan item di kalender dan laporan harian, saldo tetap; job backup otomatis jalan, sudah ada 3 file backup |
+| 2026-11-09 | 8 | Notifikasi pengingat jam 09.00 muncul setiap hari yang belum ada catatan sejak APK terpasang, menurut owner. Sisa checklist PRD bagian 17 yang butuh HP kedua ditunda sampai HP tersedia |
