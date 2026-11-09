@@ -126,3 +126,4 @@ Ref: FIN-17, D-56 (permintaan owner setelah `v1.0.0`)
 | 2026-11-09 | 9 | Kode selesai: backend 192 lolos + 1 dilewati (6 test baru biaya admin), mobile 165 lolos, lint dan analyze bersih. Migrasi jalan di database test kosong. Sisa: deploy ke mini PC, tag `v1.1.0`, uji HP asli |
 | 2026-11-09 | 9 | Tag `v1.1.0` di `04b52b2`: workflow sukses, `direkapin-1.1.0.apk` (62,6 MB) terbit. Sisa: deploy `api` di mini PC, `LATEST_APK_VERSION=1.1.0`, uji HP asli |
 | 2026-11-09 | 9 | Biaya admin dari dompet asal dan tujuan serta keterangan saldo sesuai di HP asli lewat APK `v1.1.0` menurut owner. Slice ditutup. WiFi kantor owner (FortiGate SSL inspection) memblokir API; owner memakai data seluler, pengecualian domain di FortiGate tidak dikejar |
+| 2026-11-09 | — | Gate sebelum mengundang teman dipersingkat jadi 3 hari atas keputusan owner (D-57). Job arsip pergantian bulan dan rotasi backup 14 hari dicek saat terjadi |

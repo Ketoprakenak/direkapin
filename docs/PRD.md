@@ -324,7 +324,7 @@ MVP siap dipakai sendiri dalam ±8 minggu, lalu dibagikan ke teman.
 | 2. Inti keuangan | Minggu 3–4 | Dompet + transaksi, kategori + foto struk, dashboard |
 | 3. Kalender | Minggu 5–6 | Kalender bulanan, Halaman Hari, kegiatan + foto |
 | 4. Rilis v1.0 | Minggu 7–8 | Laporan 3 periode, reminder + arsip foto, APK v1.0 di GitHub |
-| **Gate** | — | Dipakai sendiri 14 hari tanpa bug kritis |
+| **Gate** | — | Dipakai sendiri 3 hari tanpa bug kritis (D-57) |
 | 5. Setelah MVP | Minggu 9+ | Undang teman, budget per kategori, mood harian, badge streak, export CSV/PDF, OCR struk |
 
 Durasi adalah estimasi untuk dikerjakan sendiri sambil kuliah (±10 jam/minggu); fitur P0 masuk fase 1–4, fitur P1/P2 di fase 5. Urutan pengerjaan per sesi Claude Code ada di `docs/TASKS.md`.
