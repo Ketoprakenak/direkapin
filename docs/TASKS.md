@@ -3,7 +3,7 @@
 Satu slice per sesi Claude Code. Centang item saat selesai dan ubah status slice.
 Status: `Belum mulai` · `Sedang dikerjakan` · `Selesai`
 
-**Slice aktif:** 9
+**Slice aktif:** — (v1.1.0 rilis)
 
 ---
 
@@ -73,12 +73,12 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 - [x] Deploy: `cloudflared` di compose, panduan setup di README
 - [x] Checklist rilis PRD bagian 17 lolos → tag `v1.0.0`
 
-## Slice 9 — Biaya admin transfer · Status: Sedang dikerjakan
+## Slice 9 — Biaya admin transfer · Status: Selesai
 Ref: FIN-17, D-56 (permintaan owner setelah `v1.0.0`)
 - [x] Schema `transfers.feeTransactionId` + migrasi `20261109000000_transfer_fee`, kontrak `fee` / `feePaidBy` di `openapi.yaml`
 - [x] API transfers: buat, edit, hapus ikut mengurus transaksi biaya; kategori "Biaya Admin" otomatis
 - [x] Mobile: field biaya admin + pilihan dompet yang dipotong di form transfer, biaya tampil di detail dan riwayat transfer
-- [ ] Uji di HP asli lewat APK `v1.1.0`
+- [x] Uji di HP asli lewat APK `v1.1.0`
 
 ---
 
@@ -125,3 +125,4 @@ Ref: FIN-17, D-56 (permintaan owner setelah `v1.0.0`)
 | 2026-11-09 | — | Coverage backend diukur (v8, `--no-save`): statements 91,9%, lines 92,8%; modul inti ≥ 87%. `backup.job.ts` 33% karena test restore dilewati tanpa `pg_dump` di laptop, sudah diuji manual di mini PC. `npm audit`: 3 high + 3 moderate dari `deepmerge-ts` (lewat Prisma CLI, hanya membaca config sendiri) dan `minimatch` (lewat `archiver` glob, tidak dipakai). Tidak bisa dicapai input user; perbaikan butuh Prisma 7 / downgrade `archiver`, ditunda |
 | 2026-11-09 | 9 | Kode selesai: backend 192 lolos + 1 dilewati (6 test baru biaya admin), mobile 165 lolos, lint dan analyze bersih. Migrasi jalan di database test kosong. Sisa: deploy ke mini PC, tag `v1.1.0`, uji HP asli |
 | 2026-11-09 | 9 | Tag `v1.1.0` di `04b52b2`: workflow sukses, `direkapin-1.1.0.apk` (62,6 MB) terbit. Sisa: deploy `api` di mini PC, `LATEST_APK_VERSION=1.1.0`, uji HP asli |
+| 2026-11-09 | 9 | Biaya admin dari dompet asal dan tujuan serta keterangan saldo sesuai di HP asli lewat APK `v1.1.0` menurut owner. Slice ditutup. WiFi kantor owner (FortiGate SSL inspection) memblokir API; owner memakai data seluler, pengecualian domain di FortiGate tidak dikejar |
