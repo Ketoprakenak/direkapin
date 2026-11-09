@@ -237,6 +237,134 @@ describe('transfers', () => {
     expect(second.nextCursor).toBeNull();
   });
 
+  describe('biaya admin (FIN-17)', () => {
+    const now = () => new Date().toISOString();
+    const month = () => new Date().toISOString().slice(0, 7);
+
+    it('dipotong dari tujuan: tujuan terima amount - fee, biaya masuk pengeluaran', async () => {
+      const ctx = await setup();
+      const bca = await ctx.addWallet('BCA', 50_000);
+      const res = await ctx.call('POST', '/transfers', {
+        fromWalletId: bca,
+        toWalletId: ctx.cashId,
+        amount: 15_000,
+        fee: 1000,
+        occurredAt: now(),
+      });
+      expect(res.statusCode).toBe(201);
+      expect(res.json()).toMatchObject({ amount: 15_000, fee: 1000, feePaidBy: 'TO' });
+
+      expect(await balanceOf(ctx, bca)).toBe(35_000);
+      expect(await balanceOf(ctx, ctx.cashId)).toBe(14_000);
+      const report = (await ctx.call('GET', `/reports/monthly?month=${month()}`)).json();
+      expect(report.totals.expense).toBe(1000);
+      expect(report.totals.income).toBe(0);
+    });
+
+    it('dipotong dari asal boleh lebih besar dari nominal', async () => {
+      const ctx = await setup();
+      const bca = await ctx.addWallet('BCA', 50_000);
+      const res = await ctx.call('POST', '/transfers', {
+        fromWalletId: bca,
+        toWalletId: ctx.cashId,
+        amount: 1000,
+        fee: 2500,
+        feePaidBy: 'FROM',
+        occurredAt: now(),
+      });
+      expect(res.json()).toMatchObject({ fee: 2500, feePaidBy: 'FROM' });
+      expect(await balanceOf(ctx, bca)).toBe(46_500);
+      expect(await balanceOf(ctx, ctx.cashId)).toBe(1000);
+    });
+
+    it('tanpa biaya: fee 0, feePaidBy null, tidak ada transaksi', async () => {
+      const ctx = await setup();
+      const bca = await ctx.addWallet('BCA');
+      const res = await ctx.call('POST', '/transfers', {
+        fromWalletId: bca,
+        toWalletId: ctx.cashId,
+        amount: 1000,
+        occurredAt: now(),
+      });
+      expect(res.json()).toMatchObject({ fee: 0, feePaidBy: null });
+      expect((await ctx.call('GET', '/transactions')).json().items).toEqual([]);
+    });
+
+    it('validasi: negatif ditolak, dan fee >= nominal ditolak jika tujuan yang bayar', async () => {
+      const ctx = await setup();
+      const bca = await ctx.addWallet('BCA');
+      const base = { fromWalletId: bca, toWalletId: ctx.cashId, amount: 1000, occurredAt: now() };
+      const negative = await ctx.call('POST', '/transfers', { ...base, fee: -1 });
+      expect(negative.statusCode).toBe(400);
+      expect(negative.json().error.details.fee).toBe('Biaya admin tidak boleh negatif');
+
+      const tooBig = await ctx.call('POST', '/transfers', { ...base, fee: 1000 });
+      expect(tooBig.statusCode).toBe(400);
+      expect(tooBig.json().error.details.fee).toBe(
+        'Biaya admin harus lebih kecil dari nominal transfer',
+      );
+
+      const { id } = (await ctx.call('POST', '/transfers', base)).json();
+      const editBig = await ctx.call('PATCH', `/transfers/${id}`, { fee: 5000 });
+      expect(editBig.statusCode).toBe(400);
+      expect((await ctx.call('GET', '/transactions')).json().items).toEqual([]);
+    });
+
+    it('edit: ubah biaya, pindah pembayar, hapus biaya; kategori dipakai ulang', async () => {
+      const ctx = await setup();
+      const bca = await ctx.addWallet('BCA', 50_000);
+      const { id } = (
+        await ctx.call('POST', '/transfers', {
+          fromWalletId: bca,
+          toWalletId: ctx.cashId,
+          amount: 15_000,
+          fee: 1000,
+          occurredAt: now(),
+        })
+      ).json();
+
+      const edited = await ctx.call('PATCH', `/transfers/${id}`, { fee: 2500, feePaidBy: 'FROM' });
+      expect(edited.statusCode).toBe(200);
+      expect(edited.json()).toMatchObject({ fee: 2500, feePaidBy: 'FROM' });
+      expect(await balanceOf(ctx, bca)).toBe(32_500);
+      expect(await balanceOf(ctx, ctx.cashId)).toBe(15_000);
+
+      // Edit tanpa field biaya mempertahankan biayanya.
+      const kept = await ctx.call('PATCH', `/transfers/${id}`, { amount: 20_000 });
+      expect(kept.json()).toMatchObject({ amount: 20_000, fee: 2500, feePaidBy: 'FROM' });
+
+      const removed = await ctx.call('PATCH', `/transfers/${id}`, { fee: 0 });
+      expect(removed.json()).toMatchObject({ fee: 0, feePaidBy: null });
+      expect((await ctx.call('GET', '/transactions')).json().items).toEqual([]);
+
+      await ctx.call('PATCH', `/transfers/${id}`, { fee: 500 });
+      const categories = (await ctx.call('GET', '/categories?type=EXPENSE')).json().items;
+      expect(categories.filter((c: { name: string }) => c.name === 'Biaya Admin')).toHaveLength(1);
+    });
+
+    it('hapus transfer ikut menghapus biayanya; hapus biaya langsung membuat fee 0', async () => {
+      const ctx = await setup();
+      const bca = await ctx.addWallet('BCA', 50_000);
+      const payload = {
+        fromWalletId: bca,
+        toWalletId: ctx.cashId,
+        amount: 15_000,
+        fee: 1000,
+        occurredAt: now(),
+      };
+      const first = (await ctx.call('POST', '/transfers', payload)).json();
+      expect((await ctx.call('DELETE', `/transfers/${first.id}`)).statusCode).toBe(204);
+      expect((await ctx.call('GET', '/transactions')).json().items).toEqual([]);
+      expect(await balanceOf(ctx, bca)).toBe(50_000);
+
+      const second = (await ctx.call('POST', '/transfers', payload)).json();
+      const [feeTx] = (await ctx.call('GET', '/transactions')).json().items;
+      expect((await ctx.call('DELETE', `/transactions/${feeTx.id}`)).statusCode).toBe(204);
+      const list = (await ctx.call('GET', '/transfers')).json().items;
+      expect(list.find((t: { id: string }) => t.id === second.id)).toMatchObject({ fee: 0 });
+    });
+  });
+
   it('dompet user lain di body 400, transfer user lain 404', async () => {
     const a = await setup('a@example.test');
     const b = await setup('b@example.test');

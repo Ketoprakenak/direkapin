@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/format/dates.dart';
+import '../../../core/format/money.dart';
 import '../../../core/router/router.dart';
 import '../../../core/widgets/money_widgets.dart';
 import '../../../core/widgets/state_views.dart';
@@ -48,7 +49,10 @@ class TransferTile extends StatelessWidget {
       ),
       title: Text('${transfer.fromWallet.name} ke ${transfer.toWallet.name}'),
       subtitle: Text(
-        transfer.note ?? '${formatShortDate(when)}, ${formatTime(when)}',
+        [
+          transfer.note ?? '${formatShortDate(when)}, ${formatTime(when)}',
+          if (transfer.fee > 0) 'biaya admin ${formatRupiah(transfer.fee)}',
+        ].join(' · '),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),

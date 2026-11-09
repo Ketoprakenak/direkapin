@@ -58,6 +58,8 @@ _Transfer _$TransferFromJson(Map<String, dynamic> json) => _Transfer(
   amount: (json['amount'] as num).toInt(),
   occurredAt: DateTime.parse(json['occurredAt'] as String),
   note: json['note'] as String?,
+  fee: (json['fee'] as num?)?.toInt() ?? 0,
+  feePaidBy: $enumDecodeNullable(_$FeePaidByEnumMap, json['feePaidBy']),
 );
 
 Map<String, dynamic> _$TransferToJson(_Transfer instance) => <String, dynamic>{
@@ -67,4 +69,8 @@ Map<String, dynamic> _$TransferToJson(_Transfer instance) => <String, dynamic>{
   'amount': instance.amount,
   'occurredAt': instance.occurredAt.toIso8601String(),
   'note': instance.note,
+  'fee': instance.fee,
+  'feePaidBy': _$FeePaidByEnumMap[instance.feePaidBy],
 };
+
+const _$FeePaidByEnumMap = {FeePaidBy.from: 'FROM', FeePaidBy.to: 'TO'};

@@ -196,6 +196,40 @@ void main() {
       expect(write.body, containsPair('fromWalletId', 'w1'));
       expect(write.body, containsPair('toWalletId', 'w2'));
       expect(write.body!.containsKey('categoryId'), isFalse);
+      expect(write.body, containsPair('fee', 0));
+    });
+
+    testWidgets('transfer: biaya admin, pilihan dompet yang dipotong, dan validasi', (tester) async {
+      final server = formServer();
+      await pumpRoutedApp(tester, server, routeName: Routes.transactionForm);
+
+      await tester.tap(find.text('Transfer'));
+      await tester.pumpAndSettle();
+      await tester.enterText(field('Nominal'), '15000');
+      await tester.tap(find.widgetWithText(DropdownButtonFormField<String>, 'Ke dompet'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Bank').last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Dipotong dari'), findsNothing);
+      await tester.enterText(field('Biaya admin (opsional)'), '1000');
+      await tester.pump();
+      expect(find.text('Diterima: Rp14.000'), findsOneWidget);
+
+      await tester.enterText(field('Biaya admin (opsional)'), '15000');
+      await tapSave(tester);
+      expect(find.text('Biaya admin harus lebih kecil dari nominal transfer'), findsOneWidget);
+      expect(server.writes, isEmpty);
+
+      await tester.ensureVisible(find.text('Dompet asal'));
+      await tester.tap(find.text('Dompet asal'));
+      await tester.pump();
+      expect(find.text('Total keluar dari dompet asal: Rp30.000'), findsOneWidget);
+      await tapSave(tester);
+
+      final write = server.writes.single;
+      expect(write.body, containsPair('fee', 15000));
+      expect(write.body, containsPair('feePaidBy', 'FROM'));
     });
 
     testWidgets('tanpa dompet aktif menampilkan ajakan', (tester) async {

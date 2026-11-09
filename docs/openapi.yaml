@@ -1076,6 +1076,18 @@ components:
         amount: { type: integer, minimum: 1, maximum: 999999999 }
         occurredAt: { type: string, format: date-time }
         note: { type: string, maxLength: 1000 }
+        fee:
+          type: integer
+          minimum: 0
+          maximum: 999999999
+          default: 0
+          description: Biaya admin (FIN-17), dicatat sebagai pengeluaran kategori "Biaya Admin" (D-56). Jika feePaidBy TO, harus lebih kecil dari amount
+        feePaidBy: { $ref: '#/components/schemas/FeePaidBy' }
+    FeePaidBy:
+      type: string
+      enum: [FROM, TO]
+      default: TO
+      description: Dompet yang dipotong biaya admin
     TransferInputPartial:
       type: object
       properties:
@@ -1084,9 +1096,11 @@ components:
         amount: { type: integer, minimum: 1, maximum: 999999999 }
         occurredAt: { type: string, format: date-time }
         note: { type: [string, 'null'], maxLength: 1000 }
+        fee: { type: integer, minimum: 0, maximum: 999999999, description: 'Tidak dikirim = biaya tetap; 0 = biaya dihapus' }
+        feePaidBy: { $ref: '#/components/schemas/FeePaidBy' }
     Transfer:
       type: object
-      required: [id, fromWallet, toWallet, amount, occurredAt, note]
+      required: [id, fromWallet, toWallet, amount, occurredAt, note, fee, feePaidBy]
       properties:
         id: { type: string, format: uuid }
         fromWallet: { $ref: '#/components/schemas/WalletRef' }
@@ -1094,6 +1108,8 @@ components:
         amount: { type: integer }
         occurredAt: { type: string, format: date-time }
         note: { type: [string, 'null'] }
+        fee: { type: integer, description: '0 jika tanpa biaya admin' }
+        feePaidBy: { type: [string, 'null'], enum: [FROM, TO, null] }
 
     WalletRef:
       type: object

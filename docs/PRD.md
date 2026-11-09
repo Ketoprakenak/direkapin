@@ -122,6 +122,7 @@ Prioritas: **P0** wajib di MVP, **P1** setelah MVP stabil, **P2** nice-to-have.
 | FIN-14 | Export laporan ke CSV / PDF | P2 |
 | FIN-15 | Transaksi berulang (mis. kos bulanan) | P2 |
 | FIN-16 | Simpan foto dari server ke galeri HP (album Direkapin), mis. setelah foto aslinya terhapus dari HP. Yang tersimpan versi kompres; foto yang sudah diarsip diambil dari ZIP arsip | P1 |
+| FIN-17 | Biaya admin transfer (opsional, nominal bebas) dipotong dari dompet asal atau tujuan; dicatat sebagai pengeluaran kategori "Biaya Admin" (D-56). Mis. BCA → GoPay Rp15.000, biaya Rp1.000 dari tujuan: GoPay bertambah Rp14.000 | P1 |
 
 ### 4.5 Modul kegiatan
 
@@ -246,7 +247,7 @@ Model lengkap dan final ada di `backend/prisma/schema.prisma`. Ringkasan:
 | `wallets` | id, userId, name, type (CASH/BANK/EWALLET), initialBalance, icon, color, isArchived | Saldo = initialBalance + masuk − keluar ± transfer (dihitung, tidak disimpan) |
 | `categories` | id, userId, name, type (INCOME/EXPENSE), icon, color, isDefault, isHidden | Kategori bawaan disalin per user saat registrasi + custom |
 | `transactions` | id, userId, walletId, categoryId, type, amount (BigInt), occurredAt (timestamptz), note | Index: (userId, occurredAt), (walletId) |
-| `transfers` | id, userId, fromWalletId, toWalletId, amount, occurredAt, note | Tidak masuk laporan pemasukan/pengeluaran |
+| `transfers` | id, userId, fromWalletId, toWalletId, amount, occurredAt, note, feeTransactionId | Tidak masuk laporan pemasukan/pengeluaran; biaya admin = transaksi pengeluaran terhubung (D-56) |
 | `activities` | id, userId, title, date, time (nullable), location, description, isImportant | Index: (userId, date) |
 | `attachments` | id, userId, transactionId / activityId (tepat satu terisi), filePath (null setelah diarsip), thumbPath, sizeBytes, width, height, archivedAt | Foto struk & foto kegiatan |
 | `archives` | id, userId, month, zipPath (null jika gagal), sizeBytes, photoCount, status (READY/DOWNLOADED/EXPIRED/FAILED), createdAt, downloadedAt, expiresAt | Arsip foto bulanan |

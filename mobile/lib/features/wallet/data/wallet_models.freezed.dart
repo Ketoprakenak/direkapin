@@ -589,7 +589,7 @@ as String,
 /// @nodoc
 mixin _$Transfer {
 
- String get id; WalletRef get fromWallet; WalletRef get toWallet; int get amount; DateTime get occurredAt; String? get note;
+ String get id; WalletRef get fromWallet; WalletRef get toWallet; int get amount; DateTime get occurredAt; String? get note; int get fee; FeePaidBy? get feePaidBy;
 /// Create a copy of Transfer
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -603,20 +603,20 @@ $TransferCopyWith<Transfer> get copyWith => _$TransferCopyWithImpl<Transfer>(thi
 @override
 bool operator ==(Object other) {
   final _this = this as Transfer;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Transfer&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.fromWallet, _this.fromWallet) || other.fromWallet == _this.fromWallet)&&(identical(other.toWallet, _this.toWallet) || other.toWallet == _this.toWallet)&&(identical(other.amount, _this.amount) || other.amount == _this.amount)&&(identical(other.occurredAt, _this.occurredAt) || other.occurredAt == _this.occurredAt)&&(identical(other.note, _this.note) || other.note == _this.note));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Transfer&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.fromWallet, _this.fromWallet) || other.fromWallet == _this.fromWallet)&&(identical(other.toWallet, _this.toWallet) || other.toWallet == _this.toWallet)&&(identical(other.amount, _this.amount) || other.amount == _this.amount)&&(identical(other.occurredAt, _this.occurredAt) || other.occurredAt == _this.occurredAt)&&(identical(other.note, _this.note) || other.note == _this.note)&&(identical(other.fee, _this.fee) || other.fee == _this.fee)&&(identical(other.feePaidBy, _this.feePaidBy) || other.feePaidBy == _this.feePaidBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Transfer;
-  return Object.hash(runtimeType,_this.id,_this.fromWallet,_this.toWallet,_this.amount,_this.occurredAt,_this.note);
+  return Object.hash(runtimeType,_this.id,_this.fromWallet,_this.toWallet,_this.amount,_this.occurredAt,_this.note,_this.fee,_this.feePaidBy);
 }
 
 @override
 String toString() {
   final _this = this as Transfer;
-  return 'Transfer(id: ${_this.id}, fromWallet: ${_this.fromWallet}, toWallet: ${_this.toWallet}, amount: ${_this.amount}, occurredAt: ${_this.occurredAt}, note: ${_this.note})';
+  return 'Transfer(id: ${_this.id}, fromWallet: ${_this.fromWallet}, toWallet: ${_this.toWallet}, amount: ${_this.amount}, occurredAt: ${_this.occurredAt}, note: ${_this.note}, fee: ${_this.fee}, feePaidBy: ${_this.feePaidBy})';
 }
 
 
@@ -627,7 +627,7 @@ abstract mixin class $TransferCopyWith<$Res>  {
   factory $TransferCopyWith(Transfer value, $Res Function(Transfer) _then) = _$TransferCopyWithImpl;
 @useResult
 $Res call({
- String id, WalletRef fromWallet, WalletRef toWallet, int amount, DateTime occurredAt, String? note
+ String id, WalletRef fromWallet, WalletRef toWallet, int amount, DateTime occurredAt, String? note, int fee, FeePaidBy? feePaidBy
 });
 
 
@@ -644,7 +644,7 @@ class _$TransferCopyWithImpl<$Res>
 
 /// Create a copy of Transfer
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? fromWallet = null,Object? toWallet = null,Object? amount = null,Object? occurredAt = null,Object? note = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? fromWallet = null,Object? toWallet = null,Object? amount = null,Object? occurredAt = null,Object? note = freezed,Object? fee = null,Object? feePaidBy = freezed,}) {
   return _then(Transfer(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,fromWallet: null == fromWallet ? _self.fromWallet : fromWallet // ignore: cast_nullable_to_non_nullable
@@ -652,7 +652,9 @@ as WalletRef,toWallet: null == toWallet ? _self.toWallet : toWallet // ignore: c
 as WalletRef,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as int,occurredAt: null == occurredAt ? _self.occurredAt : occurredAt // ignore: cast_nullable_to_non_nullable
 as DateTime,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,fee: null == fee ? _self.fee : fee // ignore: cast_nullable_to_non_nullable
+as int,feePaidBy: freezed == feePaidBy ? _self.feePaidBy : feePaidBy // ignore: cast_nullable_to_non_nullable
+as FeePaidBy?,
   ));
 }
 /// Create a copy of Transfer
@@ -755,10 +757,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  WalletRef fromWallet,  WalletRef toWallet,  int amount,  DateTime occurredAt,  String? note)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  WalletRef fromWallet,  WalletRef toWallet,  int amount,  DateTime occurredAt,  String? note,  int fee,  FeePaidBy? feePaidBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Transfer() when $default != null:
-return $default(_that.id,_that.fromWallet,_that.toWallet,_that.amount,_that.occurredAt,_that.note);case _:
+return $default(_that.id,_that.fromWallet,_that.toWallet,_that.amount,_that.occurredAt,_that.note,_that.fee,_that.feePaidBy);case _:
   return orElse();
 
 }
@@ -776,10 +778,10 @@ return $default(_that.id,_that.fromWallet,_that.toWallet,_that.amount,_that.occu
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  WalletRef fromWallet,  WalletRef toWallet,  int amount,  DateTime occurredAt,  String? note)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  WalletRef fromWallet,  WalletRef toWallet,  int amount,  DateTime occurredAt,  String? note,  int fee,  FeePaidBy? feePaidBy)  $default,) {final _that = this;
 switch (_that) {
 case _Transfer():
-return $default(_that.id,_that.fromWallet,_that.toWallet,_that.amount,_that.occurredAt,_that.note);case _:
+return $default(_that.id,_that.fromWallet,_that.toWallet,_that.amount,_that.occurredAt,_that.note,_that.fee,_that.feePaidBy);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -796,10 +798,10 @@ return $default(_that.id,_that.fromWallet,_that.toWallet,_that.amount,_that.occu
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  WalletRef fromWallet,  WalletRef toWallet,  int amount,  DateTime occurredAt,  String? note)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  WalletRef fromWallet,  WalletRef toWallet,  int amount,  DateTime occurredAt,  String? note,  int fee,  FeePaidBy? feePaidBy)?  $default,) {final _that = this;
 switch (_that) {
 case _Transfer() when $default != null:
-return $default(_that.id,_that.fromWallet,_that.toWallet,_that.amount,_that.occurredAt,_that.note);case _:
+return $default(_that.id,_that.fromWallet,_that.toWallet,_that.amount,_that.occurredAt,_that.note,_that.fee,_that.feePaidBy);case _:
   return null;
 
 }
@@ -811,7 +813,7 @@ return $default(_that.id,_that.fromWallet,_that.toWallet,_that.amount,_that.occu
 @JsonSerializable()
 
 class _Transfer implements Transfer {
-  const _Transfer({required this.id, required this.fromWallet, required this.toWallet, required this.amount, required this.occurredAt, this.note});
+  const _Transfer({required this.id, required this.fromWallet, required this.toWallet, required this.amount, required this.occurredAt, this.note, this.fee = 0, this.feePaidBy});
   factory _Transfer.fromJson(Map<String, dynamic> json) => _$TransferFromJson(json);
 
 @override final  String id;
@@ -820,6 +822,8 @@ class _Transfer implements Transfer {
 @override final  int amount;
 @override final  DateTime occurredAt;
 @override final  String? note;
+@override@JsonKey() final  int fee;
+@override final  FeePaidBy? feePaidBy;
 
 /// Create a copy of Transfer
 /// with the given fields replaced by the non-null parameter values.
@@ -834,18 +838,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Transfer&&(identical(other.id, id) || other.id == id)&&(identical(other.fromWallet, fromWallet) || other.fromWallet == fromWallet)&&(identical(other.toWallet, toWallet) || other.toWallet == toWallet)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.occurredAt, occurredAt) || other.occurredAt == occurredAt)&&(identical(other.note, note) || other.note == note));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Transfer&&(identical(other.id, id) || other.id == id)&&(identical(other.fromWallet, fromWallet) || other.fromWallet == fromWallet)&&(identical(other.toWallet, toWallet) || other.toWallet == toWallet)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.occurredAt, occurredAt) || other.occurredAt == occurredAt)&&(identical(other.note, note) || other.note == note)&&(identical(other.fee, fee) || other.fee == fee)&&(identical(other.feePaidBy, feePaidBy) || other.feePaidBy == feePaidBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,fromWallet,toWallet,amount,occurredAt,note);
+    return Object.hash(runtimeType,id,fromWallet,toWallet,amount,occurredAt,note,fee,feePaidBy);
 }
 
 @override
 String toString() {
-    return 'Transfer(id: $id, fromWallet: $fromWallet, toWallet: $toWallet, amount: $amount, occurredAt: $occurredAt, note: $note)';
+    return 'Transfer(id: $id, fromWallet: $fromWallet, toWallet: $toWallet, amount: $amount, occurredAt: $occurredAt, note: $note, fee: $fee, feePaidBy: $feePaidBy)';
 }
 
 
@@ -856,7 +860,7 @@ abstract mixin class _$TransferCopyWith<$Res> implements $TransferCopyWith<$Res>
   factory _$TransferCopyWith(_Transfer value, $Res Function(_Transfer) _then) = __$TransferCopyWithImpl;
 @override @useResult
 $Res call({
- String id, WalletRef fromWallet, WalletRef toWallet, int amount, DateTime occurredAt, String? note
+ String id, WalletRef fromWallet, WalletRef toWallet, int amount, DateTime occurredAt, String? note, int fee, FeePaidBy? feePaidBy
 });
 
 
@@ -873,7 +877,7 @@ class __$TransferCopyWithImpl<$Res>
 
 /// Create a copy of Transfer
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? fromWallet = null,Object? toWallet = null,Object? amount = null,Object? occurredAt = null,Object? note = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? fromWallet = null,Object? toWallet = null,Object? amount = null,Object? occurredAt = null,Object? note = freezed,Object? fee = null,Object? feePaidBy = freezed,}) {
   return _then(_Transfer(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,fromWallet: null == fromWallet ? _self.fromWallet : fromWallet // ignore: cast_nullable_to_non_nullable
@@ -881,7 +885,9 @@ as WalletRef,toWallet: null == toWallet ? _self.toWallet : toWallet // ignore: c
 as WalletRef,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as int,occurredAt: null == occurredAt ? _self.occurredAt : occurredAt // ignore: cast_nullable_to_non_nullable
 as DateTime,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,fee: null == fee ? _self.fee : fee // ignore: cast_nullable_to_non_nullable
+as int,feePaidBy: freezed == feePaidBy ? _self.feePaidBy : feePaidBy // ignore: cast_nullable_to_non_nullable
+as FeePaidBy?,
   ));
 }
 

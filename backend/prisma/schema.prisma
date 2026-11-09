@@ -151,6 +151,7 @@ model Transaction {
   wallet      Wallet       @relation(fields: [walletId], references: [id], onDelete: Restrict)
   category    Category     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   attachments Attachment[]
+  feeOf       Transfer?    @relation("TransferFee")
 
   @@index([userId, occurredAt])
   @@index([walletId])
@@ -159,19 +160,22 @@ model Transaction {
 }
 
 model Transfer {
-  id           String   @id @default(uuid()) @db.Uuid
-  userId       String   @db.Uuid
-  fromWalletId String   @db.Uuid
-  toWalletId   String   @db.Uuid
-  amount       BigInt
-  occurredAt   DateTime @db.Timestamptz
-  note         String?  @db.VarChar(1000)
-  createdAt    DateTime @default(now()) @db.Timestamptz
-  updatedAt    DateTime @updatedAt @db.Timestamptz
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @db.Uuid
+  fromWalletId     String   @db.Uuid
+  toWalletId       String   @db.Uuid
+  amount           BigInt
+  occurredAt       DateTime @db.Timestamptz
+  note             String?  @db.VarChar(1000)
+  // Biaya admin = transaksi pengeluaran biasa, supaya saldo & laporan tidak perlu logika baru (D-56)
+  feeTransactionId String?  @unique @db.Uuid
+  createdAt        DateTime @default(now()) @db.Timestamptz
+  updatedAt        DateTime @updatedAt @db.Timestamptz
 
-  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  fromWallet Wallet @relation("TransferFrom", fields: [fromWalletId], references: [id], onDelete: Restrict)
-  toWallet   Wallet @relation("TransferTo", fields: [toWalletId], references: [id], onDelete: Restrict)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fromWallet     Wallet       @relation("TransferFrom", fields: [fromWalletId], references: [id], onDelete: Restrict)
+  toWallet       Wallet       @relation("TransferTo", fields: [toWalletId], references: [id], onDelete: Restrict)
+  feeTransaction Transaction? @relation("TransferFee", fields: [feeTransactionId], references: [id], onDelete: SetNull)
 
   @@index([userId, occurredAt])
   @@map("transfers")

@@ -47,6 +47,15 @@ abstract class WalletRef with _$WalletRef {
       _$WalletRefFromJson(json);
 }
 
+/// Dompet yang dipotong biaya admin transfer (FIN-17).
+@JsonEnum(fieldRename: FieldRename.screamingSnake)
+enum FeePaidBy {
+  from,
+  to;
+
+  String get apiValue => name.toUpperCase();
+}
+
 @freezed
 abstract class Transfer with _$Transfer {
   const factory Transfer({
@@ -56,6 +65,8 @@ abstract class Transfer with _$Transfer {
     required int amount,
     required DateTime occurredAt,
     String? note,
+    @Default(0) int fee,
+    FeePaidBy? feePaidBy,
   }) = _Transfer;
 
   factory Transfer.fromJson(Map<String, dynamic> json) =>

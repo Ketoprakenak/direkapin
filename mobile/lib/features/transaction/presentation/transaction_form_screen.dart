@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/api/api_error.dart';
 import '../../../core/format/dates.dart';
+import '../../../core/format/money.dart';
 import '../../../core/format/rupiah_input.dart';
 import '../../../core/router/router.dart';
 import '../../../core/theme/tokens.dart';
@@ -54,6 +55,8 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amount = TextEditingController();
   final _note = TextEditingController();
+  final _fee = TextEditingController();
+  FeePaidBy _feePaidBy = FeePaidBy.to;
 
   _Mode _mode = _Mode.expense;
   String? _walletId;
@@ -80,6 +83,9 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     super.initState();
     _photos = PhotoEdits(_transaction?.attachments ?? const [])
       ..addListener(_rebuild);
+    // Teks "Diterima" di form transfer mengikuti nominal dan biaya.
+    _amount.addListener(_rebuild);
+    _fee.addListener(_rebuild);
     final now = DateTime.now();
     final date = widget.args.initialDate;
     _occurredAt = date?.copyWith(hour: now.hour, minute: now.minute) ?? now;
@@ -101,6 +107,8 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       _occurredAt = transfer.occurredAt.toLocal();
       _amount.text = rupiahInputText(transfer.amount);
       _note.text = transfer.note ?? '';
+      if (transfer.fee > 0) _fee.text = rupiahInputText(transfer.fee);
+      _feePaidBy = transfer.feePaidBy ?? FeePaidBy.to;
     }
   }
 
@@ -108,6 +116,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   void dispose() {
     _amount.dispose();
     _note.dispose();
+    _fee.dispose();
     _photos.dispose();
     super.dispose();
   }
@@ -194,6 +203,8 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
         ...common,
         'fromWalletId': walletId,
         'toWalletId': _toWalletId,
+        'fee': parseRupiah(_fee.text) ?? 0,
+        'feePaidBy': _feePaidBy.apiValue,
       };
       final transfer = _transfer;
       await (transfer == null
@@ -294,6 +305,54 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     );
   }
 
+  /// Biaya admin transfer (FIN-17): dicatat sebagai pengeluaran "Biaya Admin".
+  List<Widget> _feeFields(ThemeData theme) {
+    final fee = parseRupiah(_fee.text) ?? 0;
+    final amount = parseRupiah(_amount.text) ?? 0;
+    final paidByTo = _feePaidBy == FeePaidBy.to;
+    return [
+      const SizedBox(height: Spacing.md),
+      TextFormField(
+        controller: _fee,
+        keyboardType: TextInputType.number,
+        inputFormatters: const [RupiahInputFormatter()],
+        decoration: const InputDecoration(
+          labelText: 'Biaya admin (opsional)',
+          prefixText: 'Rp',
+        ),
+        validator: (value) {
+          final fee = parseRupiah(value ?? '') ?? 0;
+          final amount = parseRupiah(_amount.text) ?? 0;
+          return _feePaidBy == FeePaidBy.to && fee > 0 && fee >= amount
+              ? 'Biaya admin harus lebih kecil dari nominal transfer'
+              : null;
+        },
+      ),
+      if (fee > 0) ...[
+        const SizedBox(height: Spacing.sm),
+        Text('Dipotong dari', style: theme.textTheme.bodyMedium),
+        const SizedBox(height: Spacing.xs),
+        SegmentedButton<FeePaidBy>(
+          showSelectedIcon: false,
+          segments: const [
+            ButtonSegment(value: FeePaidBy.from, label: Text('Dompet asal')),
+            ButtonSegment(value: FeePaidBy.to, label: Text('Dompet tujuan')),
+          ],
+          selected: {_feePaidBy},
+          onSelectionChanged: (selected) =>
+              setState(() => _feePaidBy = selected.first),
+        ),
+        const SizedBox(height: Spacing.xs),
+        Text(
+          paidByTo
+              ? 'Diterima: ${formatRupiah(amount - fee)}'
+              : 'Total keluar dari dompet asal: ${formatRupiah(amount + fee)}',
+          style: theme.textTheme.bodyMedium,
+        ),
+      ],
+    ];
+  }
+
   Widget _buildForm(List<Wallet> wallets) {
     final theme = Theme.of(context);
     final fromWallet = _selectedWallet(wallets);
@@ -386,7 +445,8 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                             ? 'Dompet asal dan tujuan harus berbeda'
                             : null;
                       },
-                    )
+                    ),
+                  if (_mode == _Mode.transfer) ..._feeFields(theme)
                   else
                     CategoryGrid(
                       type: _mode == _Mode.income

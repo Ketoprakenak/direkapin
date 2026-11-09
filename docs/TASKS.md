@@ -3,7 +3,7 @@
 Satu slice per sesi Claude Code. Centang item saat selesai dan ubah status slice.
 Status: `Belum mulai` · `Sedang dikerjakan` · `Selesai`
 
-**Slice aktif:** — (v1.0.0 rilis)
+**Slice aktif:** 9
 
 ---
 
@@ -73,6 +73,13 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 - [x] Deploy: `cloudflared` di compose, panduan setup di README
 - [x] Checklist rilis PRD bagian 17 lolos → tag `v1.0.0`
 
+## Slice 9 — Biaya admin transfer · Status: Sedang dikerjakan
+Ref: FIN-17, D-56 (permintaan owner setelah `v1.0.0`)
+- [x] Schema `transfers.feeTransactionId` + migrasi `20261109000000_transfer_fee`, kontrak `fee` / `feePaidBy` di `openapi.yaml`
+- [x] API transfers: buat, edit, hapus ikut mengurus transaksi biaya; kategori "Biaya Admin" otomatis
+- [x] Mobile: field biaya admin + pilihan dompet yang dipotong di form transfer, biaya tampil di detail dan riwayat transfer
+- [ ] Uji di HP asli lewat APK `v1.1.0`
+
 ---
 
 ## Log
@@ -116,3 +123,4 @@ Ref: ARC-01–05, US-10, PRD bagian 10, D-21–D-23
 | 2026-11-09 | 8 | Data uji dibersihkan atas permintaan owner: 2 akun uji dan semua datanya dihapus (users, dompet, kategori, foto, arsip = 0), folder `uploads`, `archives`, dan backup lama dikosongkan. Owner daftar ulang dengan kode undangan baru |
 | 2026-11-09 | 8 | Tag `v1.0.0` di `c4f162d`: workflow sukses, `direkapin-1.0.0.apk` (62,6 MB) terbit di GitHub Releases. Slice ditutup. Sisa owner: `LATEST_APK_VERSION=1.0.0` di `.env` mini PC |
 | 2026-11-09 | — | Coverage backend diukur (v8, `--no-save`): statements 91,9%, lines 92,8%; modul inti ≥ 87%. `backup.job.ts` 33% karena test restore dilewati tanpa `pg_dump` di laptop, sudah diuji manual di mini PC. `npm audit`: 3 high + 3 moderate dari `deepmerge-ts` (lewat Prisma CLI, hanya membaca config sendiri) dan `minimatch` (lewat `archiver` glob, tidak dipakai). Tidak bisa dicapai input user; perbaikan butuh Prisma 7 / downgrade `archiver`, ditunda |
+| 2026-11-09 | 9 | Kode selesai: backend 192 lolos + 1 dilewati (6 test baru biaya admin), mobile 165 lolos, lint dan analyze bersih. Migrasi jalan di database test kosong. Sisa: deploy ke mini PC, tag `v1.1.0`, uji HP asli |

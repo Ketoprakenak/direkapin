@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/api/api_error.dart';
 import '../../../core/format/dates.dart';
+import '../../../core/format/money.dart';
 import '../../../core/router/router.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/money_widgets.dart';
@@ -83,6 +84,10 @@ class TransferDetailScreen extends ConsumerWidget {
       rows: {
         'Dari dompet': transfer.fromWallet.name,
         'Ke dompet': transfer.toWallet.name,
+        if (transfer.fee > 0)
+          'Biaya admin':
+              '${formatRupiah(transfer.fee)}, dipotong dari '
+              '${transfer.feePaidBy == FeePaidBy.from ? transfer.fromWallet.name : transfer.toWallet.name}',
         ..._whenRows(transfer.occurredAt),
         'Catatan': ?transfer.note,
       },
