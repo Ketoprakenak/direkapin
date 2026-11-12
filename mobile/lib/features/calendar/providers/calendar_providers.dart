@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/api/api_client.dart';
@@ -19,6 +20,10 @@ Future<List<CalendarDay>> calendarMonth(Ref ref, String month) async {
         .toList();
   });
 }
+
+/// Simpan mood hari [date]; `null` menghapusnya.
+Future<void> saveMood(Dio dio, String date, String? mood) =>
+    apiCall(() => dio.put<void>('/days/$date/note', data: {'mood': mood}));
 
 @riverpod
 Future<DayDetail> dayDetail(Ref ref, String date) async {

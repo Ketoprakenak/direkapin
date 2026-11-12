@@ -3,10 +3,16 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
   dailyReportQuery,
   monthlyReportQuery,
+  rangeReportQuery,
   reportResponse,
   weeklyReportQuery,
 } from './reports.schemas.js';
-import { getDailyReport, getMonthlyReport, getWeeklyReport } from './reports.service.js';
+import {
+  getDailyReport,
+  getMonthlyReport,
+  getRangeReport,
+  getWeeklyReport,
+} from './reports.service.js';
 
 export function reportRoutes(app: FastifyInstance) {
   const routes = app.withTypeProvider<ZodTypeProvider>();
@@ -32,5 +38,18 @@ export function reportRoutes(app: FastifyInstance) {
     { onRequest, schema: { querystring: monthlyReportQuery, response } },
     (request) =>
       getMonthlyReport(app.prisma, request.userId, request.query.month, request.query.wallet),
+  );
+
+  routes.get(
+    '/reports/range',
+    { onRequest, schema: { querystring: rangeReportQuery, response } },
+    (request) =>
+      getRangeReport(
+        app.prisma,
+        request.userId,
+        request.query.from,
+        request.query.to,
+        request.query.wallet,
+      ),
   );
 }

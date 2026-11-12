@@ -60,7 +60,7 @@ class CategoryGrid extends ConsumerWidget {
                             border: Border.all(
                               width: 2,
                               color: category.id == selectedId
-                                  ? theme.colorScheme.primary
+                                  ? AppColors.of(context).ink
                                   : Colors.transparent,
                             ),
                           ),

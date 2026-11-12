@@ -1,13 +1,12 @@
 import 'dart:io';
 
 import 'package:direkapin/core/router/router.dart';
+import 'package:direkapin/core/widgets/frame.dart';
 import 'package:direkapin/features/archive/data/archive_models.dart';
 import 'package:direkapin/features/archive/providers/archive_providers.dart';
-import 'package:direkapin/features/settings/providers/settings_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -19,6 +18,7 @@ const _me = {
   'email': 'd@x.com',
   'timezone': 'Asia/Jakarta',
   'reminderTime': '21:00',
+  'hasAvatar': false,
   'createdAt': '2026-11-01T00:00:00.000Z',
 };
 
@@ -77,9 +77,7 @@ Future<void> _openArchives(
   server,
   routeName: Routes.archives,
   reminders: reminders,
-  overrides: [
-    if (files != null) archiveFilesProvider.overrideWithValue(files),
-  ],
+  overrides: [if (files != null) archiveFilesProvider.overrideWithValue(files)],
 );
 
 /// File I/O sungguhan macet di waktu palsu test, jadi download harus dimulai di waktu nyata.
@@ -115,7 +113,11 @@ void main() {
     testWidgets('error punya tombol coba lagi', (tester) async {
       await _openArchives(
         tester,
-        FakeServer({'/me': _me, '/dashboard': dashboardJson(), '/archives': 500}),
+        FakeServer({
+          '/me': _me,
+          '/dashboard': dashboardJson(),
+          '/archives': 500,
+        }),
       );
       expect(find.text('Coba lagi'), findsOneWidget);
     });
@@ -148,26 +150,27 @@ void main() {
       expect(find.text('Download lagi'), findsOneWidget);
     });
 
-    testWidgets('download sukses: disimpan, temp dihapus, daftar dimuat ulang', (
-      tester,
-    ) async {
-      final files = _FakeFiles();
-      final server = _server([_archive('READY')]);
-      await _openArchives(tester, server, files: files);
-      server.responses['/archives'] = {
-        'items': [_archive('DOWNLOADED')],
-      };
+    testWidgets(
+      'download sukses: disimpan, temp dihapus, daftar dimuat ulang',
+      (tester) async {
+        final files = _FakeFiles();
+        final server = _server([_archive('READY')]);
+        await _openArchives(tester, server, files: files);
+        server.responses['/archives'] = {
+          'items': [_archive('DOWNLOADED')],
+        };
 
-      await _tapDownload(tester);
+        await _tapDownload(tester);
 
-      expect(files.saved, ['direkapin-arsip-2026-09.zip']);
-      expect(File(files.lastTemp).existsSync(), isFalse);
-      expect(
-        find.text('Arsip tersimpan di Download/Direkapin'),
-        findsOneWidget,
-      );
-      expect(find.text('Download lagi'), findsOneWidget);
-    });
+        expect(files.saved, ['direkapin-arsip-2026-09.zip']);
+        expect(File(files.lastTemp).existsSync(), isFalse);
+        expect(
+          find.text('Arsip tersimpan di Download/Direkapin'),
+          findsOneWidget,
+        );
+        expect(find.text('Download lagi'), findsOneWidget);
+      },
+    );
 
     testWidgets('izin ditolak: pesan jelas, tombol kembali', (tester) async {
       final files = _FakeFiles()
@@ -222,7 +225,11 @@ void main() {
       final reminders = FakeReminderService();
       await pumpRoutedApp(
         tester,
-        FakeServer({'/me': _me, '/dashboard': dashboardJson(), '/archives': 500}),
+        FakeServer({
+          '/me': _me,
+          '/dashboard': dashboardJson(),
+          '/archives': 500,
+        }),
         routeName: Routes.profile,
         reminders: reminders,
       );
@@ -267,6 +274,8 @@ void main() {
       expect(find.text('Desta'), findsOneWidget);
       expect(find.text('d@x.com'), findsOneWidget);
       expect(find.text('D'), findsOneWidget);
+      // Grup header + pengingat, dan grup menu.
+      expect(find.byType(FrameCard), findsNWidgets(2));
 
       await tester.tap(find.text('Arsip foto'));
       await tester.pumpAndSettle();
@@ -321,22 +330,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Terjadi kesalahan di server'), findsOneWidget);
-    });
-
-    testWidgets('pilihan tema tersimpan di HP', (tester) async {
-      await pumpRoutedApp(tester, _server([]), routeName: Routes.profile);
-
-      await tester.tap(find.text('Gelap'));
-      await tester.pumpAndSettle();
-
-      final container = ProviderScope.containerOf(
-        tester.element(find.byType(Scaffold).first),
-      );
-      expect(container.read(appThemeModeProvider).value, ThemeMode.dark);
-      expect(
-        await const FlutterSecureStorage().read(key: 'themeMode'),
-        'dark',
-      );
     });
   });
 }

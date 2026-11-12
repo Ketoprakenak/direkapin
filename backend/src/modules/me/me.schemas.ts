@@ -32,5 +32,6 @@ export const userResponse = z.object({
   email: z.email(),
   timezone: z.string(),
   reminderTime: z.string(),
+  hasAvatar: z.boolean(),
   createdAt: z.string(),
 });

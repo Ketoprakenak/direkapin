@@ -59,7 +59,7 @@ class ColorPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final outline = Theme.of(context).colorScheme.primary;
+    final outline = AppColors.of(context).ink;
     return Wrap(
       spacing: Spacing.xs,
       children: [

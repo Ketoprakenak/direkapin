@@ -9,10 +9,12 @@ import { activityRoutes } from './modules/activities/activities.routes.js';
 import { archiveRoutes } from './modules/archives/archives.routes.js';
 import { attachmentRoutes } from './modules/attachments/attachments.routes.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
+import { budgetRoutes } from './modules/budgets/budgets.routes.js';
 import { calendarRoutes } from './modules/calendar/calendar.routes.js';
 import { categoryRoutes } from './modules/categories/categories.routes.js';
 import { dashboardRoutes } from './modules/dashboard/dashboard.routes.js';
 import { meRoutes } from './modules/me/me.routes.js';
+import { recurringRoutes } from './modules/recurring/recurring.routes.js';
 import { reportRoutes } from './modules/reports/reports.routes.js';
 import { systemRoutes } from './modules/system/system.routes.js';
 import { transactionRoutes } from './modules/transactions/transactions.routes.js';
@@ -51,7 +53,7 @@ export function buildApp(config: Config) {
     async (api) => {
       systemRoutes(api, config);
       authRoutes(api, config);
-      meRoutes(api);
+      meRoutes(api, config);
       walletRoutes(api);
       transferRoutes(api);
       categoryRoutes(api);
@@ -61,6 +63,8 @@ export function buildApp(config: Config) {
       dashboardRoutes(api);
       calendarRoutes(api);
       reportRoutes(api);
+      budgetRoutes(api);
+      recurringRoutes(api);
       archiveRoutes(api, config);
     },
     { prefix: '/api/v1' },

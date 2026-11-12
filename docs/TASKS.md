@@ -3,7 +3,7 @@
 Satu slice per sesi Claude Code. Centang item saat selesai dan ubah status slice.
 Status: `Belum mulai` · `Sedang dikerjakan` · `Selesai`
 
-**Slice aktif:** — (v1.1.0 rilis)
+**Slice aktif:** 10
 
 ---
 
@@ -80,6 +80,34 @@ Ref: FIN-17, D-56 (permintaan owner setelah `v1.0.0`)
 - [x] Mobile: field biaya admin + pilihan dompet yang dipotong di form transfer, biaya tampil di detail dan riwayat transfer
 - [x] Uji di HP asli lewat APK `v1.1.0`
 
+## Slice 10 — Anti dobel + paket P1 kecil · Status: Sedang dikerjakan
+Ref: D-58, D-59, D-60, D-61, D-62, D-63, D-64, FIN-06, ENG-03, FIN-11, FIN-12, CAL-02, DSH-04, ENG-02, ACT-05, AUTH-05, ARC-06, D-66, D-65 (permintaan owner, selama gate 3 hari D-57)
+- [x] `clientId` di transaksi dan transfer (migrasi `20261110000000_client_id`), form mengirim ulang dengan `clientId` sama
+- [x] `PUT /days/{date}/note` untuk mood harian
+- [x] Mobile: layar cari & filter transaksi dari Beranda (FIN-11), top 3 kategori bulan ini (DSH-04), badge streak 7/30/100 dari streak terpanjang (ENG-02), pilihan mood di Halaman Hari (ACT-05)
+- [x] Beranda & Laporan dirampingkan setelah uji debug (D-59)
+- [x] Beranda: 3 transaksi terakhir, masuk hari ini, badge di judul; Laporan: grafik garis harian, toggle donut Semua/Top 3 (D-62)
+- [x] Tema penuh: 7 tema, maskot, transisi horizontal, layar Tema (ENG-03, D-63)
+- [x] Budget multi kategori (FIN-12, D-60): migrasi `20261111000000_budget_groups`, `GET/POST /budgets`, `PATCH/DELETE /budgets/{id}`, bagian Budget di Laporan Bulanan + layar Kelola budget, peringatan 80%/100% (snackbar + notifikasi)
+- [x] Ikon + warna mood di sel kalender (D-61); mode Minggu/Agenda (CAL-02) dibatalkan owner
+- [x] Frame luar/dalam bergaya tebal di kartu dan kotak ringkasan Laporan (D-64)
+- [x] Laporan Custom menggantikan Harian: `GET /reports/range`, pemilih rentang maks. 366 hari (FIN-06, D-64)
+- [x] Maskot ngintip di atas tab bawah aktif (D-64)
+- [x] Foto profil (AUTH-05, D-65): `PUT/GET/DELETE /me/avatar`, `User.hasAvatar`, avatar + sheet di Profil
+- [x] Arsip lebih awal saat disk > 80% (ARC-06, D-66): cek `statfs` tiap jam + job 02:00, cutoff M-1
+- [ ] Uji di HP asli lewat build debug, lalu commit dan rilis
+
+---
+
+## Slice 11 — Transaksi berulang (FIN-15) · Status: Sedang dikerjakan
+Ref: FIN-15, D-67
+- [x] Migrasi tabel `recurring_transactions` (`lastHandledMonth`, tanpa job)
+- [x] Backend: `GET/POST /recurring`, `PATCH/DELETE /recurring/{id}`, `GET /recurring/due`, `POST /recurring/{id}/record`, `POST /recurring/{id}/skip` (klaim atomik, 409 `CONFLICT`)
+- [x] Hapus kategori memindahkan aturan ke "Lainnya"; hapus dompet yang dipakai aturan = 409 `WALLET_IN_USE`
+- [x] Mobile: layar Transaksi berulang (Profil), form aturan, kartu "Jatuh tempo" di Beranda, sheet Catat, dialog Lewati
+- [x] Docs: D-67, PRD FIN-15, DESIGN, openapi
+- [ ] Uji di HP asli lewat build debug, lalu commit
+
 ---
 
 ## Log
@@ -127,3 +155,4 @@ Ref: FIN-17, D-56 (permintaan owner setelah `v1.0.0`)
 | 2026-11-09 | 9 | Tag `v1.1.0` di `04b52b2`: workflow sukses, `direkapin-1.1.0.apk` (62,6 MB) terbit. Sisa: deploy `api` di mini PC, `LATEST_APK_VERSION=1.1.0`, uji HP asli |
 | 2026-11-09 | 9 | Biaya admin dari dompet asal dan tujuan serta keterangan saldo sesuai di HP asli lewat APK `v1.1.0` menurut owner. Slice ditutup. WiFi kantor owner (FortiGate SSL inspection) memblokir API; owner memakai data seluler, pengecualian domain di FortiGate tidak dikejar |
 | 2026-11-09 | — | Gate sebelum mengundang teman dipersingkat jadi 3 hari atas keputusan owner (D-57). Job arsip pergantian bulan dan rotasi backup 14 hari dicek saat terjadi |
+| 2026-11-10 | 10 | Kode selesai, belum di-commit: backend 196 lolos + 1 dilewati, mobile 170 lolos, lint dan analyze bersih. Sisa: uji HP lewat build debug ke backend laptop, lalu commit, deploy, rilis `v1.2.0` |

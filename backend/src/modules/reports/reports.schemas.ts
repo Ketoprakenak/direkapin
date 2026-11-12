@@ -17,9 +17,20 @@ export const weeklyReportQuery = z.object({
 
 export const monthlyReportQuery = z.object({ month: calendarQuery.shape.month, wallet });
 
+const dayMs = 86_400_000;
+
+export const rangeReportQuery = z
+  .object({ from: dateString, to: dateString, wallet })
+  .refine(({ from, to }) => to >= from, { error: 'Tanggal akhir tidak boleh sebelum tanggal awal' })
+  .refine(
+    ({ from, to }) =>
+      (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / dayMs <= 365,
+    { error: 'Rentang maksimal 366 hari' },
+  );
+
 export const reportResponse = z.object({
   period: z.object({
-    type: z.enum(['daily', 'weekly', 'monthly']),
+    type: z.enum(['daily', 'weekly', 'monthly', 'range']),
     start: z.string(),
     end: z.string(),
   }),

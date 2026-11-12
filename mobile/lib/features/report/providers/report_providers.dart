@@ -8,7 +8,8 @@ import '../data/report_models.dart';
 
 part 'report_providers.g.dart';
 
-/// [key] = tanggal (harian), Senin awal minggu (mingguan), atau `YYYY-MM` (bulanan).
+/// [key] = Senin awal minggu (mingguan), `YYYY-MM` (bulanan), atau
+/// `YYYY-MM-DD_YYYY-MM-DD` (rentang).
 @riverpod
 Future<Report> report(
   Ref ref,
@@ -17,15 +18,18 @@ Future<Report> report(
   String? walletId,
 }) async {
   final dio = ref.watch(apiClientProvider);
-  final (path, param) = switch (type) {
-    ReportType.daily => ('/reports/daily', 'date'),
-    ReportType.weekly => ('/reports/weekly', 'start'),
-    ReportType.monthly => ('/reports/monthly', 'month'),
+  final (path, query) = switch (type) {
+    ReportType.weekly => ('/reports/weekly', {'start': key}),
+    ReportType.monthly => ('/reports/monthly', {'month': key}),
+    ReportType.range => (
+      '/reports/range',
+      {'from': key.split('_').first, 'to': key.split('_').last},
+    ),
   };
   return apiCall(() async {
     final response = await dio.get<Map<String, dynamic>>(
       path,
-      queryParameters: {param: key, 'wallet': ?walletId},
+      queryParameters: {...query, 'wallet': ?walletId},
     );
     return Report.fromJson(response.data!);
   });

@@ -121,7 +121,7 @@ docker compose exec db psql -U direkapin -d direkapin -Atc "INSERT INTO invite_c
 
 ### Backup
 
-Job di dalam `api` membuat `pg_dump` tiap hari pukul 01.00 ke `data/backups/` dan menyimpan 14 hari terakhir. Job arsip foto jalan pukul 02.00. Keduanya bisa dipicu manual:
+Job di dalam `api` membuat `pg_dump` tiap hari pukul 01.00 ke `data/backups/` dan menyimpan 14 hari terakhir. Job arsip foto jalan pukul 02.00, dan tiap jam dicek pemakaian disk: di atas 80% arsip bulan lalu ikut dibuat. Keduanya bisa dipicu manual:
 
 ```bash
 docker compose exec api node dist/src/jobs/run.js backup

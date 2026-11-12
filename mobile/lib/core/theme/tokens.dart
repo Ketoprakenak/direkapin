@@ -9,6 +9,11 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.important,
     required this.background,
     required this.textSecondary,
+    required this.ink,
+    required this.moodTints,
+    required this.incomeTint,
+    required this.expenseTint,
+    required this.importantTint,
   });
 
   final Color income;
@@ -18,6 +23,18 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color background;
   final Color textSecondary;
 
+  /// Aksen untuk teks/penanda di atas latar; = primary di Teal/Gelap, versi tua di pastel.
+  final Color ink;
+
+  /// Warna latar tanggal di kalender per mood (D-61); dipakai transparan.
+  final Map<String, Color> moodTints;
+
+  /// Latar pastel kotak ringkasan Pemasukan/Pengeluaran/Selisih di laporan;
+  /// teks di atasnya = onSurface.
+  final Color incomeTint;
+  final Color expenseTint;
+  final Color importantTint;
+
   static const light = AppColors(
     income: Color(0xFF15803D),
     expense: Color(0xFFDC2626),
@@ -25,6 +42,17 @@ class AppColors extends ThemeExtension<AppColors> {
     important: Color(0xFFF59E0B),
     background: Color(0xFFFAFAF9),
     textSecondary: Color(0xFF78716C),
+    ink: Color(0xFF0F766E),
+    moodTints: {
+      '😄': Color(0xFF22C55E),
+      '🙂': Color(0xFF14B8A6),
+      '😐': Color(0xFFA8A29E),
+      '😕': Color(0xFFF59E0B),
+      '😢': Color(0xFF3B82F6),
+    },
+    incomeTint: Color(0xFFCDEBD7),
+    expenseTint: Color(0xFFF6D3CC),
+    importantTint: Color(0xFFF7E3A8),
   );
 
   static const dark = AppColors(
@@ -34,6 +62,17 @@ class AppColors extends ThemeExtension<AppColors> {
     important: Color(0xFFFBBF24),
     background: Color(0xFF0C0A09),
     textSecondary: Color(0xFFA8A29E),
+    ink: Color(0xFF2DD4BF),
+    moodTints: {
+      '😄': Color(0xFF22C55E),
+      '🙂': Color(0xFF14B8A6),
+      '😐': Color(0xFFA8A29E),
+      '😕': Color(0xFFF59E0B),
+      '😢': Color(0xFF3B82F6),
+    },
+    incomeTint: Color(0xFF14301F),
+    expenseTint: Color(0xFF3B1A18),
+    importantTint: Color(0xFF3A2E0C),
   );
 
   static AppColors of(BuildContext context) =>

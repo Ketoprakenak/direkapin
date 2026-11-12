@@ -21,6 +21,7 @@ const _me = {
   'email': 'd@x.com',
   'timezone': 'Asia/Jakarta',
   'reminderTime': '21:00',
+  'hasAvatar': false,
   'createdAt': '2026-11-01T00:00:00.000Z',
 };
 

@@ -136,7 +136,7 @@ export async function deleteWallet(prisma: PrismaClient, userId: string, id: str
   } catch (error) {
     // FK Restrict menolak langsung, jadi tidak ada celah antara cek dan hapus.
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
-      throw new AppError('WALLET_IN_USE', 409, 'Dompet masih punya transaksi. Arsipkan saja.');
+      throw new AppError('WALLET_IN_USE', 409, 'Dompet masih punya transaksi atau aturan berulang. Arsipkan saja.');
     }
     throw error;
   }

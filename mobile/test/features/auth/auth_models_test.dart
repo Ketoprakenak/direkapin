@@ -13,6 +13,7 @@ void main() {
         'email': 'desta@example.test',
         'timezone': 'Asia/Jakarta',
         'reminderTime': '21:00',
+        'hasAvatar': false,
         'createdAt': '2026-11-04T02:30:00.000Z',
       },
     });

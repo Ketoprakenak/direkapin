@@ -3,7 +3,7 @@ import type { z } from 'zod';
 import { AppError } from '../../lib/app-error.js';
 import { occurredAtFilter } from '../../lib/dates.js';
 import { toBigInt, toNumber } from '../../lib/money.js';
-import { toPage } from '../../lib/schemas.js';
+import { createOnce, toPage } from '../../lib/schemas.js';
 import { getTimezone } from '../me/me.service.js';
 import { assertActiveWallet } from '../wallets/wallets.service.js';
 import {
@@ -124,13 +124,22 @@ export async function createTransfer(
   await assertActiveWallet(prisma, userId, input.fromWalletId, 'fromWalletId');
   await assertActiveWallet(prisma, userId, input.toWalletId, 'toWalletId');
   const { fee = 0, feePaidBy = 'TO', ...fields } = input;
-  const transfer = await prisma.$transaction(async (tx) => {
-    const row = await tx.transfer.create({
-      data: { ...fields, userId, amount: toBigInt(fields.amount) },
-    });
-    await syncFee(tx, userId, row, fee, feePaidBy);
-    return tx.transfer.findUniqueOrThrow({ where: { id: row.id }, include: transferInclude });
-  });
+  const transfer = await createOnce(
+    fields.clientId,
+    () =>
+      prisma.transfer.findFirst({
+        where: { userId, clientId: fields.clientId },
+        include: transferInclude,
+      }),
+    () =>
+      prisma.$transaction(async (tx) => {
+        const row = await tx.transfer.create({
+          data: { ...fields, userId, amount: toBigInt(fields.amount) },
+        });
+        await syncFee(tx, userId, row, fee, feePaidBy);
+        return tx.transfer.findUniqueOrThrow({ where: { id: row.id }, include: transferInclude });
+      }),
+  );
   return toTransferResponse(transfer);
 }
 

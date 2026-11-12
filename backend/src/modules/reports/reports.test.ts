@@ -251,3 +251,90 @@ describe('GET /reports/monthly', () => {
     expect((await get('/reports/monthly?month=2026-13')).statusCode).toBe(400);
   });
 });
+
+describe('GET /reports/range', () => {
+  it('series per hari sepanjang rentang lintas bulan', async () => {
+    const { get, addTx, addIncome, post, cashId, addWallet } = await setup();
+    const bankId = await addWallet();
+    await addTx(1000, '2026-10-30T02:00:00.000Z');
+    await addIncome(7000, '2026-11-02T02:00:00.000Z');
+    await addTx(9000, '2026-11-03T02:00:00.000Z'); // di luar rentang
+    await post('/transfers', {
+      fromWalletId: cashId,
+      toWalletId: bankId,
+      amount: 5000,
+      occurredAt: '2026-10-31T02:00:00.000Z',
+    });
+
+    const res = await get('/reports/range?from=2026-10-30&to=2026-11-02');
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.period).toEqual({ type: 'range', start: '2026-10-30', end: '2026-11-02' });
+    expect(body.series).toHaveLength(4);
+    expect(body.series[0]).toEqual({ label: '2026-10-30', income: 0, expense: 1000 });
+    expect(body.totals).toEqual({ income: 7000, expense: 1000, net: 6000, transactionCount: 2 });
+  });
+
+  it('membandingkan dengan periode sepanjang sama sebelumnya', async () => {
+    const { get, addTx } = await setup();
+    await addTx(40000, '2026-10-26T02:00:00.000Z');
+    await addTx(1000, '2026-10-29T02:00:00.000Z');
+    await addTx(99000, '2026-10-25T02:00:00.000Z'); // di luar periode sebelumnya
+    await addTx(51000, '2026-11-01T02:00:00.000Z');
+
+    expect((await get('/reports/range?from=2026-10-30&to=2026-11-02')).json().comparison).toEqual({
+      previousExpense: 41000,
+      changePct: 24.4,
+    });
+    expect((await get('/reports/range?from=2026-10-10&to=2026-10-12')).json().comparison).toEqual({
+      previousExpense: 0,
+      changePct: null,
+    });
+  });
+
+  it('menerima tepat 366 hari', async () => {
+    const { get } = await setup();
+    const res = await get('/reports/range?from=2025-01-01&to=2026-01-01');
+    expect(res.statusCode).toBe(200);
+    expect(res.json().series).toHaveLength(366);
+  });
+
+  it('menolak lebih dari 366 hari', async () => {
+    const { get } = await setup();
+    const res = await get('/reports/range?from=2025-01-01&to=2026-01-02');
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('menolak to sebelum from', async () => {
+    const { get } = await setup();
+    const res = await get('/reports/range?from=2026-11-10&to=2026-11-09');
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('menolak tanggal tidak valid dan tanpa token', async () => {
+    const { get } = await setup();
+    expect((await get('/reports/range?from=2026-13-01&to=2026-11-09')).statusCode).toBe(400);
+    expect((await get('/reports/range?from=2026-11-01')).statusCode).toBe(400);
+    expect(
+      (await app.inject({ url: '/api/v1/reports/range?from=2026-11-01&to=2026-11-02' })).statusCode,
+    ).toBe(401);
+  });
+
+  it('data user lain tidak ikut, dompet asing menghasilkan laporan kosong', async () => {
+    const owner = await setup('pemilik@example.test');
+    const other = await setup('lain@example.test');
+    await owner.addTx(1000, '2026-11-04T02:00:00.000Z');
+
+    const own = await other.get('/reports/range?from=2026-11-01&to=2026-11-07');
+    expect(own.json().totals.transactionCount).toBe(0);
+
+    const foreign = await other.get(
+      `/reports/range?from=2026-11-01&to=2026-11-07&wallet=${owner.cashId}`,
+    );
+    expect(foreign.statusCode).toBe(200);
+    expect(foreign.json().totals.transactionCount).toBe(0);
+  });
+});

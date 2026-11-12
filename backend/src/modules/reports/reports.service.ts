@@ -155,3 +155,37 @@ export async function getMonthlyReport(
     },
   };
 }
+
+export async function getRangeReport(
+  prisma: PrismaClient,
+  userId: string,
+  from: string,
+  to: string,
+  walletId: string | undefined,
+) {
+  const timezone = await getTimezone(prisma, userId);
+  const period = { start: from, end: to, walletId, timezone };
+  const days = (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000 + 1;
+  const previousPeriod = { ...period, start: addDays(from, -days), end: addDays(from, -1) };
+
+  const totals = await getTotals(prisma, userId, period);
+  const [series, byCategory, previous] = await Promise.all([
+    getSeries(prisma, userId, period),
+    getByCategory(prisma, userId, period, totals.expense),
+    getTotals(prisma, userId, previousPeriod),
+  ]);
+  const previousExpense = previous.expense;
+  return {
+    period: { type: 'range' as const, start: from, end: to },
+    totals,
+    series,
+    byCategory,
+    comparison: {
+      previousExpense,
+      changePct:
+        previousExpense === 0
+          ? null
+          : Math.round(((totals.expense - previousExpense) / previousExpense) * 1000) / 10,
+    },
+  };
+}

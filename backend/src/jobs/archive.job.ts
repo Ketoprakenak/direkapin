@@ -1,5 +1,5 @@
 import { createWriteStream } from 'node:fs';
-import { mkdir, rename, rm, stat } from 'node:fs/promises';
+import { mkdir, rename, rm, stat, statfs } from 'node:fs/promises';
 import { dirname, extname, join } from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import type { PrismaClient } from '@prisma/client';
@@ -18,11 +18,29 @@ import { toNumber } from '../lib/money.js';
 import { releaseOriginals } from '../modules/archives/archives.service.js';
 
 const EXPIRY_MS = 30 * 86_400_000;
+/** Pemakaian disk (%) di atas ini membuat bulan M-1 ikut diarsip (ARC-06, D-66). */
+export const DISK_HIGH_PERCENT = 80;
 const BOM = '﻿';
 
 type Dirs = Pick<Config, 'UPLOAD_DIR' | 'ARCHIVE_DIR'>;
 type Photo = { id: string; filePath: string | null; createdAt: Date };
 type ArchiveUser = { id: string; timezone: string };
+
+/** Persen terpakai = (blocks - bavail) / blocks x 100; bavail = blok yang bisa dipakai non-root. */
+export function usedPercent(blocks: number, bavail: number) {
+  return blocks > 0 ? ((blocks - bavail) / blocks) * 100 : 0;
+}
+
+/** Pemakaian disk dir dalam persen; gagal baca = 0 (dianggap normal), tidak pernah melempar. */
+export async function readDiskUsage(dir: string, log: FastifyBaseLogger) {
+  try {
+    const { blocks, bavail } = await statfs(dir);
+    return usedPercent(blocks, bavail);
+  } catch (err) {
+    log.error({ err, dir }, 'gagal membaca pemakaian disk, memakai jadwal normal');
+    return 0;
+  }
+}
 
 /** Teks dari user yang diawali tanda ini dijalankan sebagai formula oleh Excel. */
 function csvText(value: string | null) {
@@ -177,16 +195,17 @@ async function createArchive(
   }
 }
 
-/** Arsip M-2 dan bulan sebelumnya yang belum ada atau `FAILED` (D-23). */
+/** Arsip M-2 dan bulan sebelumnya yang belum ada atau `FAILED` (D-23); `early` menambah M-1 (D-66). */
 async function archiveUser(
   prisma: PrismaClient,
   user: ArchiveUser,
   now: Date,
+  early: boolean,
   dirs: Dirs,
   log: FastifyBaseLogger,
 ) {
   const currentMonth = localDate(now, user.timezone).slice(0, 7);
-  const before = startOfDay(`${shiftMonth(currentMonth, -1)}-01`, user.timezone);
+  const before = startOfDay(`${shiftMonth(currentMonth, early ? 0 : -1)}-01`, user.timezone);
   const photos = await prisma.attachment.findMany({
     where: { userId: user.id, archiveId: null, filePath: { not: null }, createdAt: { lt: before } },
     select: { id: true, filePath: true, createdAt: true },
@@ -239,11 +258,17 @@ export async function runArchiveJob(
   dirs: Dirs,
   log: FastifyBaseLogger,
   now = new Date(),
+  diskUsage: () => Promise<number> = () => readDiskUsage(dirs.UPLOAD_DIR, log),
 ) {
+  const used = await diskUsage();
+  const early = used > DISK_HIGH_PERCENT;
+  if (early) {
+    log.warn({ usedPercent: Math.round(used) }, 'disk hampir penuh, arsip bulan lalu dimajukan');
+  }
   const users = await prisma.user.findMany({ select: { id: true, timezone: true } });
   for (const user of users) {
     try {
-      await archiveUser(prisma, user, now, dirs, log);
+      await archiveUser(prisma, user, now, early, dirs, log);
     } catch (err) {
       log.error({ err, userId: user.id }, 'job arsip gagal untuk user ini');
     }

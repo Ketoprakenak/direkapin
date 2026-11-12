@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
   amount,
+  clientId,
   dateString,
   note,
   occurredAt,
@@ -34,6 +35,7 @@ export const createTransferBody = z
     note: note.optional(),
     fee: fee.optional(),
     feePaidBy: feePaidBy.optional(),
+    clientId: clientId.optional(),
   })
   .refine((body) => body.fromWalletId !== body.toWalletId, {
     path: ['toWalletId'],

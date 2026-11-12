@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,11 +8,14 @@ import 'package:go_router/go_router.dart';
 import '../../../core/format/dates.dart';
 import '../../../core/format/money.dart';
 import '../../../core/router/router.dart';
+import '../../../core/theme/app_themes.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../core/widgets/frame.dart';
 import '../../../core/widgets/money_widgets.dart';
 import '../../../core/widgets/state_views.dart';
-import '../../dashboard/presentation/widgets/expense_bar_chart.dart';
-import '../../transaction/presentation/wallet_transactions_screen.dart';
+import '../../budget/presentation/budget_screen.dart';
+import '../../budget/providers/budget_providers.dart';
+import '../../dashboard/data/dashboard_models.dart';
 import '../../wallet/data/wallet_models.dart';
 import '../../wallet/providers/wallet_providers.dart';
 import '../data/report_models.dart';
@@ -35,24 +40,29 @@ class ReportScreen extends ConsumerStatefulWidget {
 class _ReportScreenState extends ConsumerState<ReportScreen> {
   ReportType _type = ReportType.monthly;
   DateTime _anchor = DateTime.now();
+  // Custom terpisah dari _anchor: tetap saat pindah ke Mingguan/Bulanan dan kembali.
+  DateTimeRange _range = DateTimeRange(
+    start: DateTime(DateTime.now().year, DateTime.now().month),
+    end: DateUtils.dateOnly(DateTime.now()),
+  );
   String _walletId = _allWallets;
 
   String get _key => switch (_type) {
-    ReportType.daily => dateKey(_anchor),
     ReportType.weekly => dateKey(mondayOf(_anchor)),
     ReportType.monthly => monthKey(_anchor),
+    ReportType.range => '${dateKey(_range.start)}_${dateKey(_range.end)}',
   };
 
   String get _label {
     switch (_type) {
-      case ReportType.daily:
-        return formatLongDate(_anchor);
       case ReportType.weekly:
         final monday = mondayOf(_anchor);
         final sunday = DateTime(monday.year, monday.month, monday.day + 6);
         return '${formatShortDate(monday)} – ${formatShortDate(sunday)}';
       case ReportType.monthly:
         return formatMonth(_anchor);
+      case ReportType.range:
+        return '${formatShortDate(_range.start)} – ${formatShortDate(_range.end)}';
     }
   }
 
@@ -60,11 +70,6 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
     setState(() {
       final date = _anchor;
       _anchor = switch (_type) {
-        ReportType.daily => DateTime(
-          date.year,
-          date.month,
-          date.day + direction,
-        ),
         ReportType.weekly => DateTime(
           date.year,
           date.month,
@@ -72,8 +77,33 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
         ),
         // Tanggal 1: tanggal 31 bisa melompati bulan yang lebih pendek.
         ReportType.monthly => DateTime(date.year, date.month + direction),
+        // Custom tidak punya panah; rentang diganti lewat pemilih.
+        ReportType.range => date,
       };
     });
+  }
+
+  Future<void> _pickRange() async {
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateUtils.dateOnly(DateTime.now()),
+      initialDateRange: _range,
+    );
+    if (picked == null || !mounted) return;
+    // UTC supaya pergantian jam musim panas tidak menggeser hitungan hari.
+    final days = DateTime.utc(picked.end.year, picked.end.month, picked.end.day)
+        .difference(
+          DateTime.utc(picked.start.year, picked.start.month, picked.start.day),
+        )
+        .inDays;
+    if (days > 365) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Rentang maksimal 366 hari')),
+      );
+      return;
+    }
+    setState(() => _range = picked);
   }
 
   @override
@@ -90,44 +120,74 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
       body: ListView(
         padding: const EdgeInsets.all(Spacing.lg),
         children: [
-          SegmentedButton<ReportType>(
-            showSelectedIcon: false,
-            segments: const [
-              ButtonSegment(value: ReportType.daily, label: Text('Harian')),
-              ButtonSegment(value: ReportType.weekly, label: Text('Mingguan')),
-              ButtonSegment(value: ReportType.monthly, label: Text('Bulanan')),
-            ],
-            selected: {_type},
-            onSelectionChanged: (selected) =>
-                setState(() => _type = selected.first),
+          _PeriodTabs(
+            selected: _type,
+            onChanged: (type) => setState(() => _type = type),
           ),
           const SizedBox(height: Spacing.sm),
-          Row(
-            children: [
-              IconButton(
-                tooltip: 'Periode sebelumnya',
-                icon: const Icon(Icons.chevron_left_rounded),
-                onPressed: () => _shift(-1),
-              ),
-              Expanded(
-                child: Text(
-                  _label,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleMedium,
+          if (_type == ReportType.range)
+            Tooltip(
+              message: 'Pilih rentang',
+              child: FrameBox(
+                padding: EdgeInsets.zero,
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(
+                      AppStyle.of(context).cardRadius / 2,
+                    ),
+                    onTap: _pickRange,
+                    child: Padding(
+                      padding: const EdgeInsets.all(Spacing.md),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              _label,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                          ),
+                          const Icon(Icons.calendar_month_rounded),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
-              IconButton(
-                tooltip: 'Periode berikutnya',
-                icon: const Icon(Icons.chevron_right_rounded),
-                onPressed: () => _shift(1),
-              ),
-            ],
-          ),
+            )
+          else
+            Row(
+              children: [
+                IconButton(
+                  tooltip: 'Periode sebelumnya',
+                  icon: const Icon(Icons.chevron_left_rounded),
+                  onPressed: () => _shift(-1),
+                ),
+                Expanded(
+                  child: FrameBox(
+                    padding: const EdgeInsets.all(Spacing.md),
+                    child: Text(
+                      _label,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Periode berikutnya',
+                  icon: const Icon(Icons.chevron_right_rounded),
+                  onPressed: () => _shift(1),
+                ),
+              ],
+            ),
           const SizedBox(height: Spacing.sm),
-          _WalletFilter(
-            wallets: wallets ?? const [],
-            selected: walletId ?? _allWallets,
-            onChanged: (value) => setState(() => _walletId = value),
+          FrameBox(
+            child: _WalletFilter(
+              wallets: wallets ?? const [],
+              selected: walletId ?? _allWallets,
+              onChanged: (value) => setState(() => _walletId = value),
+            ),
           ),
           const SizedBox(height: Spacing.lg),
           ref
@@ -157,6 +217,79 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
   }
 }
 
+/// Tab kapsul berframe dalam; tab aktif = blok penuh warna teks tema.
+class _PeriodTabs extends StatelessWidget {
+  const _PeriodTabs({required this.selected, required this.onChanged});
+
+  final ReportType selected;
+  final ValueChanged<ReportType> onChanged;
+
+  static const _labels = {
+    ReportType.weekly: 'Mingguan',
+    ReportType.monthly: 'Bulanan',
+    ReportType.range: 'Custom',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    // Garis sama dengan FrameBox, tapi radius penuh (kapsul).
+    return DecoratedBox(
+      decoration: ShapeDecoration(
+        color: scheme.surface,
+        shape: StadiumBorder(
+          side: BorderSide(
+            color: scheme.onSurface,
+            width: AppStyle.of(context).frameWidth,
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(Spacing.xs),
+        child: Row(
+          children: [
+            for (final MapEntry(key: type, value: label) in _labels.entries)
+              Expanded(
+                child: Semantics(
+                  button: true,
+                  selected: type == selected,
+                  inMutuallyExclusiveGroup: true,
+                  child: Material(
+                    type: type == selected
+                        ? MaterialType.canvas
+                        : MaterialType.transparency,
+                    color: scheme.onSurface,
+                    shape: const StadiumBorder(),
+                    child: InkWell(
+                      customBorder: const StadiumBorder(),
+                      onTap: () => onChanged(type),
+                      child: Container(
+                        constraints: const BoxConstraints(
+                          minHeight: kMinInteractiveDimension,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          label,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color: type == selected
+                                ? scheme.surface
+                                : scheme.onSurface,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _WalletFilter extends StatelessWidget {
   const _WalletFilter({
     required this.wallets,
@@ -175,7 +308,14 @@ class _WalletFilter extends StatelessWidget {
     return DropdownButtonFormField<String>(
       key: ValueKey('$selected-${wallets.length}'),
       initialValue: hasSelected ? selected : _allWallets,
-      decoration: const InputDecoration(labelText: 'Dompet'),
+      // Garis input dimatikan: bingkainya dari FrameBox.
+      decoration: const InputDecoration(
+        labelText: 'Dompet',
+        filled: false,
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+      ),
       items: [
         const DropdownMenuItem(value: _allWallets, child: Text('Semua dompet')),
         // Dompet arsip tetap ada supaya laporan lamanya bisa dibuka.
@@ -212,14 +352,25 @@ class _ReportBody extends StatelessWidget {
       child: Text(title, style: theme.textTheme.titleMedium),
     );
 
+    final colors = AppColors.of(context);
+    // Bulanan dan Custom: grafik garis + donut. Mingguan: daftar kategori.
+    final charts = type != ReportType.weekly;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(child: _Total('Masuk', totals.income)),
-            Expanded(child: _Total('Keluar', -totals.expense)),
-            Expanded(child: _Total('Selisih', totals.net)),
+            Expanded(
+              child: _Total('Pemasukan', totals.income, colors.incomeTint),
+            ),
+            Expanded(
+              child: _Total('Pengeluaran', -totals.expense, colors.expenseTint),
+            ),
+            Expanded(
+              child: _Total('Selisih', totals.net, colors.importantTint),
+            ),
           ],
         ),
         if (report.comparison case final comparison?) ...[
@@ -229,110 +380,525 @@ class _ReportBody extends StatelessWidget {
         if (totals.transactionCount == 0)
           const EmptyState(message: 'Belum ada transaksi di periode ini.')
         else ...[
-          if (report.series.isNotEmpty) ...[
-            section('Pengeluaran'),
-            _seriesChart(),
+          // Mingguan tanpa grafik batang: sudah ada grafik 7 hari di Beranda.
+          if (report.series.isNotEmpty && charts) ...[
+            section('Pengeluaran per hari'),
+            FrameCard(
+              child: _DailyLineChart(
+                report.series,
+                range: type == ReportType.range,
+              ),
+            ),
           ],
           if (report.byCategory.isNotEmpty) ...[
-            section('Pengeluaran per kategori'),
-            if (type == ReportType.monthly) ...[
-              _CategoryDonut(report.byCategory),
-              const SizedBox(height: Spacing.md),
-            ],
-            for (final item in report.byCategory)
-              _CategoryTile(item, period: report.period, walletId: walletId),
+            // Bulanan/Custom: donut semua / top 3, judul + toggle di dalamnya.
+            // Mingguan: daftar.
+            if (!charts) section('Pengeluaran per kategori'),
+            if (charts)
+              _MonthlyCategories(
+                report.byCategory,
+                period: report.period,
+                walletId: walletId,
+              )
+            else
+              for (final item in report.byCategory)
+                _CategoryTile(item, period: report.period, walletId: walletId),
           ],
-          if (type == ReportType.daily) ...[
-            section('Transaksi'),
-            _DayTransactions(day: report.period.start, walletId: walletId),
-          ],
+        ],
+        // Tetap tampil di bulan tanpa transaksi, supaya budget bisa diatur dari awal.
+        if (type == ReportType.monthly) ...[
+          section('Budget'),
+          _BudgetSection(month: report.period.start.substring(0, 7)),
         ],
       ],
     );
   }
 
-  Widget _seriesChart() {
-    if (type == ReportType.weekly) {
-      return ExpenseBarChart(
-        points: report.series,
-        barWidth: Spacing.lg,
-        labelOf: (point) => formatWeekday(DateTime.parse(point.label)),
-      );
-    }
-    return ExpenseBarChart(
-      points: report.series,
-      barWidth: Spacing.sm,
-      labelOf: (point) {
-        // Label tiap 5 hari: 31 label tidak muat dalam satu baris.
-        final day = DateTime.parse(point.label).day;
-        return day == 1 || day % 5 == 0 ? '$day' : '';
-      },
-    );
-  }
-
   String _comparisonText(ReportComparison comparison) {
+    final range = type == ReportType.range;
+    final before = range ? 'periode sebelumnya' : 'bulan lalu';
     final pct = comparison.changePct;
-    if (pct == null) return 'Bulan lalu belum ada pengeluaran.';
+    if (pct == null) {
+      return range
+          ? 'Periode sebelumnya belum ada pengeluaran.'
+          : 'Bulan lalu belum ada pengeluaran.';
+    }
     final previous = formatRupiah(comparison.previousExpense);
     final rounded = pct.abs().round();
-    if (rounded == 0) return 'Pengeluaran sama dengan bulan lalu ($previous).';
+    if (rounded == 0) return 'Pengeluaran sama dengan $before ($previous).';
     final direction = pct > 0 ? 'naik' : 'turun';
-    return 'Pengeluaran $direction $rounded% dari bulan lalu ($previous).';
+    return 'Pengeluaran $direction $rounded% dari $before ($previous).';
   }
 }
 
-class _Total extends StatelessWidget {
-  const _Total(this.label, this.amount);
+/// Apakah titik [index] (0..[last]) diberi label di sumbu-x rentang Custom.
+@visibleForTesting
+bool showRangeLabel(int index, int last) {
+  final step = max(1, (last / 5).ceil());
+  return index == last || (index % step == 0 && last - index >= step);
+}
 
-  final String label;
-  final int amount;
+/// Tren pengeluaran harian: garis lewat semua tanggal (hari kosong = 0),
+/// titik hanya di tanggal yang ada pengeluarannya, tap untuk nominal.
+class _DailyLineChart extends StatelessWidget {
+  const _DailyLineChart(this.points, {required this.range});
+
+  final List<SeriesPoint> points;
+
+  /// Rentang Custom: label `4 Nov` secukupnya; bulanan: tanggal tiap 5 hari.
+  final bool range;
+
+  String _axisLabel(int index) {
+    final last = points.length - 1;
+    if (index < 0 || index > last) return '';
+    final date = DateTime.parse(points[index].label);
+    if (!range) {
+      return date.day == 1 || date.day % 5 == 0 ? '${date.day}' : '';
+    }
+    // Maks. ±6 label; titik pertama dan terakhir selalu tampil, label antara
+    // yang terlalu dekat ke titik terakhir dilewati supaya tidak bertumpuk.
+    return showRangeLabel(index, last) ? formatShortDate(date) : '';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final expense = AppColors.of(context).expense;
+    final highest = points.fold(0, (peak, point) => max(peak, point.expense));
+    final label = theme.textTheme.labelSmall;
+    return SizedBox(
+      height: 180,
+      child: LineChart(
+        LineChartData(
+          minX: 1,
+          maxX: points.length.toDouble(),
+          minY: 0,
+          maxY: max(highest, 1) * 1.25,
+          gridData: FlGridData(
+            drawVerticalLine: false,
+            getDrawingHorizontalLine: (_) =>
+                FlLine(color: theme.colorScheme.outlineVariant, strokeWidth: 1),
+          ),
+          borderData: FlBorderData(show: false),
+          titlesData: FlTitlesData(
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 40,
+                getTitlesWidget: (value, meta) => value == meta.max
+                    // Puncak sumbu = nilai tertinggi × 1,25, angkanya tidak bulat.
+                    ? const SizedBox.shrink()
+                    : Text(formatCompact(value.toInt()), style: label),
+              ),
+            ),
+            rightTitles: const AxisTitles(),
+            topTitles: const AxisTitles(),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                interval: 1,
+                // Tidak tiap hari: 31 label tidak muat dalam satu baris.
+                getTitlesWidget: (value, meta) =>
+                    Text(_axisLabel(value.toInt() - 1), style: label),
+              ),
+            ),
+          ),
+          lineTouchData: LineTouchData(
+            touchTooltipData: LineTouchTooltipData(
+              getTooltipItems: (spots) => [
+                for (final spot in spots)
+                  LineTooltipItem(
+                    formatCompact(spot.y.toInt()),
+                    (label ?? const TextStyle()).copyWith(color: expense),
+                  ),
+              ],
+            ),
+          ),
+          lineBarsData: [
+            LineChartBarData(
+              // x = urutan titik (1..n), supaya rentang lintas bulan tetap urut.
+              spots: [
+                for (final (index, point) in points.indexed)
+                  FlSpot(index + 1, point.expense.toDouble()),
+              ],
+              isCurved: true,
+              // Lengkungan tidak boleh turun di bawah nol di hari kosong.
+              preventCurveOverShooting: true,
+              color: expense,
+              barWidth: 2,
+              dotData: FlDotData(
+                // Titik hanya di tanggal yang ada pengeluarannya.
+                checkToShowDot: (spot, _) => spot.y > 0,
+                getDotPainter: (_, _, _, _) => FlDotCirclePainter(
+                  radius: 2.5,
+                  color: theme.colorScheme.surface,
+                  strokeColor: expense,
+                  strokeWidth: 1.5,
+                ),
+              ),
+              belowBarData: BarAreaData(
+                show: true,
+                color: expense.withValues(alpha: 0.12),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Kotak ringkasan berframe luar. Teks `onSurface`, bukan warna masuk/keluar:
+/// kontras di atas latar muda hanya dijamin untuk `onSurface`.
+class _Total extends StatelessWidget {
+  const _Total(this.label, this.amount, this.tint);
+
+  final String label;
+  final int amount;
+  final Color tint;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final ink = theme.colorScheme.onSurface;
+    return FrameCard(
+      color: tint,
+      padding: const EdgeInsets.all(Spacing.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              style: theme.textTheme.labelSmall?.copyWith(color: ink),
+            ),
+          ),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              formatRupiah(amount, showPlus: true),
+              style: theme.textTheme.titleSmall?.copyWith(color: ink),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Ringkasan budget bulan itu (FIN-12); kelola lengkap di layar Budget.
+class _BudgetSection extends ConsumerWidget {
+  const _BudgetSection({required this.month});
+
+  final String month;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final provider = budgetsProvider(month);
+    void open() => context.pushNamed(Routes.budgets, extra: month);
+    return ref
+        .watch(provider)
+        .when(
+          loading: () => const Skeleton(height: Spacing.xxl * 3),
+          error: (error, _) =>
+              ErrorState(error: error, onRetry: () => ref.invalidate(provider)),
+          data: (budgets) => Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (budgets.isEmpty)
+                Text(
+                  'Belum ada budget. Atur batas pengeluaran untuk kategori yang mau dijaga.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                )
+              else
+                for (final budget in budgets) ...[
+                  BudgetCard(budget, onTap: open),
+                  const SizedBox(height: Spacing.sm),
+                ],
+              const SizedBox(height: Spacing.sm),
+              OutlinedButton.icon(
+                onPressed: open,
+                icon: Icon(
+                  budgets.isEmpty ? Icons.add_rounded : Icons.tune_rounded,
+                ),
+                label: Text(budgets.isEmpty ? 'Atur budget' : 'Kelola budget'),
+              ),
+            ],
+          ),
+        );
+  }
+}
+
+/// Kategori bulanan/Custom: donut semua kategori atau 3 terbesar. Tombol kecil di
+/// kanan judul menampilkan mode yang akan dituju.
+class _MonthlyCategories extends StatefulWidget {
+  const _MonthlyCategories(
+    this.items, {
+    required this.period,
+    required this.walletId,
+  });
+
+  final List<CategoryShare> items;
+  final ReportPeriod period;
+  final String? walletId;
+
+  @override
+  State<_MonthlyCategories> createState() => _MonthlyCategoriesState();
+}
+
+class _MonthlyCategoriesState extends State<_MonthlyCategories> {
+  bool _top3 = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(label, style: Theme.of(context).textTheme.labelSmall),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
-          child: AmountText(amount, signed: true),
+        Padding(
+          padding: const EdgeInsets.only(top: Spacing.xl, bottom: Spacing.sm),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Pengeluaran per kategori',
+                  style: theme.textTheme.titleMedium,
+                ),
+              ),
+              // Toggle berframe dalam.
+              Semantics(
+                button: true,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => setState(() => _top3 = !_top3),
+                  // Bingkai tetap kecil, area sentuh setinggi target minimum.
+                  child: Container(
+                    constraints: const BoxConstraints(
+                      minHeight: kMinInteractiveDimension,
+                    ),
+                    alignment: Alignment.center,
+                    child: FrameBox(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.swap_horiz_rounded),
+                          const SizedBox(width: Spacing.xs),
+                          Text(
+                            _top3 ? 'Semua' : 'Top 3',
+                            style: theme.textTheme.labelLarge,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        FrameCard(
+          child: _CategoryDonut(
+            // byCategory dari server sudah urut nominal terbesar.
+            _top3 ? widget.items.take(3).toList() : widget.items,
+            // Key baru tiap mode supaya pilihan segmen kembali ke yang terbesar.
+            key: ValueKey(_top3),
+            period: widget.period,
+            walletId: widget.walletId,
+          ),
         ),
       ],
     );
   }
 }
 
-class _CategoryDonut extends StatelessWidget {
-  const _CategoryDonut(this.items);
+class _CategoryDonut extends StatefulWidget {
+  const _CategoryDonut(
+    this.items, {
+    super.key,
+    required this.period,
+    required this.walletId,
+  });
 
   final List<CategoryShare> items;
+  final ReportPeriod period;
+  final String? walletId;
+
+  @override
+  State<_CategoryDonut> createState() => _CategoryDonutState();
+}
+
+class _CategoryDonutState extends State<_CategoryDonut> {
+  static const _hole = Spacing.xxl + Spacing.sm;
+  static const _ring = Spacing.lg + Spacing.xs;
+  static const _size = (_hole + _ring + Spacing.xs) * 2;
+
+  // Kategori terbesar terpilih dari awal, supaya kartu kanan tidak kosong.
+  int _selected = 0;
+
+  void _onTouch(FlTouchEvent event, PieTouchResponse? response) {
+    if (event is! FlTapUpEvent) return;
+    final index = response?.touchedSection?.touchedSectionIndex ?? -1;
+    if (index >= 0) setState(() => _selected = index);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final items = widget.items;
     final summary = [
       for (final item in items)
         '${item.category.name} ${(item.share * 100).round()}%',
     ].join(', ');
-    return Semantics(
-      label: 'Grafik pengeluaran per kategori: $summary',
-      excludeSemantics: true,
-      child: SizedBox(
-        height: Spacing.xxl * 6,
-        child: PieChart(
-          PieChartData(
-            centerSpaceRadius: Spacing.xxl * 1.5,
-            sectionsSpace: Spacing.xs / 2,
-            sections: [
-              for (final item in items)
-                PieChartSectionData(
-                  value: item.amount.toDouble(),
-                  color: colorFromHex(item.category.color),
-                  radius: Spacing.xl,
-                  showTitle: false,
+    final total = items.fold(0, (sum, item) => sum + item.amount);
+    final selected = _selected.clamp(0, items.length - 1);
+    return Row(
+      children: [
+        SizedBox.square(
+          dimension: _size,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Semantics(
+                label: 'Grafik pengeluaran per kategori: $summary',
+                excludeSemantics: true,
+                child: PieChart(
+                  PieChartData(
+                    centerSpaceRadius: _hole,
+                    sectionsSpace: Spacing.xs / 2,
+                    pieTouchData: PieTouchData(touchCallback: _onTouch),
+                    sections: [
+                      for (final (index, item) in items.indexed)
+                        PieChartSectionData(
+                          value: item.amount.toDouble(),
+                          color: colorFromHex(item.category.color),
+                          radius: index == selected
+                              ? _ring + Spacing.xs
+                              : _ring,
+                          showTitle: false,
+                        ),
+                    ],
+                  ),
                 ),
+              ),
+              // Total di lubang tengah; tap tembus ke donut.
+              IgnorePointer(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('Total', style: theme.textTheme.labelSmall),
+                    Text(
+                      formatCompact(total),
+                      style: theme.textTheme.titleSmall,
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
+        ),
+        const SizedBox(width: Spacing.md),
+        Expanded(
+          child: _ShareBubble(
+            items[selected],
+            period: widget.period,
+            walletId: widget.walletId,
+            position: '${selected + 1}/${items.length}',
+            // Berputar; kategori kecil yang potongannya tipis tetap bisa dipilih.
+            onStep: items.length < 2
+                ? null
+                : (delta) => setState(
+                    () => _selected = (selected + delta) % items.length,
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ShareBubble extends StatelessWidget {
+  const _ShareBubble(
+    this.item, {
+    required this.period,
+    required this.walletId,
+    required this.position,
+    required this.onStep,
+  });
+
+  final CategoryShare item;
+  final ReportPeriod period;
+  final String? walletId;
+
+  /// Urutan kategori terpilih, mis. `2/5`.
+  final String position;
+
+  /// Pindah kategori -1/+1; null jika hanya satu kategori.
+  final void Function(int delta)? onStep;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          Spacing.md,
+          Spacing.sm,
+          Spacing.md,
+          0,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              item.category.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelLarge,
+            ),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: AmountText(-item.amount, signed: true),
+            ),
+            Text(
+              '${(item.share * 100).round()}% pengeluaran',
+              style: theme.textTheme.labelSmall,
+            ),
+            TextButton(
+              style: TextButton.styleFrom(padding: EdgeInsets.zero),
+              onPressed: () => context.pushNamed(
+                Routes.categoryTransactions,
+                extra: CategoryTransactionsArgs(
+                  category: item.category,
+                  from: period.start,
+                  to: period.end,
+                  walletId: walletId,
+                ),
+              ),
+              child: const Text('Lihat detail'),
+            ),
+            if (onStep case final step?)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    tooltip: 'Kategori sebelumnya',
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(Icons.chevron_left_rounded),
+                    onPressed: () => step(-1),
+                  ),
+                  Text(position, style: theme.textTheme.labelSmall),
+                  IconButton(
+                    tooltip: 'Kategori berikutnya',
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(Icons.chevron_right_rounded),
+                    onPressed: () => step(1),
+                  ),
+                ],
+              ),
+          ],
         ),
       ),
     );
@@ -368,28 +934,5 @@ class _CategoryTile extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class _DayTransactions extends ConsumerWidget {
-  const _DayTransactions({required this.day, required this.walletId});
-
-  final String day;
-  final String? walletId;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final provider = periodTransactionsProvider(day, day, walletId: walletId);
-    return ref
-        .watch(provider)
-        .when(
-          loading: () => const Skeleton(height: Spacing.xxl * 2),
-          error: (error, _) =>
-              ErrorState(error: error, onRetry: () => ref.invalidate(provider)),
-          data: (items) => Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [for (final item in items) TransactionTile(item)],
-          ),
-        );
   }
 }

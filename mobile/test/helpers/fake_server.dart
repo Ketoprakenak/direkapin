@@ -6,7 +6,9 @@ import 'package:direkapin/core/api/api_client.dart';
 import 'package:direkapin/core/media/photo_service.dart';
 import 'package:direkapin/core/notifications/reminder_service.dart';
 import 'package:direkapin/core/router/router.dart';
-import 'package:direkapin/core/theme/tokens.dart';
+import 'package:direkapin/core/theme/app_theme.dart';
+import 'package:direkapin/core/theme/app_themes.dart';
+import 'package:direkapin/features/settings/providers/settings_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -20,8 +22,14 @@ class FakeServer implements HttpClientAdapter {
   final Map<String, Object> responses;
   final writes = <({String method, String path, Map<String, dynamic>? body})>[];
 
+  /// Semua GET beserta query-nya, untuk mengecek filter.
+  final reads = <Uri>[];
+
   /// Jika terisi, penulisan berikutnya gagal dengan body error ini.
   ({int status, Map<String, Object?> body})? writeFailure;
+
+  /// Body sukses khusus per path penulisan (default `{id: id-baru}`).
+  final writeResponses = <String, Object>{};
 
   /// Path penulisan yang gagal dengan status 500.
   final failingPaths = <String>{};
@@ -53,8 +61,12 @@ class FakeServer implements HttpClientAdapter {
       if (pathFailure != null) {
         return _json(pathFailure.body, pathFailure.status);
       }
-      return _json(const {'id': 'id-baru'}, 200);
+      return _json(
+        writeResponses[options.path] ?? const {'id': 'id-baru'},
+        200,
+      );
     }
+    reads.add(options.uri);
     final error = errors[options.path];
     if (error != null) return _json(error.body, error.status);
     final response = responses[options.path];
@@ -67,6 +79,7 @@ class FakeServer implements HttpClientAdapter {
         },
       }, response);
     }
+    if (response is Uint8List) return ResponseBody.fromBytes(response, 200);
     return _json(response, 200);
   }
 
@@ -91,16 +104,15 @@ class FakeReminderService implements ReminderService {
   String? launchedPayload;
   final archiveSyncs = <List<ReadyArchive>>[];
   final archiveTimezones = <String>[];
+  final budgetAlerts = <String>[];
   var enabled = true;
 
   @override
   void Function(String? payload)? onTap;
 
   @override
-  Future<({bool launched, String? payload})> launchDetails() async => (
-    launched: launched || launchedPayload != null,
-    payload: launchedPayload,
-  );
+  Future<({bool launched, String? payload})> launchDetails() async =>
+      (launched: launched || launchedPayload != null, payload: launchedPayload);
 
   @override
   Future<void> syncArchives(List<ReadyArchive> ready, String timezone) async {
@@ -110,6 +122,10 @@ class FakeReminderService implements ReminderService {
 
   @override
   Future<void> requestPermission() async {}
+
+  @override
+  Future<void> showBudgetAlerts(List<String> messages) async =>
+      budgetAlerts.addAll(messages);
 
   @override
   Future<bool> notificationsEnabled() async => enabled;
@@ -134,7 +150,7 @@ class FakeReminderService implements ReminderService {
 }
 
 /// Tema polos: google_fonts butuh jaringan, yang tidak ada di test.
-final testTheme = ThemeData(extensions: const [AppColors.light]);
+final testTheme = buildTheme(appThemes.first);
 
 Future<void> pumpRoutedApp(
   WidgetTester tester,
@@ -164,7 +180,9 @@ Future<void> pumpRoutedApp(
       ],
       child: Consumer(
         builder: (context, ref, _) => MaterialApp.router(
-          theme: testTheme,
+          theme: buildTheme(
+            ref.watch(appThemeChoiceProvider).value ?? appThemes.first,
+          ),
           routerConfig: ref.watch(appRouterProvider),
         ),
       ),

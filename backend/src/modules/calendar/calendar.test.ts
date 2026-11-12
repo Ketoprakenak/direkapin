@@ -40,7 +40,7 @@ async function setup(email = 'a@example.test') {
       data: { userId: user.id, title, date: new Date(`${date}T00:00:00Z`), ...extra },
     });
 
-  return { get, post, patch, userId: user.id, walletId, addTx, addActivity };
+  return { get, post, patch, headers, userId: user.id, walletId, addTx, addActivity };
 }
 
 describe('GET /calendar', () => {
@@ -59,9 +59,30 @@ describe('GET /calendar', () => {
     expect(res.json()).toEqual({
       month: '2026-11',
       days: [
-        { date: '2026-11-02', income: 0, expense: 300, activityCount: 0, hasImportant: false },
-        { date: '2026-11-10', income: 5000, expense: 3000, activityCount: 2, hasImportant: true },
-        { date: '2026-11-15', income: 0, expense: 0, activityCount: 1, hasImportant: false },
+        {
+          date: '2026-11-02',
+          income: 0,
+          expense: 300,
+          activityCount: 0,
+          hasImportant: false,
+          mood: null,
+        },
+        {
+          date: '2026-11-10',
+          income: 5000,
+          expense: 3000,
+          activityCount: 2,
+          hasImportant: true,
+          mood: null,
+        },
+        {
+          date: '2026-11-15',
+          income: 0,
+          expense: 0,
+          activityCount: 1,
+          hasImportant: false,
+          mood: null,
+        },
       ],
     });
   });
@@ -75,7 +96,14 @@ describe('GET /calendar', () => {
 
     const nov = (await ctx.get('/calendar?month=2026-11')).json();
     expect(nov.days).toEqual([
-      { date: '2026-11-01', income: 0, expense: 1, activityCount: 0, hasImportant: false },
+      {
+        date: '2026-11-01',
+        income: 0,
+        expense: 1,
+        activityCount: 0,
+        hasImportant: false,
+        mood: null,
+      },
     ]);
     const oct = (await ctx.get('/calendar?month=2026-10')).json();
     expect(oct.days[0]).toMatchObject({ date: '2026-10-31', expense: 2 });
@@ -89,6 +117,36 @@ describe('GET /calendar', () => {
     await ctx.addActivity('Awal', '2026-12-01');
     const days = (await ctx.get('/calendar?month=2026-11')).json().days;
     expect(days.map((d: { date: string }) => d.date)).toEqual(['2026-11-30']);
+  });
+
+  it('mood ikut per tanggal; tanggal yang hanya berisi mood tetap muncul (D-61)', async () => {
+    const ctx = await setup();
+    await ctx.addTx(1000, '2026-11-10T03:00:00Z');
+    const put = (date: string, payload: object) =>
+      app.inject({
+        method: 'PUT',
+        url: `/api/v1/days/${date}/note`,
+        headers: ctx.headers,
+        payload,
+      });
+    await put('2026-11-10', { mood: '😄' });
+    await put('2026-11-12', { mood: '😢' });
+    // Catatan tanpa mood dan mood di bulan lain tidak ikut.
+    await put('2026-11-13', { note: 'cuma catatan' });
+    await put('2026-12-01', { mood: '🙂' });
+
+    const days = (await ctx.get('/calendar?month=2026-11')).json().days;
+    expect(days).toEqual([
+      expect.objectContaining({ date: '2026-11-10', expense: 1000, mood: '😄' }),
+      {
+        date: '2026-11-12',
+        income: 0,
+        expense: 0,
+        activityCount: 0,
+        hasImportant: false,
+        mood: '😢',
+      },
+    ]);
   });
 
   it('tanggal yang hanya berisi transfer tidak masuk (D-33)', async () => {
@@ -122,6 +180,12 @@ describe('GET /calendar', () => {
     const b = await setup('b@example.test');
     await a.addTx(1000, '2026-11-10T03:00:00Z');
     await a.addActivity('Rapat', '2026-11-10');
+    await app.inject({
+      method: 'PUT',
+      url: '/api/v1/days/2026-11-11/note',
+      headers: a.headers,
+      payload: { mood: '😄' },
+    });
     expect((await b.get('/calendar?month=2026-11')).json().days).toEqual([]);
   });
 
@@ -231,5 +295,53 @@ describe('GET /days/:date', () => {
 
   it('tanpa token 401', async () => {
     expect((await app.inject({ url: '/api/v1/days/2026-11-10' })).statusCode).toBe(401);
+  });
+});
+
+describe('PUT /days/:date/note (ACT-05)', () => {
+  const put = (accessToken: string, date: string, payload: object) =>
+    app.inject({
+      method: 'PUT',
+      url: `/api/v1/days/${date}/note`,
+      headers: authHeader(accessToken),
+      payload,
+    });
+
+  it('simpan mood, field lain tetap, kosong keduanya menghapus', async () => {
+    const { accessToken } = await createUser(app, 'a@example.test');
+    const day = () =>
+      app.inject({ url: '/api/v1/days/2026-11-10', headers: authHeader(accessToken) });
+
+    const saved = await put(accessToken, '2026-11-10', { mood: '😊' });
+    expect(saved.statusCode).toBe(200);
+    expect(saved.json()).toEqual({ date: '2026-11-10', mood: '😊', note: null });
+
+    await put(accessToken, '2026-11-10', { note: 'capek tapi senang' });
+    expect((await day()).json().note).toEqual({
+      date: '2026-11-10',
+      mood: '😊',
+      note: 'capek tapi senang',
+    });
+
+    const cleared = await put(accessToken, '2026-11-10', { mood: null, note: '  ' });
+    expect(cleared.json()).toEqual({ date: '2026-11-10', mood: null, note: null });
+    expect((await day()).json().note).toBeNull();
+  });
+
+  it('validasi 400, dan catatan user lain tidak tersentuh', async () => {
+    const a = await createUser(app, 'a@example.test');
+    const b = await createUser(app, 'b@example.test');
+    const bad = await put(a.accessToken, '2026-11-10', { mood: 'x'.repeat(17) });
+    expect(bad.statusCode).toBe(400);
+    expect(bad.json().error.details.mood).toBe('Mood tidak valid');
+    expect((await put(a.accessToken, '2026-13-01', { mood: '😊' })).statusCode).toBe(400);
+
+    await put(a.accessToken, '2026-11-10', { mood: '😊' });
+    await put(b.accessToken, '2026-11-10', { mood: null });
+    const dayA = await app.inject({
+      url: '/api/v1/days/2026-11-10',
+      headers: authHeader(a.accessToken),
+    });
+    expect(dayA.json().note.mood).toBe('😊');
   });
 });

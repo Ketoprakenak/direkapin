@@ -5,9 +5,13 @@ import 'package:go_router/go_router.dart';
 import '../../../core/api/api_error.dart';
 import '../../../core/auth/session_provider.dart';
 import '../../../core/format/dates.dart';
+import '../../../core/media/photo_service.dart';
 import '../../../core/notifications/reminder_service.dart';
 import '../../../core/router/router.dart';
+import '../../../core/theme/app_themes.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../core/widgets/frame.dart';
+import '../../../core/widgets/mascot.dart';
 import '../../auth/data/auth_models.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../providers/settings_providers.dart';
@@ -20,30 +24,47 @@ class ProfileScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Profil')),
       body: ListView(
+        padding: const EdgeInsets.all(Spacing.lg),
         children: [
-          const _ProfileHeader(),
-          const _ReminderTile(),
-          const _ThemeTile(),
-          ListTile(
-            leading: const Icon(Icons.account_balance_wallet_rounded),
-            title: const Text('Dompet'),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => context.pushNamed(Routes.wallets),
+          const FrameCard(
+            padding: EdgeInsets.zero,
+            child: Column(children: [_ProfileHeader(), _ReminderTile()]),
           ),
-          ListTile(
-            leading: const Icon(Icons.category_rounded),
-            title: const Text('Kategori'),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => context.pushNamed(Routes.categories),
-          ),
-          ListTile(
-            leading: const Icon(Icons.inventory_2_rounded),
-            title: const Text('Arsip foto'),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => context.pushNamed(Routes.archives),
+          const SizedBox(height: Spacing.lg),
+          FrameCard(
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.account_balance_wallet_rounded),
+                  title: const Text('Dompet'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.pushNamed(Routes.wallets),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.category_rounded),
+                  title: const Text('Kategori'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.pushNamed(Routes.categories),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.event_repeat_rounded),
+                  title: const Text('Transaksi berulang'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.pushNamed(Routes.recurring),
+                ),
+                const _ThemeTile(),
+                ListTile(
+                  leading: const Icon(Icons.inventory_2_rounded),
+                  title: const Text('Arsip foto'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.pushNamed(Routes.archives),
+                ),
+              ],
+            ),
           ),
           Padding(
-            padding: const EdgeInsets.all(Spacing.lg),
+            padding: const EdgeInsets.only(top: Spacing.lg),
             child: OutlinedButton(
               onPressed: () async {
                 await ref.read(authRepositoryProvider).logout();
@@ -58,15 +79,25 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
-class _ProfileHeader extends ConsumerWidget {
+enum _AvatarAction { camera, gallery, remove }
+
+class _ProfileHeader extends ConsumerStatefulWidget {
   const _ProfileHeader();
 
-  Future<void> _edit(BuildContext context, WidgetRef ref, User user) async {
+  @override
+  ConsumerState<_ProfileHeader> createState() => _ProfileHeaderState();
+}
+
+class _ProfileHeaderState extends ConsumerState<_ProfileHeader> {
+  static const _avatarTouchSize = Spacing.xxl + Spacing.lg;
+  var _busy = false;
+
+  Future<void> _edit(User user) async {
     final name = await showDialog<String>(
       context: context,
       builder: (context) => _NameDialog(user.name),
     );
-    if (name == null || name == user.name || !context.mounted) return;
+    if (name == null || name == user.name || !mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       await ref.read(settingsApiProvider).updateName(name);
@@ -76,8 +107,67 @@ class _ProfileHeader extends ConsumerWidget {
     }
   }
 
+  Future<void> _changeAvatar(User user) async {
+    final action = await showModalBottomSheet<_AvatarAction>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera_rounded),
+              title: const Text('Ambil foto'),
+              onTap: () => Navigator.pop(context, _AvatarAction.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_rounded),
+              title: const Text('Pilih dari galeri'),
+              onTap: () => Navigator.pop(context, _AvatarAction.gallery),
+            ),
+            if (user.hasAvatar)
+              ListTile(
+                leading: const Icon(Icons.delete_rounded),
+                title: const Text('Hapus foto'),
+                onTap: () => Navigator.pop(context, _AvatarAction.remove),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (action == null || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _busy = true);
+    try {
+      final api = ref.read(settingsApiProvider);
+      if (action == _AvatarAction.remove) {
+        await api.deleteAvatar();
+      } else {
+        final picked = await ref
+            .read(photoServiceProvider)
+            .pick(
+              action == _AvatarAction.camera
+                  ? ImageSource.camera
+                  : ImageSource.gallery,
+              limit: 1,
+            );
+        if (picked.paths.isEmpty) return;
+        await api.uploadAvatar(picked.paths.first);
+      }
+      ref.invalidate(avatarProvider);
+      ref.invalidate(meProvider);
+    } on ApiException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+    } on Exception {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Foto gagal diambil')),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final me = ref.watch(meProvider);
     final user = me.value;
     if (user == null) {
@@ -92,16 +182,37 @@ class _ProfileHeader extends ConsumerWidget {
               leading: CircleAvatar(child: Icon(Icons.person_rounded)),
             );
     }
+    // Memuat atau gagal: tetap inisial.
+    final bytes = user.hasAvatar ? ref.watch(avatarProvider).value : null;
     return ListTile(
-      leading: CircleAvatar(
-        child: Text(user.name.characters.first.toUpperCase()),
+      leading: Semantics(
+        button: true,
+        label: 'Ubah foto profil',
+        excludeSemantics: true,
+        child: InkResponse(
+          onTap: _busy ? null : () => _changeAvatar(user),
+          child: SizedBox.square(
+            dimension: _avatarTouchSize,
+            child: Center(
+              child: CircleAvatar(
+                backgroundImage: bytes == null ? null : MemoryImage(bytes),
+                child: _busy
+                    ? const CircularProgressIndicator()
+                    : bytes == null
+                    ? Text(user.name.characters.first.toUpperCase())
+                    : null,
+              ),
+            ),
+          ),
+        ),
       ),
       title: Text(user.name),
       subtitle: Text(user.email),
+      onTap: () => _edit(user),
       trailing: IconButton(
         tooltip: 'Ubah nama',
         icon: const Icon(Icons.edit_rounded),
-        onPressed: () => _edit(context, ref, user),
+        onPressed: () => _edit(user),
       ),
     );
   }
@@ -156,47 +267,14 @@ class _NameDialogState extends State<_NameDialog> {
   }
 }
 
-class _ThemeTile extends ConsumerWidget {
-  const _ThemeTile();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final mode = ref.watch(appThemeModeProvider).value ?? ThemeMode.system;
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: Spacing.lg,
-        vertical: Spacing.sm,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Tema'),
-          const SizedBox(height: Spacing.sm),
-          SizedBox(
-            width: double.infinity,
-            child: SegmentedButton<ThemeMode>(
-              showSelectedIcon: false,
-              segments: const [
-                ButtonSegment(value: ThemeMode.system, label: Text('Sistem')),
-                ButtonSegment(value: ThemeMode.light, label: Text('Terang')),
-                ButtonSegment(value: ThemeMode.dark, label: Text('Gelap')),
-              ],
-              selected: {mode},
-              onSelectionChanged: (selected) => ref
-                  .read(appThemeModeProvider.notifier)
-                  .set(selected.single),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _ReminderTile extends ConsumerWidget {
   const _ReminderTile();
 
-  Future<void> _pick(BuildContext context, WidgetRef ref, String current) async {
+  Future<void> _pick(
+    BuildContext context,
+    WidgetRef ref,
+    String current,
+  ) async {
     final [hour, minute] = current.split(':').map(int.parse).toList();
     final picked = await showTimePicker(
       context: context,
@@ -237,6 +315,22 @@ class _ReminderTile extends ConsumerWidget {
           : me.hasError
           ? () => ref.invalidate(meProvider)
           : null,
+    );
+  }
+}
+
+class _ThemeTile extends ConsumerWidget {
+  const _ThemeTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final active = ref.watch(appThemeChoiceProvider).value ?? appThemes.first;
+    return ListTile(
+      leading: const Mascot(size: Spacing.xl),
+      title: const Text('Tema'),
+      subtitle: Text(active.name),
+      trailing: const Icon(Icons.chevron_right_rounded),
+      onTap: () => context.pushNamed(Routes.themes),
     );
   }
 }

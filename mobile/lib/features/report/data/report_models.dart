@@ -6,7 +6,7 @@ import '../../dashboard/data/dashboard_models.dart';
 part 'report_models.freezed.dart';
 part 'report_models.g.dart';
 
-enum ReportType { daily, weekly, monthly }
+enum ReportType { weekly, monthly, range }
 
 @freezed
 abstract class ReportPeriod with _$ReportPeriod {

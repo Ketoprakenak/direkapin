@@ -89,6 +89,11 @@ export async function deleteCategory(prisma: PrismaClient, userId: string, id: s
       where: { userId, categoryId: id },
       data: { categoryId: fallback.id },
     });
+    // Aturan transaksi berulang (FIN-15) ikut dipindah; FK Restrict akan menolak hapus bila tidak.
+    await tx.recurringTransaction.updateMany({
+      where: { userId, categoryId: id },
+      data: { categoryId: fallback.id },
+    });
     await tx.category.delete({ where: { id } });
   });
 }

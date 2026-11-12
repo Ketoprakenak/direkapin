@@ -1,20 +1,24 @@
 import type { PrismaClient } from '@prisma/client';
+import type { z } from 'zod';
 import { dateRange, firstOfNextMonth, monthRange, toDbDate } from '../../lib/dates.js';
 import { toNumber } from '../../lib/money.js';
-import { activityInclude, activityOrder, toActivityResponse } from '../activities/activities.service.js';
-import { getTimezone } from '../me/me.service.js';
 import {
-  toTransactionResponse,
-  transactionInclude,
-} from '../transactions/transactions.service.js';
+  activityInclude,
+  activityOrder,
+  toActivityResponse,
+} from '../activities/activities.service.js';
+import { getTimezone } from '../me/me.service.js';
+import { toTransactionResponse, transactionInclude } from '../transactions/transactions.service.js';
 import { toTransferResponse, transferInclude } from '../transfers/transfers.service.js';
+import type { dailyNoteBody } from './calendar.schemas.js';
 
 export async function getCalendar(prisma: PrismaClient, userId: string, month: string) {
   const timezone = await getTimezone(prisma, userId);
   const first = `${month}-01`;
   const range = monthRange(first, timezone);
 
-  const [totals, activities] = await Promise.all([
+  const dateWhere = { gte: toDbDate(first), lt: toDbDate(firstOfNextMonth(first)) };
+  const [totals, activities, moods] = await Promise.all([
     prisma.$queryRaw<{ day: string; income: bigint; expense: bigint }[]>`
       SELECT to_char("occurredAt" AT TIME ZONE ${timezone}::text, 'YYYY-MM-DD') AS day,
              COALESCE(SUM("amount") FILTER (WHERE "type" = 'INCOME'), 0)::bigint AS income,
@@ -23,22 +27,37 @@ export async function getCalendar(prisma: PrismaClient, userId: string, month: s
       WHERE "userId" = ${userId}::uuid AND "occurredAt" >= ${range.gte} AND "occurredAt" < ${range.lt}
       GROUP BY 1`,
     prisma.activity.findMany({
-      where: {
-        userId,
-        date: { gte: toDbDate(first), lt: toDbDate(firstOfNextMonth(first)) },
-      },
+      where: { userId, date: dateWhere },
       select: { date: true, isImportant: true },
+    }),
+    prisma.dailyNote.findMany({
+      where: { userId, date: dateWhere, mood: { not: null } },
+      select: { date: true, mood: true },
     }),
   ]);
 
   const days = new Map<
     string,
-    { date: string; income: number; expense: number; activityCount: number; hasImportant: boolean }
+    {
+      date: string;
+      income: number;
+      expense: number;
+      activityCount: number;
+      hasImportant: boolean;
+      mood: string | null;
+    }
   >();
   const dayOf = (date: string) => {
     const existing = days.get(date);
     if (existing) return existing;
-    const created = { date, income: 0, expense: 0, activityCount: 0, hasImportant: false };
+    const created = {
+      date,
+      income: 0,
+      expense: 0,
+      activityCount: 0,
+      hasImportant: false,
+      mood: null as string | null,
+    };
     days.set(date, created);
     return created;
   };
@@ -52,6 +71,10 @@ export async function getCalendar(prisma: PrismaClient, userId: string, month: s
     const day = dayOf(activity.date.toISOString().slice(0, 10));
     day.activityCount++;
     day.hasImportant ||= activity.isImportant;
+  }
+  // Tanggal yang hanya berisi mood tetap tampil, supaya pola mood terlihat di kalender (D-61).
+  for (const note of moods) {
+    dayOf(note.date.toISOString().slice(0, 10)).mood = note.mood;
   }
 
   return {
@@ -99,4 +122,27 @@ export async function getDay(prisma: PrismaClient, userId: string, date: string)
     activities: activities.map(toActivityResponse),
     note: note && { date, mood: note.mood, note: note.note },
   };
+}
+
+/** Simpan mood/catatan harian; field yang tidak dikirim tetap. Keduanya kosong = dihapus. */
+export async function putDailyNote(
+  prisma: PrismaClient,
+  userId: string,
+  date: string,
+  input: z.infer<typeof dailyNoteBody>,
+) {
+  const key = { userId_date: { userId, date: toDbDate(date) } };
+  const existing = await prisma.dailyNote.findUnique({ where: key });
+  const mood = input.mood === undefined ? (existing?.mood ?? null) : input.mood;
+  const note = input.note === undefined ? (existing?.note ?? null) : input.note?.trim() || null;
+  if (mood === null && note === null) {
+    if (existing) await prisma.dailyNote.delete({ where: key });
+  } else {
+    await prisma.dailyNote.upsert({
+      where: key,
+      create: { userId, date: toDbDate(date), mood, note },
+      update: { mood, note },
+    });
+  }
+  return { date, mood, note };
 }

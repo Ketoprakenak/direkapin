@@ -56,6 +56,7 @@ model User {
   archives      Archive[]
   dailyNotes    DailyNote[]
   budgets       Budget[]
+  recurring     RecurringTransaction[]
   invitesMade   InviteCode[]   @relation("InviteCreatedBy")
   inviteUsed    InviteCode?    @relation("InviteUsedBy")
 
@@ -109,6 +110,7 @@ model Wallet {
   transactions  Transaction[]
   transfersFrom Transfer[]    @relation("TransferFrom")
   transfersTo   Transfer[]    @relation("TransferTo")
+  recurring     RecurringTransaction[]
 
   @@unique([userId, name])
   @@map("wallets")
@@ -127,9 +129,10 @@ model Category {
   createdAt DateTime @default(now()) @db.Timestamptz
   updatedAt DateTime @updatedAt @db.Timestamptz
 
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]
-  budgets      Budget[]
+  budgets      BudgetCategory[]
+  recurring    RecurringTransaction[]
 
   @@unique([userId, name, type])
   @@map("categories")
@@ -144,6 +147,8 @@ model Transaction {
   amount     BigInt // Rupiah, > 0
   occurredAt DateTime @db.Timestamptz
   note       String?  @db.VarChar(1000)
+  // UUID dari HP; kirim ulang dengan nilai sama tidak membuat data dobel (D-58)
+  clientId   String?  @db.Uuid
   createdAt  DateTime @default(now()) @db.Timestamptz
   updatedAt  DateTime @updatedAt @db.Timestamptz
 
@@ -153,6 +158,7 @@ model Transaction {
   attachments Attachment[]
   feeOf       Transfer?    @relation("TransferFee")
 
+  @@unique([userId, clientId])
   @@index([userId, occurredAt])
   @@index([walletId])
   @@index([categoryId])
@@ -169,6 +175,7 @@ model Transfer {
   note             String?  @db.VarChar(1000)
   // Biaya admin = transaksi pengeluaran biasa, supaya saldo & laporan tidak perlu logika baru (D-56)
   feeTransactionId String?  @unique @db.Uuid
+  clientId         String?  @db.Uuid
   createdAt        DateTime @default(now()) @db.Timestamptz
   updatedAt        DateTime @updatedAt @db.Timestamptz
 
@@ -177,22 +184,36 @@ model Transfer {
   toWallet       Wallet       @relation("TransferTo", fields: [toWalletId], references: [id], onDelete: Restrict)
   feeTransaction Transaction? @relation("TransferFee", fields: [feeTransactionId], references: [id], onDelete: SetNull)
 
+  @@unique([userId, clientId])
   @@index([userId, occurredAt])
   @@map("transfers")
 }
 
 model Budget {
-  id          String @id @default(uuid()) @db.Uuid
-  userId      String @db.Uuid
-  categoryId  String @db.Uuid
-  month       String @db.VarChar(7) // YYYY-MM
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  name        String   @db.VarChar(40)
   limitAmount BigInt
+  startMonth  String   @db.VarChar(7) // YYYY-MM, mulai berlaku
+  endMonth    String?  @db.VarChar(7) // null = berlaku terus (D-60)
+  createdAt   DateTime @default(now()) @db.Timestamptz
 
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categories BudgetCategory[]
+
+  @@index([userId, startMonth])
+  @@map("budgets") // P1, FIN-12
+}
+
+model BudgetCategory {
+  budgetId   String @db.Uuid
+  categoryId String @db.Uuid
+
+  budget   Budget   @relation(fields: [budgetId], references: [id], onDelete: Cascade)
   category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, categoryId, month])
-  @@map("budgets") // P1
+  @@id([budgetId, categoryId])
+  @@map("budget_categories")
 }
 
 // ---------- Kegiatan ----------
@@ -275,4 +296,27 @@ model Archive {
 
   @@unique([userId, month])
   @@map("archives")
+}
+
+model RecurringTransaction {
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @db.Uuid
+  walletId         String   @db.Uuid
+  categoryId       String   @db.Uuid
+  type             TxType
+  amount           BigInt // Rupiah, > 0
+  note             String?  @db.VarChar(1000)
+  dayOfMonth       Int // 1-31; 29-31 jatuh ke hari terakhir bulan pendek
+  startMonth       String   @db.VarChar(7) // YYYY-MM
+  endMonth         String?  @db.VarChar(7) // null = terus
+  lastHandledMonth String?  @db.VarChar(7) // bulan terakhir yang dicatat/dilewati
+  createdAt        DateTime @default(now()) @db.Timestamptz
+  updatedAt        DateTime @updatedAt @db.Timestamptz
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet   Wallet   @relation(fields: [walletId], references: [id], onDelete: Restrict)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@map("recurring_transactions") // P2, FIN-15
 }

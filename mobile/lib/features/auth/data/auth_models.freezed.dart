@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$User {
 
- String get id; String get name; String get email; String get timezone; String get reminderTime; DateTime get createdAt;
+ String get id; String get name; String get email; String get timezone; String get reminderTime; bool get hasAvatar; DateTime get createdAt;
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +30,20 @@ $UserCopyWith<User> get copyWith => _$UserCopyWithImpl<User>(this as User, _$ide
 @override
 bool operator ==(Object other) {
   final _this = this as User;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is User&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.timezone, _this.timezone) || other.timezone == _this.timezone)&&(identical(other.reminderTime, _this.reminderTime) || other.reminderTime == _this.reminderTime)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is User&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.timezone, _this.timezone) || other.timezone == _this.timezone)&&(identical(other.reminderTime, _this.reminderTime) || other.reminderTime == _this.reminderTime)&&(identical(other.hasAvatar, _this.hasAvatar) || other.hasAvatar == _this.hasAvatar)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as User;
-  return Object.hash(runtimeType,_this.id,_this.name,_this.email,_this.timezone,_this.reminderTime,_this.createdAt);
+  return Object.hash(runtimeType,_this.id,_this.name,_this.email,_this.timezone,_this.reminderTime,_this.hasAvatar,_this.createdAt);
 }
 
 @override
 String toString() {
   final _this = this as User;
-  return 'User(id: ${_this.id}, name: ${_this.name}, email: ${_this.email}, timezone: ${_this.timezone}, reminderTime: ${_this.reminderTime}, createdAt: ${_this.createdAt})';
+  return 'User(id: ${_this.id}, name: ${_this.name}, email: ${_this.email}, timezone: ${_this.timezone}, reminderTime: ${_this.reminderTime}, hasAvatar: ${_this.hasAvatar}, createdAt: ${_this.createdAt})';
 }
 
 
@@ -54,7 +54,7 @@ abstract mixin class $UserCopyWith<$Res>  {
   factory $UserCopyWith(User value, $Res Function(User) _then) = _$UserCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String email, String timezone, String reminderTime, DateTime createdAt
+ String id, String name, String email, String timezone, String reminderTime, bool hasAvatar, DateTime createdAt
 });
 
 
@@ -71,14 +71,15 @@ class _$UserCopyWithImpl<$Res>
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? email = null,Object? timezone = null,Object? reminderTime = null,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? email = null,Object? timezone = null,Object? reminderTime = null,Object? hasAvatar = null,Object? createdAt = null,}) {
   return _then(User(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,timezone: null == timezone ? _self.timezone : timezone // ignore: cast_nullable_to_non_nullable
 as String,reminderTime: null == reminderTime ? _self.reminderTime : reminderTime // ignore: cast_nullable_to_non_nullable
-as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as String,hasAvatar: null == hasAvatar ? _self.hasAvatar : hasAvatar // ignore: cast_nullable_to_non_nullable
+as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
 }
@@ -164,10 +165,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String email,  String timezone,  String reminderTime,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String email,  String timezone,  String reminderTime,  bool hasAvatar,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
-return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTime,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTime,_that.hasAvatar,_that.createdAt);case _:
   return orElse();
 
 }
@@ -185,10 +186,10 @@ return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTim
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String email,  String timezone,  String reminderTime,  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String email,  String timezone,  String reminderTime,  bool hasAvatar,  DateTime createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _User():
-return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTime,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTime,_that.hasAvatar,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -205,10 +206,10 @@ return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTim
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String email,  String timezone,  String reminderTime,  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String email,  String timezone,  String reminderTime,  bool hasAvatar,  DateTime createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
-return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTime,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTime,_that.hasAvatar,_that.createdAt);case _:
   return null;
 
 }
@@ -220,7 +221,7 @@ return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTim
 @JsonSerializable()
 
 class _User implements User {
-  const _User({required this.id, required this.name, required this.email, required this.timezone, required this.reminderTime, required this.createdAt});
+  const _User({required this.id, required this.name, required this.email, required this.timezone, required this.reminderTime, required this.hasAvatar, required this.createdAt});
   factory _User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
 @override final  String id;
@@ -228,6 +229,7 @@ class _User implements User {
 @override final  String email;
 @override final  String timezone;
 @override final  String reminderTime;
+@override final  bool hasAvatar;
 @override final  DateTime createdAt;
 
 /// Create a copy of User
@@ -243,18 +245,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _User&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.timezone, timezone) || other.timezone == timezone)&&(identical(other.reminderTime, reminderTime) || other.reminderTime == reminderTime)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _User&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.timezone, timezone) || other.timezone == timezone)&&(identical(other.reminderTime, reminderTime) || other.reminderTime == reminderTime)&&(identical(other.hasAvatar, hasAvatar) || other.hasAvatar == hasAvatar)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,email,timezone,reminderTime,createdAt);
+    return Object.hash(runtimeType,id,name,email,timezone,reminderTime,hasAvatar,createdAt);
 }
 
 @override
 String toString() {
-    return 'User(id: $id, name: $name, email: $email, timezone: $timezone, reminderTime: $reminderTime, createdAt: $createdAt)';
+    return 'User(id: $id, name: $name, email: $email, timezone: $timezone, reminderTime: $reminderTime, hasAvatar: $hasAvatar, createdAt: $createdAt)';
 }
 
 
@@ -265,7 +267,7 @@ abstract mixin class _$UserCopyWith<$Res> implements $UserCopyWith<$Res> {
   factory _$UserCopyWith(_User value, $Res Function(_User) _then) = __$UserCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String email, String timezone, String reminderTime, DateTime createdAt
+ String id, String name, String email, String timezone, String reminderTime, bool hasAvatar, DateTime createdAt
 });
 
 
@@ -282,14 +284,15 @@ class __$UserCopyWithImpl<$Res>
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? email = null,Object? timezone = null,Object? reminderTime = null,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? email = null,Object? timezone = null,Object? reminderTime = null,Object? hasAvatar = null,Object? createdAt = null,}) {
   return _then(_User(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,timezone: null == timezone ? _self.timezone : timezone // ignore: cast_nullable_to_non_nullable
 as String,reminderTime: null == reminderTime ? _self.reminderTime : reminderTime // ignore: cast_nullable_to_non_nullable
-as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as String,hasAvatar: null == hasAvatar ? _self.hasAvatar : hasAvatar // ignore: cast_nullable_to_non_nullable
+as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
 }

@@ -83,49 +83,92 @@ final class MeProvider
 
 String _$meHash() => r'7edcf29d5facef5e8a43b91a4d729fdf020c237f';
 
-/// Disimpan di HP (D-50), dan tetap ada setelah keluar akun.
+/// Hanya dipakai saat `User.hasAvatar` true; di-invalidate setelah unggah/hapus.
 
-@ProviderFor(AppThemeMode)
-final appThemeModeProvider = AppThemeModeProvider._();
+@ProviderFor(avatar)
+final avatarProvider = AvatarProvider._();
 
-/// Disimpan di HP (D-50), dan tetap ada setelah keluar akun.
-final class AppThemeModeProvider
-    extends $AsyncNotifierProvider<AppThemeMode, ThemeMode> {
-  /// Disimpan di HP (D-50), dan tetap ada setelah keluar akun.
-  AppThemeModeProvider._()
+/// Hanya dipakai saat `User.hasAvatar` true; di-invalidate setelah unggah/hapus.
+
+final class AvatarProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<Uint8List>,
+          Uint8List,
+          FutureOr<Uint8List>
+        >
+    with $FutureModifier<Uint8List>, $FutureProvider<Uint8List> {
+  /// Hanya dipakai saat `User.hasAvatar` true; di-invalidate setelah unggah/hapus.
+  AvatarProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'appThemeModeProvider',
+        name: r'avatarProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$avatarHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<Uint8List> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<Uint8List> create(Ref ref) {
+    return avatar(ref);
+  }
+}
+
+String _$avatarHash() => r'8403472904a6fd6203ad276f2c68392fe2bae4a8';
+
+/// Disimpan di HP (D-50), dan tetap ada setelah keluar akun.
+
+@ProviderFor(AppThemeChoice)
+final appThemeChoiceProvider = AppThemeChoiceProvider._();
+
+/// Disimpan di HP (D-50), dan tetap ada setelah keluar akun.
+final class AppThemeChoiceProvider
+    extends $AsyncNotifierProvider<AppThemeChoice, AppThemeData> {
+  /// Disimpan di HP (D-50), dan tetap ada setelah keluar akun.
+  AppThemeChoiceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'appThemeChoiceProvider',
         isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$appThemeModeHash();
+  String debugGetCreateSourceHash() => _$appThemeChoiceHash();
 
   @$internal
   @override
-  AppThemeMode create() => AppThemeMode();
+  AppThemeChoice create() => AppThemeChoice();
 }
 
-String _$appThemeModeHash() => r'7b562ce5b46358e60953e91aad5f66b0d8e5e4a7';
+String _$appThemeChoiceHash() => r'121b8cff10d4a9e4fc4cdde0df4853ffff1c1f17';
 
 /// Disimpan di HP (D-50), dan tetap ada setelah keluar akun.
 
-abstract class _$AppThemeMode extends $AsyncNotifier<ThemeMode> {
-  FutureOr<ThemeMode> build();
+abstract class _$AppThemeChoice extends $AsyncNotifier<AppThemeData> {
+  FutureOr<AppThemeData> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<ThemeMode>, ThemeMode>;
+    final ref = this.ref as $Ref<AsyncValue<AppThemeData>, AppThemeData>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<ThemeMode>, ThemeMode>,
-              AsyncValue<ThemeMode>,
+              AnyNotifier<AsyncValue<AppThemeData>, AppThemeData>,
+              AsyncValue<AppThemeData>,
               Object?,
               Object?
             >;

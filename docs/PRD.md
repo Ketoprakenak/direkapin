@@ -77,7 +77,7 @@ Prioritas: **P0** wajib di MVP, **P1** setelah MVP stabil, **P2** nice-to-have.
 | AUTH-02 | Login email + password, sesi tersimpan (access token + refresh token) | P0 |
 | AUTH-03 | Logout dan hapus token dari perangkat | P0 |
 | AUTH-04 | Registrasi dibatasi pakai kode undangan (supaya server tidak dipakai orang asing) | P0 |
-| AUTH-05 | Edit profil: nama, foto | P1 |
+| AUTH-05 | Edit profil: nama, foto (D-65: foto dipotong 512x512 di server, tampil di Profil saja) | P1 |
 | AUTH-06 | Lupa password via email | P2 |
 
 ### 4.2 Dashboard
@@ -85,9 +85,9 @@ Prioritas: **P0** wajib di MVP, **P1** setelah MVP stabil, **P2** nice-to-have.
 | ID | Kebutuhan | Prioritas |
 | --- | --- | --- |
 | DSH-01 | Kartu saldo bulan ini: pemasukan, pengeluaran, selisih | P0 |
-| DSH-02 | Ringkasan hari ini: total keluar hari ini + daftar kegiatan hari ini | P0 |
+| DSH-02 | Ringkasan hari ini: total masuk (jika ada) dan keluar hari ini + daftar kegiatan hari ini (D-62) | P0 |
 | DSH-03 | Grafik pengeluaran 7 hari terakhir | P0 |
-| DSH-04 | Top 5 kategori pengeluaran bulan ini (donut chart) | P1 |
+| DSH-04 | 3 transaksi terakhir (D-62; sebelumnya top 3 kategori, kini cukup di Laporan) | P1 |
 | DSH-05 | Streak pencatatan (hari berturut-turut ada catatan) | P0 |
 | DSH-06 | Tombol cepat (FAB): + Transaksi, + Kegiatan | P0 |
 
@@ -96,7 +96,7 @@ Prioritas: **P0** wajib di MVP, **P1** setelah MVP stabil, **P2** nice-to-have.
 | ID | Kebutuhan | Prioritas |
 | --- | --- | --- |
 | CAL-01 | Tampilan bulan; tiap tanggal menampilkan titik warna: hijau (pemasukan), merah (pengeluaran), biru (kegiatan) | P0 |
-| CAL-02 | Tampilan minggu dan agenda (list) | P1 |
+| CAL-02 | ~~Tampilan minggu dan agenda (list)~~ dibatalkan owner setelah dicoba; diganti: mood mewarnai tanggal di kalender (D-61) | P1 |
 | CAL-03 | Tap tanggal membuka Halaman Hari: daftar transaksi + kegiatan + total hari itu | P0 |
 | CAL-04 | Tambah / edit / hapus transaksi dan kegiatan langsung dari Halaman Hari | P0 |
 | CAL-05 | Pindah tanggal transaksi atau kegiatan (edit tanggal) | P0 |
@@ -111,16 +111,16 @@ Prioritas: **P0** wajib di MVP, **P1** setelah MVP stabil, **P2** nice-to-have.
 | FIN-03 | Edit semua field per transaksi: dompet, kategori, nominal, tanggal, catatan, foto | P0 |
 | FIN-04 | Hapus transaksi (dengan konfirmasi) | P0 |
 | FIN-05 | Kategori bawaan (Makan, Transport, Kuliah, Hiburan, Belanja, Tagihan, Gaji/Uang saku, Lainnya) + CRUD kategori custom dengan ikon & warna | P0 |
-| FIN-06 | Laporan harian: total masuk, keluar, selisih, daftar transaksi | P0 |
+| FIN-06 | Laporan Custom (menggantikan Harian, D-64): pilih rentang tanggal bebas, maks. 366 hari; isi sama dengan Bulanan (total masuk, keluar, selisih, grafik harian, kategori) tanpa Budget | P0 |
 | FIN-07 | Laporan mingguan: total per hari (bar chart) + per kategori | P0 |
 | FIN-08 | Laporan bulanan: total per minggu/hari, per kategori (donut), perbandingan dengan bulan lalu | P0 |
 | FIN-09 | Dompet: CRUD dompet (nama, jenis cash/bank/e-wallet, saldo awal, ikon); saldo tiap dompet dihitung otomatis | P0 |
 | FIN-10 | Transfer antar dompet (mis. tarik tunai bank ke cash) tanpa dihitung sebagai pemasukan/pengeluaran | P0 |
 | FIN-11 | Filter laporan & transaksi per dompet, kategori, rentang tanggal, kata kunci | P1 |
-| FIN-12 | Budget bulanan per kategori + peringatan saat mendekati batas | P1 |
+| FIN-12 | Budget bulanan untuk satu atau beberapa kategori + peringatan saat mendekati batas (D-60) | P1 |
 | FIN-13 | Kompresi otomatis: setiap foto (kamera/galeri) langsung di-resize maks. 1600 px dan dikompres ke JPEG/WebP kualitas ~75–80% (target ≤ 400 KB) di HP sebelum upload, tanpa langkah manual dari user | P0 |
 | FIN-14 | Export laporan ke CSV / PDF | P2 |
-| FIN-15 | Transaksi berulang (mis. kos bulanan) | P2 |
+| FIN-15 | Transaksi berulang bulanan (mis. kos): aturan masuk/keluar tiap tanggal tertentu. Tidak otomatis; muncul sebagai kartu "Jatuh tempo" di Beranda dan user konfirmasi Catat atau Lewati (D-67) | P2 |
 | FIN-16 | Simpan foto dari server ke galeri HP (album Direkapin), mis. setelah foto aslinya terhapus dari HP. Yang tersimpan versi kompres; foto yang sudah diarsip diambil dari ZIP arsip | P1 |
 | FIN-17 | Biaya admin transfer (opsional, nominal bebas) dipotong dari dompet asal atau tujuan; dicatat sebagai pengeluaran kategori "Biaya Admin" (D-56). Mis. BCA → GoPay Rp15.000, biaya Rp1.000 dari tujuan: GoPay bertambah Rp14.000 | P1 |
 
@@ -141,7 +141,7 @@ Prioritas: **P0** wajib di MVP, **P1** setelah MVP stabil, **P2** nice-to-have.
 | --- | --- | --- |
 | ENG-01 | Notifikasi lokal pengingat harian di jam yang bisa diatur (default 21:00), dijadwalkan di HP tanpa push server | P0 |
 | ENG-02 | Streak + badge sederhana (7, 30, 100 hari) | P1 |
-| ENG-03 | Tema terang/gelap dan warna aksen | P1 |
+| ENG-03 | Tema penuh 7 pilihan + maskot + transisi (D-63) | P1 |
 | ENG-04 | Rekap bulanan ala "wrapped": total pengeluaran, kategori terboros, foto kegiatan terbanyak | P2 |
 
 ### 4.7 Arsip foto bulanan
@@ -180,7 +180,7 @@ Halaman Hari jadi pusat aplikasi: semua transaksi dan kegiatan di satu tanggal b
 1. **Catat pengeluaran cepat:** Dashboard → tombol + → isi nominal, pilih kategori, foto struk → Simpan (maks. 3 tap + input).
 2. **Koreksi transaksi lama:** Kalender → tap tanggal → tap transaksi → ubah kategori/nominal/tanggal → Simpan → laporan otomatis menyesuaikan.
 3. **Catat kegiatan penting:** Kalender → tap tanggal → + Kegiatan → judul, jam, tandai penting, lampirkan foto → Simpan.
-4. **Cek laporan:** Tab Laporan → pilih Harian / Mingguan / Bulanan → geser periode → lihat total, grafik, dan breakdown kategori.
+4. **Cek laporan:** Tab Laporan → pilih Mingguan / Bulanan / Custom → geser periode atau pilih rentang → lihat total, grafik, dan breakdown kategori.
 
 ## 6. Kebutuhan non-fungsional
 
@@ -246,13 +246,14 @@ Model lengkap dan final ada di `backend/prisma/schema.prisma`. Ringkasan:
 | `refresh_tokens` | id, userId, tokenHash, expiresAt, revokedAt | Untuk login tetap aktif, dirotasi tiap refresh |
 | `wallets` | id, userId, name, type (CASH/BANK/EWALLET), initialBalance, icon, color, isArchived | Saldo = initialBalance + masuk − keluar ± transfer (dihitung, tidak disimpan) |
 | `categories` | id, userId, name, type (INCOME/EXPENSE), icon, color, isDefault, isHidden | Kategori bawaan disalin per user saat registrasi + custom |
-| `transactions` | id, userId, walletId, categoryId, type, amount (BigInt), occurredAt (timestamptz), note | Index: (userId, occurredAt), (walletId) |
-| `transfers` | id, userId, fromWalletId, toWalletId, amount, occurredAt, note, feeTransactionId | Tidak masuk laporan pemasukan/pengeluaran; biaya admin = transaksi pengeluaran terhubung (D-56) |
+| `transactions` | id, userId, walletId, categoryId, type, amount (BigInt), occurredAt (timestamptz), note, clientId | Index: (userId, occurredAt), (walletId); unik (userId, clientId) (D-58) |
+| `transfers` | id, userId, fromWalletId, toWalletId, amount, occurredAt, note, feeTransactionId, clientId | Tidak masuk laporan pemasukan/pengeluaran; biaya admin = transaksi pengeluaran terhubung (D-56) |
 | `activities` | id, userId, title, date, time (nullable), location, description, isImportant | Index: (userId, date) |
 | `attachments` | id, userId, transactionId / activityId (tepat satu terisi), filePath (null setelah diarsip), thumbPath, sizeBytes, width, height, archivedAt | Foto struk & foto kegiatan |
 | `archives` | id, userId, month, zipPath (null jika gagal), sizeBytes, photoCount, status (READY/DOWNLOADED/EXPIRED/FAILED), createdAt, downloadedAt, expiresAt | Arsip foto bulanan |
 | `daily_notes` | id, userId, date (unique per user), mood, note | Mood & catatan singkat per hari (P1) |
-| `budgets` | id, userId, categoryId, month, limitAmount | Budget per kategori (P1) |
+| `budgets` | id, userId, name, limitAmount, startMonth, endMonth | Budget multi kategori, berlaku startMonth s.d. endMonth (P1, D-60) |
+| `budget_categories` | budgetId, categoryId | Kategori di dalam budget |
 
 **Relasi:** satu user punya banyak wallets, categories, transactions, activities; satu transaction/activity punya 0–N attachments. Laporan harian/mingguan/bulanan dihitung dengan query agregat dari `transactions`, jadi tidak perlu tabel laporan terpisah.
 
@@ -303,7 +304,7 @@ Kontrak detail (request, response, error) ada di `docs/openapi.yaml`. Semua endp
 4. Tidak ada port yang dibuka di router; port database hanya di jaringan internal Docker.
 5. Token tunnel dan secret lain disimpan di `.env`, tidak di-commit ke GitHub.
 6. Foto disimpan di volume `/data/uploads`, arsip ZIP di `/data/archives`.
-7. Job terjadwal: `pg_dump` tiap hari pukul 01:00 (simpan 14 hari), salin backup + arsip ke disk eksternal / cloud tiap minggu, job arsip foto tiap hari pukul 02:00 (membuat arsip M-2 yang belum ada atau gagal, lalu membereskan yang kedaluwarsa).
+7. Job terjadwal: `pg_dump` tiap hari pukul 01:00 (simpan 14 hari), salin backup + arsip ke disk eksternal / cloud tiap minggu, job arsip foto tiap hari pukul 02:00 (membuat arsip M-2 yang belum ada atau gagal, lalu membereskan yang kedaluwarsa) dan cek disk tiap jam (jika pemakaian `UPLOAD_DIR` > 80%, arsip M-1 ikut dibuat, ARC-06, D-66).
 8. Integrasi Claude: buat user Postgres read-only khusus untuk MCP server Postgres, dipakai dari laptop lewat jaringan lokal saja.
 
 **Aplikasi Android via GitHub**
@@ -397,8 +398,8 @@ Sebagai user, saya ingin memisahkan uang cash, bank, dan e-wallet.
 - Dompet yang punya transaksi tidak bisa dihapus, hanya diarsipkan (disembunyikan dari pilihan).
 
 **US-07 — Lihat laporan** (FIN-06, FIN-07, FIN-08)
-Sebagai user, saya ingin melihat ke mana uang saya pergi per hari, minggu, dan bulan.
-- Tab Laporan punya pilihan Harian / Mingguan / Bulanan dan bisa geser ke periode sebelumnya/berikutnya.
+Sebagai user, saya ingin melihat ke mana uang saya pergi per minggu, bulan, atau rentang tanggal bebas (maks. 366 hari).
+- Tab Laporan punya pilihan Mingguan / Bulanan / Custom; Mingguan dan Bulanan bisa geser ke periode sebelumnya/berikutnya, Custom memakai pemilih rentang tanggal (maks. 366 hari).
 - Minggu dihitung Senin–Minggu.
 - Total di laporan sama persis dengan jumlah transaksi di periode itu; transfer tidak dihitung.
 - Bisa difilter per dompet atau "Semua dompet".
@@ -436,7 +437,7 @@ Navigasi utama pakai bottom navigation 4 tab: **Beranda · Kalender · Laporan �
 | S-07 | Detail item | Semua field + galeri foto penuh | Edit → S-08 / S-09; Hapus (konfirmasi) |
 | S-08 | Form transaksi | Toggle Keluar/Masuk/Transfer, nominal (keyboard angka), dompet, kategori (grid ikon), tanggal & jam, catatan, foto (kamera/galeri) | Simpan → kembali ke layar asal + snackbar |
 | S-09 | Form kegiatan | Judul, tanggal, jam (opsional), lokasi, deskripsi, toggle penting, foto | Simpan → kembali ke layar asal |
-| S-10 | Laporan | Tab Harian/Mingguan/Bulanan, navigasi periode, filter dompet, total, grafik, breakdown kategori | Tap kategori → daftar transaksi kategori itu |
+| S-10 | Laporan | Tab Mingguan/Bulanan/Custom, navigasi periode / pemilih rentang, filter dompet, total, grafik, breakdown kategori | Tap kategori → daftar transaksi kategori itu |
 | S-11 | Kategori | Daftar kategori masuk/keluar, tambah/edit (nama, ikon, warna) | — |
 | S-12 | Dompet | Daftar dompet + saldo, tambah/edit/arsipkan, riwayat transfer | Tap dompet → transaksi dompet itu |
 | S-13 | Arsip | Daftar arsip per bulan, ukuran, status, sisa hari sebelum foto asli dihapus | Download ZIP |

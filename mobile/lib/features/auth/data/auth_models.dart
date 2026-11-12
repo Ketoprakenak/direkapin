@@ -11,6 +11,7 @@ abstract class User with _$User {
     required String email,
     required String timezone,
     required String reminderTime,
+    required bool hasAvatar,
     required DateTime createdAt,
   }) = _User;
 

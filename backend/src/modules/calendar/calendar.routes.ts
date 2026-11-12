@@ -1,7 +1,14 @@
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { calendarQuery, calendarResponse, dayParams, dayResponse } from './calendar.schemas.js';
-import { getCalendar, getDay } from './calendar.service.js';
+import {
+  calendarQuery,
+  calendarResponse,
+  dailyNoteBody,
+  dailyNoteResponse,
+  dayParams,
+  dayResponse,
+} from './calendar.schemas.js';
+import { getCalendar, getDay, putDailyNote } from './calendar.service.js';
 
 export function calendarRoutes(app: FastifyInstance) {
   const routes = app.withTypeProvider<ZodTypeProvider>();
@@ -17,5 +24,14 @@ export function calendarRoutes(app: FastifyInstance) {
     '/days/:date',
     { onRequest, schema: { params: dayParams, response: { 200: dayResponse } } },
     (request) => getDay(app.prisma, request.userId, request.params.date),
+  );
+
+  routes.put(
+    '/days/:date/note',
+    {
+      onRequest,
+      schema: { params: dayParams, body: dailyNoteBody, response: { 200: dailyNoteResponse } },
+    },
+    (request) => putDailyNote(app.prisma, request.userId, request.params.date, request.body),
   );
 }

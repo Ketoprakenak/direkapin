@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../api/api_error.dart';
 import '../theme/tokens.dart';
+import 'mascot.dart';
 
-/// State kosong: ikon dan ajakan mencatat.
+/// State kosong: maskot tema dan ajakan mencatat.
 class EmptyState extends StatelessWidget {
-  const EmptyState({super.key, required this.message, this.icon = Icons.edit_note_rounded});
+  const EmptyState({super.key, required this.message});
 
   final String message;
-  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class EmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: Spacing.xxl * 2, color: theme.colorScheme.outline),
+          const Mascot(size: Spacing.xxl * 2),
           const SizedBox(height: Spacing.md),
           Text(message, textAlign: TextAlign.center, style: theme.textTheme.bodyLarge),
         ],

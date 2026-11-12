@@ -17,7 +17,7 @@ import { join } from 'node:path';
 import sharp from 'sharp';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { authHeader, buildTestApp, createUser, resetDb } from '../../../test/helpers.js';
-import { runArchiveJob } from '../../jobs/archive.job.js';
+import { readDiskUsage, runArchiveJob, usedPercent } from '../../jobs/archive.job.js';
 import { pruneBackups, runBackupJob } from '../../jobs/backup.job.js';
 
 const app = buildTestApp();
@@ -100,7 +100,8 @@ async function addPhoto({ userId, walletId, categoryId }: Setup, createdAt = SEP
   });
 }
 
-const runJob = (now = NOW) => runArchiveJob(app.prisma, dirs, app.log, now);
+const runJob = (now = NOW) =>
+  runArchiveJob(app.prisma, dirs, app.log, now, () => Promise.resolve(0)); // tidak bergantung disk host
 const onlyArchive = () => app.prisma.archive.findFirstOrThrow();
 const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -205,6 +206,55 @@ describe('job arsip', () => {
     expect(row.archivedAt).not.toBeNull();
     expect(await exists(join(uploadDir, photo.filePath!))).toBe(false);
     expect(await exists(join(uploadDir, photo.thumbPath))).toBe(true);
+  });
+
+  describe('disk hampir penuh (ARC-06)', () => {
+    const OCT = new Date('2026-10-10T05:00:00Z');
+    const months = async () =>
+      (await app.prisma.archive.findMany({ orderBy: { month: 'asc' } })).map((row) => row.month);
+    const withUsage = (percent: number) => () => Promise.resolve(percent);
+    const run = (usage: () => Promise<number>) =>
+      runArchiveJob(app.prisma, dirs, app.log, NOW, usage);
+
+    it('<= 80%: M-1 tidak diarsip, M-2 ya', async () => {
+      const user = await setup();
+      await addPhoto(user, OCT);
+      await addPhoto(user, SEPT);
+      await run(withUsage(80));
+      expect(await months()).toEqual(['2026-09']);
+    });
+
+    it('> 80%: M-1 ikut diarsip, bulan ini tidak, dan ada peringatan', async () => {
+      const user = await setup();
+      await addPhoto(user, OCT);
+      await addPhoto(user, SEPT);
+      await addPhoto(user, NOW);
+      const warn = vi.spyOn(app.log, 'warn');
+      await run(withUsage(80.5));
+      expect(await months()).toEqual(['2026-09', '2026-10']);
+      expect(warn).toHaveBeenCalledWith({ usedPercent: 81 }, expect.any(String));
+      warn.mockRestore();
+    });
+
+    it('statfs gagal: dicatat, dianggap 0, jadwal normal M-2 tanpa melempar', async () => {
+      const user = await setup();
+      await addPhoto(user, OCT);
+      await addPhoto(user, SEPT);
+      const error = vi.spyOn(app.log, 'error');
+      const missing = join(uploadDir, 'tidak-ada');
+      const failing = () => readDiskUsage(missing, app.log);
+      expect(await failing()).toBe(0);
+      expect(error).toHaveBeenCalledTimes(1);
+      await run(failing);
+      error.mockRestore();
+      const rows = await app.prisma.archive.findMany();
+      expect(rows.map((row) => [row.month, row.status])).toEqual([['2026-09', 'READY']]);
+    });
+
+    it('usedPercent menghitung blok terpakai', () => {
+      expect(usedPercent(200, 50)).toBe(75);
+      expect(usedPercent(0, 0)).toBe(0);
+    });
   });
 });
 

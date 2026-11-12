@@ -8,9 +8,12 @@ import '../../../core/auth/session_provider.dart';
 import '../../../core/format/dates.dart';
 import '../../../core/notifications/reminder_service.dart';
 import '../../../core/router/router.dart';
+import '../../../core/theme/tokens.dart';
+import '../../../core/widgets/mascot.dart';
 import '../../archive/data/archive_models.dart';
 import '../../archive/providers/archive_providers.dart';
 import '../../dashboard/providers/dashboard_providers.dart';
+import '../../recurring/providers/recurring_providers.dart';
 import '../../settings/providers/settings_providers.dart';
 
 class AppShell extends ConsumerStatefulWidget {
@@ -35,6 +38,7 @@ class _AppShellState extends ConsumerState<AppShell> {
       onResume: () {
         ref.invalidate(notificationsEnabledProvider);
         ref.invalidate(archivesProvider);
+        ref.invalidate(recurringDueProvider);
       },
     );
     unawaited(_start());
@@ -66,7 +70,9 @@ class _AppShellState extends ConsumerState<AppShell> {
     final dashboard = ref.read(dashboardProvider);
     final me = ref.read(meProvider);
     // Gagal memuat: jadwal lama tetap dipakai.
-    if (dashboard.isLoading || dashboard.hasError || !dashboard.hasValue) return;
+    if (dashboard.isLoading || dashboard.hasError || !dashboard.hasValue) {
+      return;
+    }
     if (me.isLoading || me.hasError || !me.hasValue) return;
     unawaited(
       _reminders.sync(
@@ -115,30 +121,70 @@ class _AppShellState extends ConsumerState<AppShell> {
     final shell = widget.shell;
     return Scaffold(
       body: shell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: shell.currentIndex,
-        onDestinationSelected: (index) => shell.goBranch(
-          index,
-          initialLocation: index == shell.currentIndex,
-        ),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_rounded),
-            label: 'Beranda',
+      bottomNavigationBar: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          NavigationBar(
+            selectedIndex: shell.currentIndex,
+            onDestinationSelected: (index) => shell.goBranch(
+              index,
+              initialLocation: index == shell.currentIndex,
+            ),
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.home_rounded),
+                label: 'Beranda',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.calendar_month_rounded),
+                label: 'Kalender',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.bar_chart_rounded),
+                label: 'Laporan',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.person_rounded),
+                label: 'Profil',
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.calendar_month_rounded),
-            label: 'Kalender',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.bar_chart_rounded),
-            label: 'Laporan',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_rounded),
-            label: 'Profil',
-          ),
+          _NavPeekMascot(index: shell.currentIndex, count: 4),
         ],
+      ),
+    );
+  }
+}
+
+/// Maskot dekoratif yang melongok dari tepi atas tab aktif; tap tembus.
+class _NavPeekMascot extends StatelessWidget {
+  const _NavPeekMascot({required this.index, required this.count});
+
+  final int index;
+  final int count;
+
+  static const _size = Spacing.xxl;
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    return AnimatedPositioned(
+      duration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 250),
+      curve: Curves.easeOutCubic,
+      top: -Spacing.lg,
+      left: width / count * (index + 0.5) - _size / 2,
+      width: _size,
+      height: _size,
+      child: const IgnorePointer(
+        child: ExcludeSemantics(
+          child: Mascot(
+            key: ValueKey('nav-peek-mascot'),
+            pose: MascotPose.peek,
+            size: _size,
+          ),
+        ),
       ),
     );
   }

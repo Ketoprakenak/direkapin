@@ -1,11 +1,15 @@
 import 'package:direkapin/core/format/dates.dart';
 import 'package:direkapin/core/router/router.dart';
+import 'package:direkapin/core/widgets/frame.dart';
+import 'package:direkapin/core/theme/app_theme.dart';
+import 'package:direkapin/core/theme/app_themes.dart';
 import 'package:direkapin/features/calendar/data/calendar_models.dart';
 import 'package:direkapin/features/calendar/presentation/widgets/calendar_cell.dart';
 import 'package:direkapin/features/transaction/data/transaction_models.dart';
 import 'package:direkapin/features/wallet/data/wallet_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import '../../helpers/fake_server.dart';
@@ -13,9 +17,24 @@ import '../../helpers/fake_server.dart';
 void main() {
   setUpAll(() => initializeDateFormatting('id_ID'));
 
-  const walletRefJson = {'id': 'w1', 'name': 'Cash', 'icon': 'x', 'color': '#14B8A6'};
-  const bankRefJson = {'id': 'w2', 'name': 'OVO', 'icon': 'x', 'color': '#3B82F6'};
-  const categoryRefJson = {'id': 'c1', 'name': 'Makan', 'icon': 'x', 'color': '#F97316'};
+  const walletRefJson = {
+    'id': 'w1',
+    'name': 'Cash',
+    'icon': 'x',
+    'color': '#14B8A6',
+  };
+  const bankRefJson = {
+    'id': 'w2',
+    'name': 'OVO',
+    'icon': 'x',
+    'color': '#3B82F6',
+  };
+  const categoryRefJson = {
+    'id': 'c1',
+    'name': 'Makan',
+    'icon': 'x',
+    'color': '#F97316',
+  };
 
   Map<String, Object?> transactionJson({String? note}) => {
     'id': 't1',
@@ -58,7 +77,10 @@ void main() {
     '/days/2026-11-04': day,
     '/dashboard': dashboardJson(),
     '/wallets': {
-      'items': [walletJson('w1', 'Cash'), walletJson('w2', 'OVO', isArchived: true)],
+      'items': [
+        walletJson('w1', 'Cash'),
+        walletJson('w2', 'OVO', isArchived: true),
+      ],
       'totalBalance': 0,
     },
     '/categories': {
@@ -69,39 +91,67 @@ void main() {
   Finder field(String label) => find.widgetWithText(TextFormField, label);
 
   group('Sel kalender', () {
-    Future<void> pumpCell(WidgetTester tester, CalendarDay? data, {bool isToday = false}) =>
-        tester.pumpWidget(
-          MaterialApp(
-            theme: testTheme,
-            home: Scaffold(body: CalendarCell(day: 10, isToday: isToday, data: data)),
-          ),
-        );
-
-    Finder dots() => find.byWidgetPredicate(
-      (widget) =>
-          widget is Container &&
-          widget.decoration is BoxDecoration &&
-          (widget.decoration! as BoxDecoration).shape == BoxShape.circle &&
-          (widget.decoration! as BoxDecoration).color != null,
+    Future<void> pumpCell(
+      WidgetTester tester,
+      CalendarDay? data, {
+      bool isToday = false,
+      String themeId = 'teal',
+    }) => tester.pumpWidget(
+      MaterialApp(
+        theme: buildTheme(themeById(themeId)),
+        home: Scaffold(
+          body: CalendarCell(day: 10, isToday: isToday, data: data),
+        ),
+      ),
     );
 
-    testWidgets('titik sesuai isi, bintang, dan total keluar ringkas', (tester) async {
-      await pumpCell(
-        tester,
-        const CalendarDay(
-          date: '2026-11-10',
-          income: 5000,
-          expense: 25000,
-          activityCount: 1,
-          hasImportant: true,
-        ),
-      );
-      expect(dots(), findsNWidgets(3));
-      expect(find.byIcon(Icons.star_rounded), findsOneWidget);
-      expect(find.text('25rb'), findsOneWidget);
-    });
+    Finder icons() => find.byWidgetPredicate(
+      (widget) =>
+          widget is Icon &&
+          [
+            Icons.south_west_rounded,
+            Icons.north_east_rounded,
+            Icons.event_rounded,
+            Icons.star_rounded,
+          ].contains(widget.icon),
+    );
 
-    testWidgets('hanya pengeluaran: satu titik tanpa bintang', (tester) async {
+    Color? dateTint() {
+      final box = find.byWidgetPredicate(
+        (widget) =>
+            widget is Container &&
+            widget.decoration is BoxDecoration &&
+            (widget.decoration! as BoxDecoration).borderRadius != null &&
+            (widget.child is Text),
+      );
+      if (box.evaluate().isEmpty) return null;
+      return ((box.evaluate().single.widget as Container).decoration!
+              as BoxDecoration)
+          .color;
+    }
+
+    testWidgets(
+      'ikon sesuai isi, kegiatan penting jadi bintang, total keluar',
+      (tester) async {
+        await pumpCell(
+          tester,
+          const CalendarDay(
+            date: '2026-11-10',
+            income: 5000,
+            expense: 25000,
+            activityCount: 1,
+            hasImportant: true,
+          ),
+        );
+        expect(find.byIcon(Icons.south_west_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.north_east_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.star_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.event_rounded), findsNothing);
+        expect(find.text('25rb'), findsOneWidget);
+      },
+    );
+
+    testWidgets('hanya pengeluaran: satu ikon tanpa bintang', (tester) async {
       await pumpCell(
         tester,
         const CalendarDay(
@@ -112,19 +162,97 @@ void main() {
           hasImportant: false,
         ),
       );
-      expect(dots(), findsOneWidget);
+      expect(icons(), findsOneWidget);
       expect(find.byIcon(Icons.star_rounded), findsNothing);
+    });
+
+    testWidgets('mood mewarnai latar tanggal, tanpa emoji (D-61)', (
+      tester,
+    ) async {
+      await pumpCell(
+        tester,
+        const CalendarDay(
+          date: '2026-11-10',
+          income: 0,
+          expense: 0,
+          activityCount: 0,
+          hasImportant: false,
+          mood: '😢',
+        ),
+      );
+      expect(find.text('😢'), findsNothing);
+      expect(icons(), findsNothing);
+      expect(
+        dateTint(),
+        themeById('teal').colors.moodTints['😢']!.withValues(alpha: 0.35),
+      );
+      final box = tester.widget<Container>(
+        find.ancestor(of: find.text('10'), matching: find.byType(Container)),
+      );
+      expect(
+        (box.decoration! as BoxDecoration).borderRadius,
+        BorderRadius.circular(themeById('teal').style.dateRadius),
+      );
+    });
+
+    const both = CalendarDay(
+      date: '2026-11-10',
+      income: 5000,
+      expense: 25000,
+      activityCount: 0,
+      hasImportant: false,
+    );
+
+    testWidgets('tema dot: lingkaran income/expense, tanpa ikon panah', (
+      tester,
+    ) async {
+      await pumpCell(tester, both, themeId: 'yellow');
+      final colors = themeById('yellow').colors;
+      expect(find.byIcon(Icons.south_west_rounded), findsNothing);
+      expect(find.byIcon(Icons.north_east_rounded), findsNothing);
+      for (final c in [colors.income, colors.expense]) {
+        expect(
+          find.byWidgetPredicate(
+            (w) =>
+                w is Container &&
+                w.decoration is BoxDecoration &&
+                (w.decoration! as BoxDecoration).shape == BoxShape.circle &&
+                (w.decoration! as BoxDecoration).color == c,
+          ),
+          findsOneWidget,
+        );
+      }
+    });
+
+    testWidgets('tema bar: persegi panjang income/expense', (tester) async {
+      await pumpCell(tester, both, themeId: 'sky');
+      final colors = themeById('sky').colors;
+      expect(find.byIcon(Icons.south_west_rounded), findsNothing);
+      for (final c in [colors.income, colors.expense]) {
+        final finder = find.byWidgetPredicate(
+          (w) =>
+              w is Container &&
+              w.decoration is BoxDecoration &&
+              (w.decoration! as BoxDecoration).color == c,
+        );
+        expect(finder, findsOneWidget);
+        final size = tester.getSize(finder);
+        expect(size.width, greaterThan(size.height));
+      }
     });
 
     testWidgets('tanpa data: tanpa titik dan total', (tester) async {
       await pumpCell(tester, null);
-      expect(dots(), findsNothing);
+      expect(icons(), findsNothing);
+      expect(dateTint(), isNull);
       expect(find.text('10'), findsOneWidget);
     });
   });
 
   group('Kalender', () {
-    testWidgets('penanda bulan ini, tap tanggal membuka Halaman Hari', (tester) async {
+    testWidgets('penanda bulan ini, tap tanggal membuka Halaman Hari', (
+      tester,
+    ) async {
       final now = DateTime.now();
       final server = FakeServer({
         '/calendar': {
@@ -146,6 +274,13 @@ void main() {
 
       expect(find.text('25rb'), findsOneWidget);
       expect(find.text(formatMonth(now)), findsOneWidget);
+      expect(
+        find.ancestor(
+          of: find.byType(TableCalendar<void>),
+          matching: find.byType(FrameCard),
+        ),
+        findsOneWidget,
+      );
 
       await tester.tap(find.text('${now.day}'));
       await tester.pumpAndSettle();
@@ -166,7 +301,10 @@ void main() {
     });
 
     testWidgets('error menampilkan tombol coba lagi', (tester) async {
-      final server = FakeServer({'/calendar': 500, '/dashboard': dashboardJson()});
+      final server = FakeServer({
+        '/calendar': 500,
+        '/dashboard': dashboardJson(),
+      });
       await pumpRoutedApp(tester, server, routeName: Routes.calendar);
       await tester.scrollUntilVisible(
         find.text('Coba lagi'),
@@ -177,23 +315,45 @@ void main() {
   });
 
   group('Halaman Hari', () {
-    Future<void> pumpDay(WidgetTester tester, FakeServer server) => pumpRoutedApp(
+    Future<void> pumpDay(WidgetTester tester, FakeServer server) =>
+        pumpRoutedApp(
+          tester,
+          server,
+          routeName: Routes.day,
+          pathParameters: {'date': '2026-11-04'},
+        );
+
+    testWidgets('mood: pilih tersimpan, tap lagi menghapus (ACT-05)', (
       tester,
-      server,
-      routeName: Routes.day,
-      pathParameters: {'date': '2026-11-04'},
-    );
+    ) async {
+      final server = FakeServer(commonResponses(dayJson()));
+      await pumpDay(tester, server);
+
+      await tester.tap(find.text('😄'));
+      await tester.pumpAndSettle();
+      expect(server.writes.last.method, 'PUT');
+      expect(server.writes.last.path, '/days/2026-11-04/note');
+      expect(server.writes.last.body, {'mood': '😄'});
+
+      await tester.tap(find.text('😄'));
+      await tester.pumpAndSettle();
+      expect(server.writes.last.body, {'mood': null});
+    });
 
     testWidgets('kosong menampilkan ajakan', (tester) async {
       await pumpDay(tester, FakeServer(commonResponses(dayJson())));
       expect(
-        find.text('Belum ada catatan hari ini. Mulai dari pengeluaran pertamamu.'),
+        find.text(
+          'Belum ada catatan hari ini. Mulai dari pengeluaran pertamamu.',
+        ),
         findsOneWidget,
       );
       expect(find.text('Rabu, 4 November 2026'), findsOneWidget);
     });
 
-    testWidgets('menampilkan kegiatan penting, transaksi, dan transfer', (tester) async {
+    testWidgets('menampilkan kegiatan penting, transaksi, dan transfer', (
+      tester,
+    ) async {
       final server = FakeServer(
         commonResponses(
           dayJson(
@@ -219,6 +379,8 @@ void main() {
       );
       await pumpDay(tester, server);
 
+      // Ringkasan + Kegiatan + Transaksi + Transfer.
+      expect(find.byType(FrameCard), findsAtLeastNWidgets(4));
       expect(find.text('Wisuda'), findsOneWidget);
       expect(find.text('08.00'), findsOneWidget);
       expect(find.byIcon(Icons.star_rounded), findsOneWidget);
@@ -257,77 +419,90 @@ void main() {
       await tester.tap(find.text('Simpan'));
       await tester.pumpAndSettle();
 
-      final local = DateTime.parse(server.writes.single.body!['occurredAt'] as String).toLocal();
+      final local = DateTime.parse(
+        server.writes.single.body!['occurredAt'] as String,
+      ).toLocal();
       expect(dateKey(local), '2026-11-04');
     });
   });
 
   group('Detail dan edit', () {
-    Future<void> pumpDetail(WidgetTester tester, FakeServer server, Transaction transaction) =>
-        pumpRoutedApp(
+    Future<void> pumpDetail(
+      WidgetTester tester,
+      FakeServer server,
+      Transaction transaction,
+    ) => pumpRoutedApp(
+      tester,
+      server,
+      routeName: Routes.transactionDetail,
+      extra: transaction,
+    );
+
+    testWidgets(
+      'edit: terisi data lama, pindah tanggal terkirim, lalu kembali',
+      (tester) async {
+        final server = FakeServer(commonResponses(dayJson()));
+        await pumpDetail(
           tester,
           server,
-          routeName: Routes.transactionDetail,
-          extra: transaction,
+          Transaction.fromJson(transactionJson(note: 'nasi goreng')),
         );
 
-    testWidgets('edit: terisi data lama, pindah tanggal terkirim, lalu kembali', (tester) async {
-      final server = FakeServer(commonResponses(dayJson()));
-      await pumpDetail(
-        tester,
-        server,
-        Transaction.fromJson(transactionJson(note: 'nasi goreng')),
-      );
+        expect(find.text('nasi goreng'), findsOneWidget);
+        await tester.tap(find.text('Ubah'));
+        await tester.pumpAndSettle();
 
-      expect(find.text('nasi goreng'), findsOneWidget);
-      await tester.tap(find.text('Ubah'));
-      await tester.pumpAndSettle();
+        expect(find.text('Ubah transaksi'), findsOneWidget);
+        expect(find.text('25.000'), findsOneWidget);
+        expect(find.text('nasi goreng'), findsOneWidget);
 
-      expect(find.text('Ubah transaksi'), findsOneWidget);
-      expect(find.text('25.000'), findsOneWidget);
-      expect(find.text('nasi goreng'), findsOneWidget);
+        await tester.enterText(field('Nominal'), '30000');
+        await tester.enterText(field('Catatan (opsional)'), '');
+        await tester.ensureVisible(find.text('Simpan'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Simpan'));
+        await tester.pumpAndSettle();
 
-      await tester.enterText(field('Nominal'), '30000');
-      await tester.enterText(field('Catatan (opsional)'), '');
-      await tester.ensureVisible(find.text('Simpan'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Simpan'));
-      await tester.pumpAndSettle();
+        final write = server.writes.single;
+        expect(write.method, 'PATCH');
+        expect(write.path, '/transactions/t1');
+        expect(write.body, containsPair('amount', 30000));
+        expect(write.body, containsPair('walletId', 'w1'));
+        expect(write.body, containsPair('categoryId', 'c1'));
+        expect(write.body, containsPair('note', null));
+        expect(find.text('Ubah transaksi'), findsNothing);
+        expect(find.text('Detail transaksi'), findsNothing);
+      },
+    );
 
-      final write = server.writes.single;
-      expect(write.method, 'PATCH');
-      expect(write.path, '/transactions/t1');
-      expect(write.body, containsPair('amount', 30000));
-      expect(write.body, containsPair('walletId', 'w1'));
-      expect(write.body, containsPair('categoryId', 'c1'));
-      expect(write.body, containsPair('note', null));
-      expect(find.text('Ubah transaksi'), findsNothing);
-      expect(find.text('Detail transaksi'), findsNothing);
-    });
+    testWidgets(
+      'kategori tersembunyi yang dipakai tetap muncul, yang lain tidak (D-34)',
+      (tester) async {
+        final responses = commonResponses(dayJson());
+        responses['/categories'] = {
+          'items': [
+            {...categoryJson('c1', 'Makan'), 'isHidden': true},
+            {...categoryJson('c9', 'Hiburan'), 'isHidden': true},
+            categoryJson('c2', 'Transport'),
+          ],
+        };
+        await pumpDetail(
+          tester,
+          FakeServer(responses),
+          Transaction.fromJson(transactionJson()),
+        );
+        await tester.tap(find.text('Ubah'));
+        await tester.pumpAndSettle();
 
-    testWidgets('kategori tersembunyi yang dipakai tetap muncul, yang lain tidak (D-34)', (tester) async {
-      final responses = commonResponses(dayJson());
-      responses['/categories'] = {
-        'items': [
-          {...categoryJson('c1', 'Makan'), 'isHidden': true},
-          {...categoryJson('c9', 'Hiburan'), 'isHidden': true},
-          categoryJson('c2', 'Transport'),
-        ],
-      };
-      await pumpDetail(
-        tester,
-        FakeServer(responses),
-        Transaction.fromJson(transactionJson()),
-      );
-      await tester.tap(find.text('Ubah'));
-      await tester.pumpAndSettle();
+        expect(find.text('Makan'), findsOneWidget);
+        expect(find.text('Transport'), findsOneWidget);
+        expect(find.text('Hiburan'), findsNothing);
+      },
+    );
 
-      expect(find.text('Makan'), findsOneWidget);
-      expect(find.text('Transport'), findsOneWidget);
-      expect(find.text('Hiburan'), findsNothing);
-    });
-
-    testWidgets('dompet arsip yang dipakai tetap jadi pilihan (D-34)', (tester) async {
+    testWidgets('dompet arsip yang dipakai tetap jadi pilihan (D-34)', (
+      tester,
+    ) async {
       final json = transactionJson();
       json['wallet'] = bankRefJson;
       final server = FakeServer(commonResponses(dayJson()));
@@ -342,29 +517,41 @@ void main() {
       expect(server.writes.single.body, containsPair('walletId', 'w2'));
     });
 
-    testWidgets('hapus minta konfirmasi: batal tidak menghapus, hapus mengirim DELETE', (tester) async {
-      final server = FakeServer(commonResponses(dayJson()));
-      await pumpDetail(tester, server, Transaction.fromJson(transactionJson()));
+    testWidgets(
+      'hapus minta konfirmasi: batal tidak menghapus, hapus mengirim DELETE',
+      (tester) async {
+        final server = FakeServer(commonResponses(dayJson()));
+        await pumpDetail(
+          tester,
+          server,
+          Transaction.fromJson(transactionJson()),
+        );
 
-      await tester.tap(find.text('Hapus'));
-      await tester.pumpAndSettle();
-      expect(find.text('Hapus transaksi ini? Foto struknya juga ikut terhapus.'), findsOneWidget);
-      await tester.tap(find.text('Batal'));
-      await tester.pumpAndSettle();
-      expect(server.writes, isEmpty);
+        await tester.tap(find.text('Hapus'));
+        await tester.pumpAndSettle();
+        expect(
+          find.text('Hapus transaksi ini? Foto struknya juga ikut terhapus.'),
+          findsOneWidget,
+        );
+        await tester.tap(find.text('Batal'));
+        await tester.pumpAndSettle();
+        expect(server.writes, isEmpty);
 
-      await tester.tap(find.text('Hapus'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Hapus').last);
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Hapus'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Hapus').last);
+        await tester.pumpAndSettle();
 
-      expect(server.writes.single.method, 'DELETE');
-      expect(server.writes.single.path, '/transactions/t1');
-      expect(find.text('Transaksi terhapus'), findsOneWidget);
-      expect(find.text('Detail transaksi'), findsNothing);
-    });
+        expect(server.writes.single.method, 'DELETE');
+        expect(server.writes.single.path, '/transactions/t1');
+        expect(find.text('Transaksi terhapus'), findsOneWidget);
+        expect(find.text('Detail transaksi'), findsNothing);
+      },
+    );
 
-    testWidgets('gagal hapus tetap di detail dengan pesan server', (tester) async {
+    testWidgets('gagal hapus tetap di detail dengan pesan server', (
+      tester,
+    ) async {
       final server = FakeServer(commonResponses(dayJson()));
       server.writeFailure = (
         status: 404,

@@ -44,6 +44,7 @@ async function setup(email = 'a@example.test') {
       type: string;
       occurredAt: string;
       note: string;
+      clientId: string;
     }> = {},
   ) =>
     call('POST', '/transactions', {
@@ -365,6 +366,25 @@ describe('transfers', () => {
     });
   });
 
+  it('clientId sama tidak membuat transfer dobel (D-58)', async () => {
+    const ctx = await setup();
+    const bank = await ctx.addWallet('Bank', 10_000);
+    const payload = {
+      fromWalletId: bank,
+      toWalletId: ctx.cashId,
+      amount: 5000,
+      fee: 500,
+      occurredAt: new Date().toISOString(),
+      clientId: randomUUID(),
+    };
+    const first = await ctx.call('POST', '/transfers', payload);
+    const again = await ctx.call('POST', '/transfers', payload);
+    expect(again.statusCode).toBe(201);
+    expect(again.json().id).toBe(first.json().id);
+    expect((await ctx.call('GET', '/transfers')).json().items).toHaveLength(1);
+    expect(await balanceOf(ctx, bank)).toBe(5000);
+  });
+
   it('dompet user lain di body 400, transfer user lain 404', async () => {
     const a = await setup('a@example.test');
     const b = await setup('b@example.test');
@@ -607,6 +627,27 @@ describe('transactions', () => {
 
     const stored = await app.prisma.transaction.findUniqueOrThrow({ where: { id: tx.id } });
     expect(stored.amount).toBe(1000n);
+  });
+
+  it('clientId sama tidak membuat transaksi dobel, juga saat bersamaan (D-58)', async () => {
+    const ctx = await setup();
+    const clientId = randomUUID();
+    const [first, second] = await Promise.all([
+      ctx.addTx(25_000, { clientId }),
+      ctx.addTx(25_000, { clientId }),
+    ]);
+    expect(first.statusCode).toBe(201);
+    expect(second.statusCode).toBe(201);
+    expect(second.json().id).toBe(first.json().id);
+    expect((await ctx.call('GET', '/transactions')).json().items).toHaveLength(1);
+
+    // clientId sama milik user lain tetap membuat data baru.
+    const other = await setup('b@example.test');
+    const res = await other.addTx(1000, { clientId });
+    expect(res.json().id).not.toBe(first.json().id);
+
+    const bad = await ctx.addTx(1000, { clientId: 'bukan-uuid' });
+    expect(bad.statusCode).toBe(400);
   });
 
   it('id bukan UUID 400', async () => {

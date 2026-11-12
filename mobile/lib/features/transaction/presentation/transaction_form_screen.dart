@@ -1,18 +1,23 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/api/api_error.dart';
+import '../../../core/api/client_id.dart';
 import '../../../core/format/dates.dart';
 import '../../../core/format/money.dart';
 import '../../../core/format/rupiah_input.dart';
+import '../../../core/notifications/reminder_service.dart';
 import '../../../core/router/router.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../attachment/presentation/photo_edits.dart';
 import '../../attachment/presentation/widgets/photo_picker_row.dart';
 import '../../attachment/providers/attachment_providers.dart';
+import '../../budget/providers/budget_providers.dart';
 import '../../category/data/category_models.dart';
 import '../../dashboard/providers/dashboard_providers.dart';
 import '../../wallet/data/wallet_models.dart';
@@ -71,6 +76,12 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
 
   /// Terisi setelah transaksi tersimpan; sejak itu Simpan tidak boleh mengirim ulang.
   String? _savedId;
+
+  /// Peringatan budget dari pengeluaran baru yang baru tersimpan (FIN-12).
+  List<String> _budgetMessages = const [];
+
+  /// Sama untuk semua percobaan Simpan di form ini, supaya tidak dobel (D-58).
+  final _clientId = newClientId();
 
   Transaction? get _transaction => widget.args.transaction;
   Transfer? get _transfer => widget.args.transfer;
@@ -189,9 +200,26 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   void _finish() {
     refreshMoney(ref);
     final subject = _mode == _Mode.transfer ? 'Transfer' : 'Transaksi';
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('$subject tersimpan')));
+    final text = ['$subject tersimpan', ..._budgetMessages].join('\n');
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
     context.pop(true);
+  }
+
+  /// Budget bulan transaksi dicek ulang setelah tersimpan. Gagal dimuat = tanpa peringatan,
+  /// karena transaksinya sendiri sudah aman.
+  Future<List<String>> _checkBudgets(String categoryId, int amount) async {
+    try {
+      final budgets = await ref
+          .read(budgetApiProvider)
+          .list(monthKey(_occurredAt));
+      final messages = budgetAlerts(budgets, categoryId, amount);
+      if (messages.isNotEmpty) {
+        unawaited(ref.read(reminderServiceProvider).showBudgetAlerts(messages));
+      }
+      return messages;
+    } on ApiException {
+      return const [];
+    }
   }
 
   /// ID transaksi yang tersimpan; null untuk transfer.
@@ -208,7 +236,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       };
       final transfer = _transfer;
       await (transfer == null
-          ? wallets.createTransfer(data)
+          ? wallets.createTransfer({...data, 'clientId': _clientId})
           : wallets.updateTransfer(transfer.id, data));
       return null;
     }
@@ -219,7 +247,9 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       'type': (_mode == _Mode.income ? TxType.income : TxType.expense).apiValue,
     };
     final transaction = _transaction;
-    if (transaction == null) return transactions.create(data);
+    if (transaction == null) {
+      return transactions.create({...data, 'clientId': _clientId});
+    }
     await transactions.update(transaction.id, data);
     return transaction.id;
   }
@@ -255,6 +285,13 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     }
     if (!mounted) return;
     if (savedId == null) return _finish();
+    if (!_isEdit && _mode == _Mode.expense) {
+      _budgetMessages = await _checkBudgets(
+        _categoryId!,
+        common['amount']! as int,
+      );
+      if (!mounted) return;
+    }
     setState(() => _savedId = savedId);
     await _syncPhotos();
   }
@@ -446,7 +483,8 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                             : null;
                       },
                     ),
-                  if (_mode == _Mode.transfer) ..._feeFields(theme)
+                  if (_mode == _Mode.transfer)
+                    ..._feeFields(theme)
                   else
                     CategoryGrid(
                       type: _mode == _Mode.income

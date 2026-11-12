@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
   amount,
+  clientId,
   dateString,
   note,
   occurredAt,
@@ -27,6 +28,7 @@ export const createTransactionBody = z.object({
   amount,
   occurredAt,
   note: note.optional(),
+  clientId: clientId.optional(),
 });
 
 export const updateTransactionBody = z.object({

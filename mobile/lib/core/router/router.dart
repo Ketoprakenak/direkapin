@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -7,19 +7,26 @@ import '../../features/activity/presentation/activity_form_screen.dart';
 import '../../features/archive/presentation/archive_screen.dart';
 import '../../features/attachment/presentation/photo_viewer_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
+import '../../features/budget/presentation/budget_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/calendar/presentation/calendar_screen.dart';
 import '../../features/category/presentation/categories_screen.dart';
+import '../../features/settings/presentation/theme_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/day/presentation/day_screen.dart';
+import '../../features/recurring/data/recurring_models.dart';
+import '../../features/recurring/presentation/recurring_form_screen.dart';
+import '../../features/recurring/presentation/recurring_list_screen.dart';
 import '../../features/report/presentation/category_transactions_screen.dart';
 import '../../features/report/presentation/report_screen.dart';
 import '../../features/settings/presentation/profile_screen.dart';
+import '../../features/shell/presentation/animated_branch_container.dart';
 import '../../features/shell/presentation/app_shell.dart';
 import '../../features/transaction/data/transaction_models.dart';
 import '../../features/transaction/presentation/item_detail_screen.dart';
 import '../../features/transaction/presentation/transaction_form_screen.dart';
+import '../../features/transaction/presentation/transaction_search_screen.dart';
 import '../../features/transaction/presentation/wallet_transactions_screen.dart';
 import '../../features/wallet/data/wallet_models.dart';
 import '../../features/wallet/presentation/transfers_screen.dart';
@@ -41,6 +48,7 @@ abstract final class Routes {
   static const walletTransactions = 'walletTransactions';
   static const transfers = 'transfers';
   static const categories = 'categories';
+  static const themes = 'themes';
   static const day = 'day';
   static const transactionDetail = 'transactionDetail';
   static const transferDetail = 'transferDetail';
@@ -49,12 +57,21 @@ abstract final class Routes {
   static const activityDetail = 'activityDetail';
   static const categoryTransactions = 'categoryTransactions';
   static const archives = 'archives';
+  static const transactionSearch = 'transactionSearch';
+  static const budgets = 'budgets';
+  static const recurring = 'recurring';
+  static const recurringForm = 'recurringForm';
 }
 
 const _splashPath = '/';
 const _loginPath = '/masuk';
 const _registerPath = '/daftar';
 const _homePath = '/beranda';
+
+// go_router 18 memeriksa MaterialApp dari package:material_ui, jadi rute
+// `builder:` jatuh ke NoTransitionPage; MaterialPage memakai pageTransitionsTheme.
+Page<void> _page(GoRouterState state, Widget child) =>
+    MaterialPage<void>(key: state.pageKey, child: child);
 
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
@@ -79,87 +96,131 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: _splashPath,
         name: Routes.splash,
-        builder: (context, state) => const SplashScreen(),
+        pageBuilder: (context, state) => _page(state, const SplashScreen()),
       ),
       GoRoute(
         path: _loginPath,
         name: Routes.login,
-        builder: (context, state) => const LoginScreen(),
+        pageBuilder: (context, state) => _page(state, const LoginScreen()),
       ),
       GoRoute(
         path: _registerPath,
         name: Routes.register,
-        builder: (context, state) => const RegisterScreen(),
+        pageBuilder: (context, state) => _page(state, const RegisterScreen()),
       ),
       GoRoute(
         path: '/transaksi/baru',
         name: Routes.transactionForm,
-        builder: (context, state) => TransactionFormScreen(
-          args:
-              state.extra as TransactionFormArgs? ??
-              const TransactionFormArgs(),
+        pageBuilder: (context, state) => _page(
+          state,
+          TransactionFormScreen(
+            args:
+                state.extra as TransactionFormArgs? ??
+                const TransactionFormArgs(),
+          ),
         ),
       ),
       GoRoute(
         path: '/transaksi/detail',
         name: Routes.transactionDetail,
-        builder: (context, state) =>
-            TransactionDetailScreen(transaction: state.extra! as Transaction),
+        pageBuilder: (context, state) => _page(
+          state,
+          TransactionDetailScreen(transaction: state.extra! as Transaction),
+        ),
       ),
       GoRoute(
         path: '/transfer/detail',
         name: Routes.transferDetail,
-        builder: (context, state) =>
-            TransferDetailScreen(transfer: state.extra! as Transfer),
+        pageBuilder: (context, state) => _page(
+          state,
+          TransferDetailScreen(transfer: state.extra! as Transfer),
+        ),
+      ),
+      GoRoute(
+        path: '/cari',
+        name: Routes.transactionSearch,
+        pageBuilder: (context, state) =>
+            _page(state, const TransactionSearchScreen()),
+      ),
+      GoRoute(
+        path: '/laporan/budget',
+        name: Routes.budgets,
+        pageBuilder: (context, state) =>
+            _page(state, BudgetScreen(initialMonth: state.extra! as String)),
+      ),
+      GoRoute(
+        path: '/berulang',
+        name: Routes.recurring,
+        pageBuilder: (context, state) =>
+            _page(state, const RecurringListScreen()),
+      ),
+      GoRoute(
+        path: '/berulang/form',
+        name: Routes.recurringForm,
+        pageBuilder: (context, state) =>
+            _page(state, RecurringFormScreen(rule: state.extra as Recurring?)),
       ),
       GoRoute(
         path: '/laporan/kategori',
         name: Routes.categoryTransactions,
-        builder: (context, state) => CategoryTransactionsScreen(
-          args: state.extra! as CategoryTransactionsArgs,
+        pageBuilder: (context, state) => _page(
+          state,
+          CategoryTransactionsScreen(
+            args: state.extra! as CategoryTransactionsArgs,
+          ),
         ),
       ),
       GoRoute(
         path: '/kegiatan/baru',
         name: Routes.activityForm,
-        builder: (context, state) => ActivityFormScreen(
-          args: state.extra as ActivityFormArgs? ?? const ActivityFormArgs(),
+        pageBuilder: (context, state) => _page(
+          state,
+          ActivityFormScreen(
+            args: state.extra as ActivityFormArgs? ?? const ActivityFormArgs(),
+          ),
         ),
       ),
       GoRoute(
         path: '/kegiatan/detail',
         name: Routes.activityDetail,
-        builder: (context, state) =>
-            ActivityDetailScreen(activity: state.extra! as Activity),
+        pageBuilder: (context, state) => _page(
+          state,
+          ActivityDetailScreen(activity: state.extra! as Activity),
+        ),
       ),
       GoRoute(
         path: '/foto',
         name: Routes.photoViewer,
-        builder: (context, state) =>
-            PhotoViewerScreen(args: state.extra! as PhotoViewerArgs),
+        pageBuilder: (context, state) => _page(
+          state,
+          PhotoViewerScreen(args: state.extra! as PhotoViewerArgs),
+        ),
       ),
       GoRoute(
         path: '/hari/:date',
         name: Routes.day,
-        builder: (context, state) =>
-            DayScreen(date: state.pathParameters['date']!),
+        pageBuilder: (context, state) =>
+            _page(state, DayScreen(date: state.pathParameters['date']!)),
       ),
       GoRoute(
         path: '/arsip',
         name: Routes.archives,
-        builder: (context, state) => const ArchiveScreen(),
+        pageBuilder: (context, state) => _page(state, const ArchiveScreen()),
       ),
       GoRoute(
         path: '/dompet',
         name: Routes.wallets,
-        builder: (context, state) => const WalletsScreen(),
+        pageBuilder: (context, state) => _page(state, const WalletsScreen()),
         routes: [
           GoRoute(
             path: ':id/transaksi',
             name: Routes.walletTransactions,
-            builder: (context, state) => WalletTransactionsScreen(
-              walletId: state.pathParameters['id']!,
-              walletName: state.uri.queryParameters['nama'] ?? 'Dompet',
+            pageBuilder: (context, state) => _page(
+              state,
+              WalletTransactionsScreen(
+                walletId: state.pathParameters['id']!,
+                walletName: state.uri.queryParameters['nama'] ?? 'Dompet',
+              ),
             ),
           ),
         ],
@@ -167,15 +228,26 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/transfer',
         name: Routes.transfers,
-        builder: (context, state) => const TransfersScreen(),
+        pageBuilder: (context, state) => _page(state, const TransfersScreen()),
       ),
       GoRoute(
         path: '/kategori',
         name: Routes.categories,
-        builder: (context, state) => const CategoriesScreen(),
+        pageBuilder: (context, state) => _page(state, const CategoriesScreen()),
       ),
-      StatefulShellRoute.indexedStack(
-        builder: (context, state, shell) => AppShell(shell: shell),
+      GoRoute(
+        path: '/tema',
+        name: Routes.themes,
+        pageBuilder: (context, state) => _page(state, const ThemeScreen()),
+      ),
+      StatefulShellRoute(
+        pageBuilder: (context, state, shell) =>
+            _page(state, AppShell(shell: shell)),
+        navigatorContainerBuilder: (context, shell, children) =>
+            AnimatedBranchContainer(
+              currentIndex: shell.currentIndex,
+              children: children,
+            ),
         branches: [
           StatefulShellBranch(
             routes: [

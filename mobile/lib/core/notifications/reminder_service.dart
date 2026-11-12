@@ -16,6 +16,8 @@ const _monthlyCount = 3;
 const _firstArchiveReminderId = 1200;
 const _maxArchiveReminders = 20;
 const _firstArchiveNoticeId = 1300;
+const _firstBudgetAlertId = 1400;
+const _maxBudgetAlerts = 10;
 const _seenArchivesKey = 'archivesSeen';
 const _archiveLifetimeDays = 30;
 
@@ -34,6 +36,15 @@ const _archiveDetails = NotificationDetails(
   android: AndroidNotificationDetails(
     'archive_reminder',
     'Arsip foto',
+    importance: Importance.high,
+    priority: Priority.high,
+  ),
+);
+
+const _budgetDetails = NotificationDetails(
+  android: AndroidNotificationDetails(
+    'budget_alert',
+    'Peringatan budget',
     importance: Importance.high,
     priority: Priority.high,
   ),
@@ -111,8 +122,8 @@ class ReminderService {
   // Berurutan: sync lama yang selesai belakangan tidak boleh menimpa yang baru.
   Future<void> _queue = Future.value();
 
-  AndroidFlutterLocalNotificationsPlugin? get _android =>
-      _plugin.resolvePlatformSpecificImplementation<
+  AndroidFlutterLocalNotificationsPlugin? get _android => _plugin
+      .resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin
       >();
 
@@ -203,7 +214,8 @@ class ReminderService {
   Future<void> syncArchives(List<ReadyArchive> ready, String timezone) =>
       _enqueue(() async {
         await _ready;
-        final seen = (await _storage.read(key: _seenArchivesKey))?.split(',') ?? [];
+        final seen =
+            (await _storage.read(key: _seenArchivesKey))?.split(',') ?? [];
         for (final archive in ready.where((a) => !seen.contains(a.id))) {
           final monthNumber = int.parse(archive.month.substring(5));
           await _plugin.show(
@@ -240,6 +252,19 @@ class ReminderService {
           }
         }
       });
+
+  /// Peringatan budget langsung saat pengeluaran disimpan (FIN-12).
+  Future<void> showBudgetAlerts(List<String> messages) => _enqueue(() async {
+    await _ready;
+    for (final (index, message) in messages.take(_maxBudgetAlerts).indexed) {
+      await _plugin.show(
+        id: _firstBudgetAlertId + index,
+        title: 'Direkapin',
+        body: message,
+        notificationDetails: _budgetDetails,
+      );
+    }
+  });
 
   Future<void> cancel() => _enqueue(() async {
     await _ready;

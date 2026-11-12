@@ -4,6 +4,7 @@ export type ErrorCode =
   | 'INVALID_CREDENTIALS'
   | 'REFRESH_INVALID'
   | 'NOT_FOUND'
+  | 'CONFLICT'
   | 'EMAIL_TAKEN'
   | 'NAME_TAKEN'
   | 'INVITE_INVALID'

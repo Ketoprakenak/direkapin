@@ -4,7 +4,7 @@ import type { z } from 'zod';
 import { AppError } from '../../lib/app-error.js';
 import { occurredAtFilter } from '../../lib/dates.js';
 import { toBigInt, toNumber } from '../../lib/money.js';
-import { toPage } from '../../lib/schemas.js';
+import { createOnce, toPage } from '../../lib/schemas.js';
 import { removeUploads } from '../../lib/storage.js';
 import {
   attachmentFiles,
@@ -93,10 +93,19 @@ export async function createTransaction(
 ) {
   await assertActiveWallet(prisma, userId, input.walletId, 'walletId');
   await assertCategory(prisma, userId, input.categoryId, input.type);
-  const row = await prisma.transaction.create({
-    data: { ...input, userId, amount: toBigInt(input.amount) },
-    include: transactionInclude,
-  });
+  const row = await createOnce(
+    input.clientId,
+    () =>
+      prisma.transaction.findFirst({
+        where: { userId, clientId: input.clientId },
+        include: transactionInclude,
+      }),
+    () =>
+      prisma.transaction.create({
+        data: { ...input, userId, amount: toBigInt(input.amount) },
+        include: transactionInclude,
+      }),
+  );
   return toTransactionResponse(row);
 }
 

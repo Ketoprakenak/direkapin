@@ -44,6 +44,32 @@ export function isUniqueViolation(error: unknown) {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
 }
 
+export const clientId = z.uuid('clientId tidak valid');
+
+/**
+ * Buat data sekali saja per [id] dari HP (D-58): kiriman ulang mendapat data yang sudah ada,
+ * termasuk saat dua kiriman sampai bersamaan dan salah satunya kena unique constraint.
+ */
+export async function createOnce<T>(
+  id: string | undefined,
+  find: () => Promise<T | null>,
+  create: () => Promise<T>,
+): Promise<T> {
+  if (id) {
+    const found = await find();
+    if (found) return found;
+  }
+  try {
+    return await create();
+  } catch (error) {
+    if (id && isUniqueViolation(error)) {
+      const found = await find();
+      if (found) return found;
+    }
+    throw error;
+  }
+}
+
 /** Hasil `take: limit + 1`, dipotong jadi satu halaman plus `nextCursor`. */
 export function toPage<T extends { id: string }>(rows: T[], limit: number) {
   const items = rows.slice(0, limit);

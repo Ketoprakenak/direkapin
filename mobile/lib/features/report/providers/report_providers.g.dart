@@ -8,17 +8,20 @@ part of 'report_providers.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// [key] = tanggal (harian), Senin awal minggu (mingguan), atau `YYYY-MM` (bulanan).
+/// [key] = Senin awal minggu (mingguan), `YYYY-MM` (bulanan), atau
+/// `YYYY-MM-DD_YYYY-MM-DD` (rentang).
 
 @ProviderFor(report)
 final reportProvider = ReportFamily._();
 
-/// [key] = tanggal (harian), Senin awal minggu (mingguan), atau `YYYY-MM` (bulanan).
+/// [key] = Senin awal minggu (mingguan), `YYYY-MM` (bulanan), atau
+/// `YYYY-MM-DD_YYYY-MM-DD` (rentang).
 
 final class ReportProvider
     extends $FunctionalProvider<AsyncValue<Report>, Report, FutureOr<Report>>
     with $FutureModifier<Report>, $FutureProvider<Report> {
-  /// [key] = tanggal (harian), Senin awal minggu (mingguan), atau `YYYY-MM` (bulanan).
+  /// [key] = Senin awal minggu (mingguan), `YYYY-MM` (bulanan), atau
+  /// `YYYY-MM-DD_YYYY-MM-DD` (rentang).
   ReportProvider._({
     required ReportFamily super.from,
     required (ReportType, String, {String? walletId}) super.argument,
@@ -62,9 +65,10 @@ final class ReportProvider
   }
 }
 
-String _$reportHash() => r'6cc25732e52f984a4305d5b629befbdc7df4e050';
+String _$reportHash() => r'7aaf91fb1acdb716e5a30bdf9fc5aa0f774455c0';
 
-/// [key] = tanggal (harian), Senin awal minggu (mingguan), atau `YYYY-MM` (bulanan).
+/// [key] = Senin awal minggu (mingguan), `YYYY-MM` (bulanan), atau
+/// `YYYY-MM-DD_YYYY-MM-DD` (rentang).
 
 final class ReportFamily extends $Family
     with
@@ -81,7 +85,8 @@ final class ReportFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// [key] = tanggal (harian), Senin awal minggu (mingguan), atau `YYYY-MM` (bulanan).
+  /// [key] = Senin awal minggu (mingguan), `YYYY-MM` (bulanan), atau
+  /// `YYYY-MM-DD_YYYY-MM-DD` (rentang).
 
   ReportProvider call(ReportType type, String key, {String? walletId}) =>
       ReportProvider._(argument: (type, key, walletId: walletId), from: this);

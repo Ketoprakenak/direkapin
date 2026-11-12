@@ -12,6 +12,7 @@ _User _$UserFromJson(Map<String, dynamic> json) => _User(
   email: json['email'] as String,
   timezone: json['timezone'] as String,
   reminderTime: json['reminderTime'] as String,
+  hasAvatar: json['hasAvatar'] as bool,
   createdAt: DateTime.parse(json['createdAt'] as String),
 );
 
@@ -21,6 +22,7 @@ Map<String, dynamic> _$UserToJson(_User instance) => <String, dynamic>{
   'email': instance.email,
   'timezone': instance.timezone,
   'reminderTime': instance.reminderTime,
+  'hasAvatar': instance.hasAvatar,
   'createdAt': instance.createdAt.toIso8601String(),
 };
 

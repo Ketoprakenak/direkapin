@@ -13,6 +13,8 @@ class TransactionApi {
     String? categoryId,
     String? from,
     String? to,
+    String? type,
+    String? query,
     required int limit,
   }) => apiCall(() async {
     final response = await _dio.get<Map<String, dynamic>>(
@@ -23,6 +25,8 @@ class TransactionApi {
         'category': ?categoryId,
         'from': ?from,
         'to': ?to,
+        'type': ?type,
+        'q': ?query,
       },
     );
     return (response.data!['items'] as List)
