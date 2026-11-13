@@ -57,6 +57,25 @@ class _FakeAuth implements AuthRepository {
 
   @override
   Future<void> logout() async => loggedOut = true;
+
+  String? forgotEmail;
+  ({String email, String code, String newPassword})? reset;
+
+  @override
+  Future<void> forgotPassword(String email) async {
+    if (failure != null) throw failure!;
+    forgotEmail = email;
+  }
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    if (failure != null) throw failure!;
+    reset = (email: email, code: code, newPassword: newPassword);
+  }
 }
 
 void main() {
@@ -118,7 +137,11 @@ void main() {
       await pumpApp(tester, {'refreshToken': 'r'});
       await tester.tap(find.widgetWithText(NavigationDestination, 'Profil'));
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Keluar'));
+      await tester.scrollUntilVisible(
+        find.text('Keluar'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Keluar'));
       await tester.pumpAndSettle();
@@ -195,7 +218,11 @@ void main() {
       for (final other in ['Beranda', 'Kalender', 'Laporan']) {
         expect(find.widgetWithText(AppBar, other), findsNothing);
       }
-      await tester.ensureVisible(find.text('Keluar'));
+      await tester.scrollUntilVisible(
+        find.text('Keluar'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.pumpAndSettle();
       expect(find.text('Keluar').hitTestable(), findsOneWidget);
     });
@@ -521,6 +548,65 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Masuk ke Direkapin'), findsOneWidget);
+    });
+  });
+
+  group('Lupa password (AUTH-06)', () {
+    Future<void> openForgot(WidgetTester tester) async {
+      await pumpApp(tester, {});
+      await tester.tap(find.text('Lupa password?'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('email lalu kode + password baru, kembali ke Login', (
+      tester,
+    ) async {
+      await openForgot(tester);
+      await tester.enterText(field('Email'), ' uji@example.test ');
+      await tester.tap(find.widgetWithText(FilledButton, 'Kirim kode'));
+      await tester.pumpAndSettle();
+      expect(auth.forgotEmail, 'uji@example.test');
+
+      await tester.enterText(field('Kode 6 angka'), '12ab');
+      await tester.enterText(field('Password baru'), 'baruBanget9');
+      await tester.enterText(field('Ulangi password baru'), 'lain');
+      await tester.tap(find.widgetWithText(FilledButton, 'Ganti password'));
+      await tester.pump();
+      expect(find.text('Kode harus 6 angka'), findsOneWidget);
+      expect(find.text('Password tidak sama'), findsOneWidget);
+      expect(auth.reset, isNull);
+
+      await tester.enterText(field('Kode 6 angka'), '482913');
+      await tester.enterText(field('Ulangi password baru'), 'baruBanget9');
+      await tester.tap(find.widgetWithText(FilledButton, 'Ganti password'));
+      await tester.pumpAndSettle();
+      expect(auth.reset, (
+        email: 'uji@example.test',
+        code: '482913',
+        newPassword: 'baruBanget9',
+      ));
+      expect(find.text('Masuk ke Direkapin'), findsOneWidget);
+      expect(find.text('Password diganti. Silakan masuk.'), findsOneWidget);
+    });
+
+    testWidgets('kode salah dari server ditampilkan', (tester) async {
+      await openForgot(tester);
+      await tester.enterText(field('Email'), 'uji@example.test');
+      await tester.tap(find.widgetWithText(FilledButton, 'Kirim kode'));
+      await tester.pumpAndSettle();
+
+      auth.failure = const ApiException(
+        'VALIDATION_ERROR',
+        'Data belum valid',
+        {'code': 'Kode salah atau sudah kedaluwarsa'},
+      );
+      await tester.enterText(field('Kode 6 angka'), '000000');
+      await tester.enterText(field('Password baru'), 'baruBanget9');
+      await tester.enterText(field('Ulangi password baru'), 'baruBanget9');
+      await tester.tap(find.widgetWithText(FilledButton, 'Ganti password'));
+      await tester.pumpAndSettle();
+      expect(find.text('Kode salah atau sudah kedaluwarsa'), findsOneWidget);
+      expect(find.text('Masukkan kode'), findsOneWidget);
     });
   });
 

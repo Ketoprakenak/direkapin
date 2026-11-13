@@ -176,22 +176,28 @@ class _MoodPickerState extends ConsumerState<_MoodPicker> {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(top: Spacing.md),
-      // Wrap, bukan Row: 5 chip + label bisa melebihi lebar HP kecil.
-      child: Wrap(
-        crossAxisAlignment: WrapCrossAlignment.center,
+      // Label di atas, 5 chip dibagi rata satu baris: label + chip sebaris
+      // melebihi lebar HP kecil dan chip terakhir turun ke bawah.
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Mood', style: theme.textTheme.titleMedium),
-          const SizedBox(width: Spacing.md),
-          for (final mood in _MoodPicker.moods)
-            Padding(
-              padding: const EdgeInsets.only(right: Spacing.xs),
-              child: ChoiceChip(
-                label: Text(mood),
-                selected: _mood == mood,
-                showCheckmark: false,
-                onSelected: _saving ? null : (_) => _select(mood),
-              ),
-            ),
+          const SizedBox(height: Spacing.sm),
+          Row(
+            children: [
+              for (final mood in _MoodPicker.moods)
+                Expanded(
+                  child: Center(
+                    child: ChoiceChip(
+                      label: Text(mood),
+                      selected: _mood == mood,
+                      showCheckmark: false,
+                      onSelected: _saving ? null : (_) => _select(mood),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ],
       ),
     );

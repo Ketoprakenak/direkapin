@@ -8,6 +8,13 @@ const _channel = MethodChannel('direkapin/gallery');
 Future<void> saveJpegToGallery(Uint8List bytes, String fileName) => _channel
     .invokeMethod<void>('saveJpeg', {'bytes': bytes, 'fileName': fileName});
 
-/// Menyalin file ZIP di [path] ke folder Download/Direkapin. Error sama seperti di atas.
-Future<void> saveFileToDownloads(String path, String fileName) => _channel
-    .invokeMethod<void>('saveZip', {'path': path, 'fileName': fileName});
+/// Menyalin file di [path] ke folder Download/Direkapin. Error sama seperti di atas.
+Future<void> saveFileToDownloads(
+  String path,
+  String fileName, {
+  String mimeType = 'application/zip',
+}) => _channel.invokeMethod<void>('saveZip', {
+  'path': path,
+  'fileName': fileName,
+  'mimeType': mimeType,
+});

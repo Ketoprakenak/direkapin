@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
   dailyReportQuery,
+  exportReportQuery,
   monthlyReportQuery,
   rangeReportQuery,
   reportResponse,
@@ -13,6 +14,7 @@ import {
   getRangeReport,
   getWeeklyReport,
 } from './reports.service.js';
+import { exportReport } from './reports.export.js';
 
 export function reportRoutes(app: FastifyInstance) {
   const routes = app.withTypeProvider<ZodTypeProvider>();
@@ -51,5 +53,18 @@ export function reportRoutes(app: FastifyInstance) {
         request.query.to,
         request.query.wallet,
       ),
+  );
+
+  routes.get(
+    '/reports/export',
+    { onRequest, schema: { querystring: exportReportQuery } },
+    async (request, reply) => {
+      const { from, to, wallet, format } = request.query;
+      const file = await exportReport(app.prisma, request.userId, from, to, wallet, format);
+      return reply
+        .header('content-type', file.contentType)
+        .header('content-disposition', `attachment; filename="${file.fileName}"`)
+        .send(file.body);
+    },
   );
 }

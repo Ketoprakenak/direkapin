@@ -61,7 +61,11 @@ class _FakeFiles extends ArchiveFiles {
       lastTemp = '${Directory.systemTemp.path}/direkapin_test_$fileName';
 
   @override
-  Future<void> saveToDownloads(String path, String fileName) async {
+  Future<void> saveToDownloads(
+    String path,
+    String fileName, {
+    String mimeType = 'application/zip',
+  }) async {
     if (saveError != null) throw saveError!;
     saved.add(fileName);
   }
@@ -277,6 +281,8 @@ void main() {
       // Grup header + pengingat, dan grup menu.
       expect(find.byType(FrameCard), findsNWidgets(2));
 
+      await tester.ensureVisible(find.text('Arsip foto'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Arsip foto'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Belum ada arsip'), findsOneWidget);

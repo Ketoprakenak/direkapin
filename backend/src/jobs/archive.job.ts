@@ -14,13 +14,13 @@ import {
   startOfDay,
   toDbDate,
 } from '../lib/dates.js';
+import { csv, csvText } from '../lib/csv.js';
 import { toNumber } from '../lib/money.js';
 import { releaseOriginals } from '../modules/archives/archives.service.js';
 
 const EXPIRY_MS = 30 * 86_400_000;
 /** Pemakaian disk (%) di atas ini membuat bulan M-1 ikut diarsip (ARC-06, D-66). */
 export const DISK_HIGH_PERCENT = 80;
-const BOM = '﻿';
 
 type Dirs = Pick<Config, 'UPLOAD_DIR' | 'ARCHIVE_DIR'>;
 type Photo = { id: string; filePath: string | null; createdAt: Date };
@@ -40,19 +40,6 @@ export async function readDiskUsage(dir: string, log: FastifyBaseLogger) {
     log.error({ err, dir }, 'gagal membaca pemakaian disk, memakai jadwal normal');
     return 0;
   }
-}
-
-/** Teks dari user yang diawali tanda ini dijalankan sebagai formula oleh Excel. */
-function csvText(value: string | null) {
-  const text = value ?? '';
-  return /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
-}
-
-function csv(rows: (string | number)[][]) {
-  const lines = rows.map((row) =>
-    row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(','),
-  );
-  return `${BOM}${lines.join('\r\n')}\r\n`;
 }
 
 async function transactionsCsv(

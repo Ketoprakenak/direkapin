@@ -23,15 +23,36 @@ class AuthApi {
   Future<AuthTokens> login({required String email, required String password}) =>
       _requestTokens('/auth/login', {'email': email, 'password': password});
 
+  Future<void> forgotPassword(String email) => apiCall(
+    () => _dio.post<void>('/auth/forgot-password', data: {'email': email}),
+  );
+
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) => apiCall(
+    () => _dio.post<void>(
+      '/auth/reset-password',
+      data: {'email': email, 'code': code, 'newPassword': newPassword},
+    ),
+  );
+
   Future<void> logout(String refreshToken) async {
     try {
-      await _dio.post<void>('/auth/logout', data: {'refreshToken': refreshToken});
+      await _dio.post<void>(
+        '/auth/logout',
+        data: {'refreshToken': refreshToken},
+      );
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }
   }
 
-  Future<AuthTokens> _requestTokens(String path, Map<String, String> data) async {
+  Future<AuthTokens> _requestTokens(
+    String path,
+    Map<String, String> data,
+  ) async {
     try {
       final response = await _dio.post<Map<String, dynamic>>(path, data: data);
       return AuthTokens.fromJson(response.data!);

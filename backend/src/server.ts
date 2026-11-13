@@ -4,6 +4,7 @@ import Fastify from 'fastify';
 import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { loadConfig, type Config } from './config.js';
+import { createMailer, type SendMail } from './lib/mailer.js';
 import { startScheduler } from './jobs/scheduler.js';
 import { activityRoutes } from './modules/activities/activities.routes.js';
 import { archiveRoutes } from './modules/archives/archives.routes.js';
@@ -28,7 +29,7 @@ import { setupRateLimit } from './plugins/rate-limit.js';
 // Pesan error ke user wajib bahasa Indonesia, termasuk pesan bawaan zod.
 z.config(z.locales.id());
 
-export function buildApp(config: Config) {
+export function buildApp(config: Config, deps: { sendMail?: SendMail } = {}) {
   const app = Fastify({
     logger:
       config.NODE_ENV === 'test'
@@ -52,7 +53,7 @@ export function buildApp(config: Config) {
   app.register(
     async (api) => {
       systemRoutes(api, config);
-      authRoutes(api, config);
+      authRoutes(api, config, deps.sendMail ?? createMailer(config, app.log));
       meRoutes(api, config);
       walletRoutes(api);
       transferRoutes(api);

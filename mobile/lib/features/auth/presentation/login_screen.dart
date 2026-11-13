@@ -55,6 +55,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           autofillHints: const [AutofillHints.password],
           validator: validateLoginPassword,
         ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () => context.goNamed(Routes.forgotPassword),
+            child: const Text('Lupa password?'),
+          ),
+        ),
       ],
       footer: TextButton(
         onPressed: () => context.goNamed(Routes.register),

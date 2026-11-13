@@ -137,6 +137,12 @@ final appThemes = <AppThemeData>[
       incomeTint: Color(0xFFCDE8CF),
       expenseTint: Color(0xFFF6D3C8),
       importantTint: Color(0xFFF7E19A),
+      heatmap: [
+        Color(0xFFFBF0C4),
+        Color(0xFFF5D98A),
+        Color(0xFFEDB47A),
+        Color(0xFFDD8F6E),
+      ],
       moodTints: _pastelMoods,
     ),
     style: const AppStyle(
@@ -170,6 +176,12 @@ final appThemes = <AppThemeData>[
       incomeTint: Color(0xFFC9E8D6),
       expenseTint: Color(0xFFF4D0CF),
       importantTint: Color(0xFFF6E3AC),
+      heatmap: [
+        Color(0xFFE3EEF8),
+        Color(0xFFBCD5EE),
+        Color(0xFF93B7E0),
+        Color(0xFF6D97CF),
+      ],
       moodTints: _pastelMoods,
     ),
     style: const AppStyle(
@@ -203,6 +215,12 @@ final appThemes = <AppThemeData>[
       incomeTint: Color(0xFFCAE8DA),
       expenseTint: Color(0xFFF2CEDA),
       importantTint: Color(0xFFF6E3AC),
+      heatmap: [
+        Color(0xFFEEE8F7),
+        Color(0xFFD9CBEE),
+        Color(0xFFC3ADE3),
+        Color(0xFFA98CD5),
+      ],
       moodTints: _pastelMoods,
     ),
     style: const AppStyle(
@@ -236,6 +254,12 @@ final appThemes = <AppThemeData>[
       incomeTint: Color(0xFFCDE9D2),
       expenseTint: Color(0xFFF8CFC2),
       importantTint: Color(0xFFF7E0A4),
+      heatmap: [
+        Color(0xFFFDECE6),
+        Color(0xFFF9D2C2),
+        Color(0xFFF4B39D),
+        Color(0xFFEB907A),
+      ],
       moodTints: _pastelMoods,
     ),
     style: const AppStyle(
@@ -269,6 +293,12 @@ final appThemes = <AppThemeData>[
       incomeTint: Color(0xFFC4E9D6),
       expenseTint: Color(0xFFF4D0CF),
       importantTint: Color(0xFFF6E3AC),
+      heatmap: [
+        Color(0xFFE3F3EE),
+        Color(0xFFBFE5D7),
+        Color(0xFF96D3BE),
+        Color(0xFF6FBFA5),
+      ],
       moodTints: _pastelMoods,
     ),
     style: const AppStyle(

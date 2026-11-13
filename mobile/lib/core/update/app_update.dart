@@ -27,9 +27,28 @@ bool isNewerVersion(String latest, String current) {
   return false;
 }
 
+typedef ReleaseNote = ({String version, List<String> items});
+typedef AppUpdate = ({String version, String url, List<ReleaseNote> notes});
+
+/// Catatan versi yang lebih baru dari [current] dan tidak lebih baru dari
+/// [latest], urutan dari server. Field hilang atau rusak = kosong.
+List<ReleaseNote> notesBetween(Object? raw, String current, String latest) {
+  if (raw is! List) return const [];
+  return [
+    for (final entry in raw)
+      if (entry case {
+        'version': final String version,
+        'items': final List<dynamic> items,
+      })
+        if (isNewerVersion(version, current) &&
+            !isNewerVersion(version, latest))
+          (version: version, items: items.whereType<String>().toList()),
+  ];
+}
+
 /// Versi baru dari `/version`, atau `null` jika tidak ada atau gagal dicek.
 @Riverpod(keepAlive: true)
-Future<({String version, String url})?> availableUpdate(Ref ref) async {
+Future<AppUpdate?> availableUpdate(Ref ref) async {
   try {
     final response = await ref
         .watch(apiClientProvider)
@@ -37,7 +56,11 @@ Future<({String version, String url})?> availableUpdate(Ref ref) async {
     final latest = response.data!['latestVersion'] as String;
     final current = (await PackageInfo.fromPlatform()).version;
     if (!isNewerVersion(latest, current)) return null;
-    return (version: latest, url: response.data!['downloadUrl'] as String);
+    return (
+      version: latest,
+      url: response.data!['downloadUrl'] as String,
+      notes: notesBetween(response.data!['releaseNotes'], current, latest),
+    );
   } catch (_) {
     // Cek versi tidak boleh mengganggu Beranda.
     return null;

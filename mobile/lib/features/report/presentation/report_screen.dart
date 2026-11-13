@@ -1,10 +1,13 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/api/api_error.dart';
 import '../../../core/format/dates.dart';
 import '../../../core/format/money.dart';
 import '../../../core/router/router.dart';
@@ -12,6 +15,7 @@ import '../../../core/theme/app_themes.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/frame.dart';
 import '../../../core/widgets/money_widgets.dart';
+import '../../../core/widgets/pill_tabs.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../budget/presentation/budget_screen.dart';
 import '../../budget/providers/budget_providers.dart';
@@ -46,6 +50,78 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
     end: DateUtils.dateOnly(DateTime.now()),
   );
   String _walletId = _allWallets;
+  bool _exporting = false;
+
+  /// Tanggal awal dan akhir (inklusif) periode yang sedang dibuka.
+  (DateTime, DateTime) get _period => switch (_type) {
+    ReportType.weekly => (
+      mondayOf(_anchor),
+      mondayOf(_anchor).add(const Duration(days: 6)),
+    ),
+    ReportType.monthly => (
+      DateTime(_anchor.year, _anchor.month),
+      DateTime(_anchor.year, _anchor.month + 1, 0),
+    ),
+    ReportType.range => (_range.start, _range.end),
+  };
+
+  Future<void> _export(String? walletId) async {
+    final format = await showModalBottomSheet<ExportFormat>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: Text(
+                'Export $_label',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.table_chart_rounded),
+              title: const Text('CSV'),
+              subtitle: const Text('Daftar transaksi, buka di Excel/Sheets'),
+              onTap: () => Navigator.pop(context, ExportFormat.csv),
+            ),
+            ListTile(
+              leading: const Icon(Icons.picture_as_pdf_rounded),
+              title: const Text('PDF'),
+              subtitle: const Text('Ringkasan + daftar transaksi'),
+              onTap: () => Navigator.pop(context, ExportFormat.pdf),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (format == null || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final (from, to) = _period;
+    setState(() => _exporting = true);
+    String message;
+    try {
+      final fileName = await ref
+          .read(reportExporterProvider)
+          .export(
+            from: dateKey(from),
+            to: dateKey(to),
+            format: format,
+            walletId: walletId,
+          );
+      message = '$fileName tersimpan di Download/Direkapin';
+    } on ApiException catch (e) {
+      message = e.message;
+    } on PlatformException catch (e) {
+      message = e.code == 'permission_denied'
+          ? 'Izin penyimpanan ditolak. Aktifkan di pengaturan HP.'
+          : 'File gagal disimpan. Coba lagi.';
+    } on FileSystemException {
+      message = 'File gagal disimpan. Coba lagi.';
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+    messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
 
   String get _key => switch (_type) {
     ReportType.weekly => dateKey(mondayOf(_anchor)),
@@ -116,11 +192,30 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
     final provider = reportProvider(_type, _key, walletId: walletId);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Laporan')),
+      appBar: AppBar(
+        title: const Text('Laporan'),
+        actions: [
+          IconButton(
+            tooltip: 'Export',
+            onPressed: _exporting ? null : () => _export(walletId),
+            icon: _exporting
+                ? const SizedBox.square(
+                    dimension: Spacing.lg,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.download_rounded),
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(Spacing.lg),
         children: [
-          _PeriodTabs(
+          PillTabs(
+            labels: const {
+              ReportType.weekly: 'Mingguan',
+              ReportType.monthly: 'Bulanan',
+              ReportType.range: 'Custom',
+            },
             selected: _type,
             onChanged: (type) => setState(() => _type = type),
           ),
@@ -218,78 +313,6 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
 }
 
 /// Tab kapsul berframe dalam; tab aktif = blok penuh warna teks tema.
-class _PeriodTabs extends StatelessWidget {
-  const _PeriodTabs({required this.selected, required this.onChanged});
-
-  final ReportType selected;
-  final ValueChanged<ReportType> onChanged;
-
-  static const _labels = {
-    ReportType.weekly: 'Mingguan',
-    ReportType.monthly: 'Bulanan',
-    ReportType.range: 'Custom',
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    // Garis sama dengan FrameBox, tapi radius penuh (kapsul).
-    return DecoratedBox(
-      decoration: ShapeDecoration(
-        color: scheme.surface,
-        shape: StadiumBorder(
-          side: BorderSide(
-            color: scheme.onSurface,
-            width: AppStyle.of(context).frameWidth,
-          ),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(Spacing.xs),
-        child: Row(
-          children: [
-            for (final MapEntry(key: type, value: label) in _labels.entries)
-              Expanded(
-                child: Semantics(
-                  button: true,
-                  selected: type == selected,
-                  inMutuallyExclusiveGroup: true,
-                  child: Material(
-                    type: type == selected
-                        ? MaterialType.canvas
-                        : MaterialType.transparency,
-                    color: scheme.onSurface,
-                    shape: const StadiumBorder(),
-                    child: InkWell(
-                      customBorder: const StadiumBorder(),
-                      onTap: () => onChanged(type),
-                      child: Container(
-                        constraints: const BoxConstraints(
-                          minHeight: kMinInteractiveDimension,
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          label,
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.labelLarge?.copyWith(
-                            color: type == selected
-                                ? scheme.surface
-                                : scheme.onSurface,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _WalletFilter extends StatelessWidget {
   const _WalletFilter({
     required this.wallets,
@@ -376,6 +399,19 @@ class _ReportBody extends StatelessWidget {
         if (report.comparison case final comparison?) ...[
           const SizedBox(height: Spacing.md),
           Text(_comparisonText(comparison), style: theme.textTheme.bodyMedium),
+        ],
+        if (type == ReportType.monthly) ...[
+          const SizedBox(height: Spacing.md),
+          OutlinedButton.icon(
+            onPressed: () => context.pushNamed(
+              Routes.wrapped,
+              extra: report.period.start.substring(0, 7),
+            ),
+            icon: const Icon(Icons.auto_awesome_rounded),
+            label: Text(
+              'Lihat rekap ${formatMonth(DateTime.parse(report.period.start))}',
+            ),
+          ),
         ],
         if (totals.transactionCount == 0)
           const EmptyState(message: 'Belum ada transaksi di periode ini.')

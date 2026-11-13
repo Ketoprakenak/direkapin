@@ -105,6 +105,7 @@ class FakeReminderService implements ReminderService {
   final archiveSyncs = <List<ReadyArchive>>[];
   final archiveTimezones = <String>[];
   final budgetAlerts = <String>[];
+  final recurringSyncs = <List<RecurringReminder>>[];
   var enabled = true;
 
   @override
@@ -119,6 +120,12 @@ class FakeReminderService implements ReminderService {
     archiveSyncs.add(ready);
     archiveTimezones.add(timezone);
   }
+
+  @override
+  Future<void> syncRecurring(
+    List<RecurringReminder> rules,
+    String timezone,
+  ) async => recurringSyncs.add(rules);
 
   @override
   Future<void> requestPermission() async {}

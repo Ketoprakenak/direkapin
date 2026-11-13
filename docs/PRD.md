@@ -78,7 +78,7 @@ Prioritas: **P0** wajib di MVP, **P1** setelah MVP stabil, **P2** nice-to-have.
 | AUTH-03 | Logout dan hapus token dari perangkat | P0 |
 | AUTH-04 | Registrasi dibatasi pakai kode undangan (supaya server tidak dipakai orang asing) | P0 |
 | AUTH-05 | Edit profil: nama, foto (D-65: foto dipotong 512x512 di server, tampil di Profil saja) | P1 |
-| AUTH-06 | Lupa password via email | P2 |
+| AUTH-06 | Lupa password via email: kode 6 angka (15 menit) lewat Gmail SMTP, lalu password baru (D-75) | P2 |
 
 ### 4.2 Dashboard
 
@@ -119,8 +119,8 @@ Prioritas: **P0** wajib di MVP, **P1** setelah MVP stabil, **P2** nice-to-have.
 | FIN-11 | Filter laporan & transaksi per dompet, kategori, rentang tanggal, kata kunci | P1 |
 | FIN-12 | Budget bulanan untuk satu atau beberapa kategori + peringatan saat mendekati batas (D-60) | P1 |
 | FIN-13 | Kompresi otomatis: setiap foto (kamera/galeri) langsung di-resize maks. 1600 px dan dikompres ke JPEG/WebP kualitas ~75–80% (target ≤ 400 KB) di HP sebelum upload, tanpa langkah manual dari user | P0 |
-| FIN-14 | Export laporan ke CSV / PDF | P2 |
-| FIN-15 | Transaksi berulang bulanan (mis. kos): aturan masuk/keluar tiap tanggal tertentu. Tidak otomatis; muncul sebagai kartu "Jatuh tempo" di Beranda dan user konfirmasi Catat atau Lewati (D-67) | P2 |
+| FIN-14 | Export laporan ke CSV / PDF dari layar Laporan, periode dan dompet mengikuti layar, file ke Download/Direkapin (D-70) | P2 |
+| FIN-15 | Transaksi berulang bulanan (mis. kos): aturan masuk/keluar tiap tanggal tertentu. Tidak otomatis; muncul sebagai kartu "Jatuh tempo" di Beranda dan user konfirmasi Catat atau Lewati (D-67); notifikasi lokal 09.00 di hari jatuh tempo (D-74) | P2 |
 | FIN-16 | Simpan foto dari server ke galeri HP (album Direkapin), mis. setelah foto aslinya terhapus dari HP. Yang tersimpan versi kompres; foto yang sudah diarsip diambil dari ZIP arsip | P1 |
 | FIN-17 | Biaya admin transfer (opsional, nominal bebas) dipotong dari dompet asal atau tujuan; dicatat sebagai pengeluaran kategori "Biaya Admin" (D-56). Mis. BCA → GoPay Rp15.000, biaya Rp1.000 dari tujuan: GoPay bertambah Rp14.000 | P1 |
 
@@ -133,7 +133,7 @@ Prioritas: **P0** wajib di MVP, **P1** setelah MVP stabil, **P2** nice-to-have.
 | ACT-03 | Lampirkan foto kegiatan, galeri boleh pilih beberapa sekaligus (maks. 5 foto), dikompres otomatis seperti FIN-13 | P0 |
 | ACT-04 | Edit dan hapus kegiatan | P0 |
 | ACT-05 | Mood harian (emoji) di Halaman Hari | P1 |
-| ACT-06 | Galeri "Kenangan": semua foto kegiatan per bulan | P2 |
+| ACT-06 | Galeri "Kenangan": semua foto kegiatan per bulan, dari Profil dan kartu Kenangan di Beranda saat pergantian bulan (D-73) | P2 |
 
 ### 4.6 Engagement (biar rajin mencatat)
 
@@ -142,7 +142,7 @@ Prioritas: **P0** wajib di MVP, **P1** setelah MVP stabil, **P2** nice-to-have.
 | ENG-01 | Notifikasi lokal pengingat harian di jam yang bisa diatur (default 21:00), dijadwalkan di HP tanpa push server | P0 |
 | ENG-02 | Streak + badge sederhana (7, 30, 100 hari) | P1 |
 | ENG-03 | Tema penuh 7 pilihan + maskot + transisi (D-63) | P1 |
-| ENG-04 | Rekap bulanan ala "wrapped": total pengeluaran, kategori terboros, foto kegiatan terbanyak | P2 |
+| ENG-04 | Rekap bulanan ala "wrapped": total pengeluaran, kategori terboros, hari paling boros, foto kegiatan terbanyak; dibuka dari Laporan Bulanan (D-72) | P2 |
 
 ### 4.7 Arsip foto bulanan
 

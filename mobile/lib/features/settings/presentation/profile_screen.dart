@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/api/api_error.dart';
 import '../../../core/auth/session_provider.dart';
 import '../../../core/format/dates.dart';
+import '../../../core/format/money.dart';
 import '../../../core/media/photo_service.dart';
 import '../../../core/notifications/reminder_service.dart';
 import '../../../core/router/router.dart';
@@ -15,6 +16,7 @@ import '../../../core/widgets/mascot.dart';
 import '../../auth/data/auth_models.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../providers/settings_providers.dart';
+import 'heatmap_sheet.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -54,6 +56,13 @@ class ProfileScreen extends ConsumerWidget {
                   onTap: () => context.pushNamed(Routes.recurring),
                 ),
                 const _ThemeTile(),
+                const _HeatmapTile(),
+                ListTile(
+                  leading: const Icon(Icons.photo_library_rounded),
+                  title: const Text('Kenangan'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.pushNamed(Routes.memories),
+                ),
                 ListTile(
                   leading: const Icon(Icons.inventory_2_rounded),
                   title: const Text('Arsip foto'),
@@ -331,6 +340,29 @@ class _ThemeTile extends ConsumerWidget {
       subtitle: Text(active.name),
       trailing: const Icon(Icons.chevron_right_rounded),
       onTap: () => context.pushNamed(Routes.themes),
+    );
+  }
+}
+
+class _HeatmapTile extends ConsumerWidget {
+  const _HeatmapTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final heatmap = ref.watch(meProvider).value?.heatmap;
+    return ListTile(
+      leading: const Icon(Icons.grid_view_rounded),
+      title: const Text('Skala heatmap'),
+      subtitle: heatmap == null
+          ? null
+          : Text(
+              heatmap.mode == HeatmapMode.auto
+                  ? 'Otomatis'
+                  : 'Tetap · ${heatmap.thresholds.map(formatCompact).join(' / ')}',
+            ),
+      trailing: const Icon(Icons.chevron_right_rounded),
+      enabled: heatmap != null,
+      onTap: heatmap == null ? null : () => showHeatmapSheet(context, heatmap),
     );
   }
 }

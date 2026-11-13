@@ -19,6 +19,9 @@ describe('system', () => {
     expect(res.json()).toEqual({
       latestVersion: process.env.LATEST_APK_VERSION,
       downloadUrl: process.env.LATEST_APK_URL,
+      releaseNotes: expect.arrayContaining([
+        { version: '1.3.0', items: expect.arrayContaining([expect.any(String)]) },
+      ]),
     });
   });
 

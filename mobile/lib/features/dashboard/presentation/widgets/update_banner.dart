@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/tokens.dart';
 import '../../../../core/update/app_update.dart';
 
 /// Banner versi baru. "Nanti" berlaku sampai aplikasi dibuka lagi.
@@ -23,6 +24,51 @@ class _UpdateBannerState extends ConsumerState<UpdateBanner> {
     }
   }
 
+  /// Ada catatan update: tampilkan dulu, download dari dialog.
+  Future<void> _update(AppUpdate update) async {
+    if (update.notes.isEmpty) return _open(update.url);
+    final download = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Yang baru di ${update.version}'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final note in update.notes) ...[
+                if (update.notes.length > 1)
+                  Padding(
+                    padding: const EdgeInsets.only(top: Spacing.sm),
+                    child: Text(
+                      note.version,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                for (final item in note.items)
+                  Padding(
+                    padding: const EdgeInsets.only(top: Spacing.xs),
+                    child: Text('• $item'),
+                  ),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Nanti'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Download'),
+          ),
+        ],
+      ),
+    );
+    if (download == true && mounted) await _open(update.url);
+  }
+
   @override
   Widget build(BuildContext context) {
     final update = ref.watch(availableUpdateProvider).value;
@@ -35,7 +81,7 @@ class _UpdateBannerState extends ConsumerState<UpdateBanner> {
           child: const Text('Nanti'),
         ),
         TextButton(
-          onPressed: () => _open(update.url),
+          onPressed: () => _update(update),
           child: const Text('Update'),
         ),
       ],

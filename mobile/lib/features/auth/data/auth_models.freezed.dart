@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$User {
 
- String get id; String get name; String get email; String get timezone; String get reminderTime; bool get hasAvatar; DateTime get createdAt;
+ String get id; String get name; String get email; String get timezone; String get reminderTime; bool get hasAvatar; HeatmapSetting get heatmap; DateTime get createdAt;
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +30,20 @@ $UserCopyWith<User> get copyWith => _$UserCopyWithImpl<User>(this as User, _$ide
 @override
 bool operator ==(Object other) {
   final _this = this as User;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is User&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.timezone, _this.timezone) || other.timezone == _this.timezone)&&(identical(other.reminderTime, _this.reminderTime) || other.reminderTime == _this.reminderTime)&&(identical(other.hasAvatar, _this.hasAvatar) || other.hasAvatar == _this.hasAvatar)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is User&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.timezone, _this.timezone) || other.timezone == _this.timezone)&&(identical(other.reminderTime, _this.reminderTime) || other.reminderTime == _this.reminderTime)&&(identical(other.hasAvatar, _this.hasAvatar) || other.hasAvatar == _this.hasAvatar)&&(identical(other.heatmap, _this.heatmap) || other.heatmap == _this.heatmap)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as User;
-  return Object.hash(runtimeType,_this.id,_this.name,_this.email,_this.timezone,_this.reminderTime,_this.hasAvatar,_this.createdAt);
+  return Object.hash(runtimeType,_this.id,_this.name,_this.email,_this.timezone,_this.reminderTime,_this.hasAvatar,_this.heatmap,_this.createdAt);
 }
 
 @override
 String toString() {
   final _this = this as User;
-  return 'User(id: ${_this.id}, name: ${_this.name}, email: ${_this.email}, timezone: ${_this.timezone}, reminderTime: ${_this.reminderTime}, hasAvatar: ${_this.hasAvatar}, createdAt: ${_this.createdAt})';
+  return 'User(id: ${_this.id}, name: ${_this.name}, email: ${_this.email}, timezone: ${_this.timezone}, reminderTime: ${_this.reminderTime}, hasAvatar: ${_this.hasAvatar}, heatmap: ${_this.heatmap}, createdAt: ${_this.createdAt})';
 }
 
 
@@ -54,11 +54,11 @@ abstract mixin class $UserCopyWith<$Res>  {
   factory $UserCopyWith(User value, $Res Function(User) _then) = _$UserCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String email, String timezone, String reminderTime, bool hasAvatar, DateTime createdAt
+ String id, String name, String email, String timezone, String reminderTime, bool hasAvatar, HeatmapSetting heatmap, DateTime createdAt
 });
 
 
-
+$HeatmapSettingCopyWith<$Res> get heatmap;
 
 }
 /// @nodoc
@@ -71,7 +71,7 @@ class _$UserCopyWithImpl<$Res>
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? email = null,Object? timezone = null,Object? reminderTime = null,Object? hasAvatar = null,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? email = null,Object? timezone = null,Object? reminderTime = null,Object? hasAvatar = null,Object? heatmap = null,Object? createdAt = null,}) {
   return _then(User(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -79,11 +79,21 @@ as String,email: null == email ? _self.email : email // ignore: cast_nullable_to
 as String,timezone: null == timezone ? _self.timezone : timezone // ignore: cast_nullable_to_non_nullable
 as String,reminderTime: null == reminderTime ? _self.reminderTime : reminderTime // ignore: cast_nullable_to_non_nullable
 as String,hasAvatar: null == hasAvatar ? _self.hasAvatar : hasAvatar // ignore: cast_nullable_to_non_nullable
-as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as bool,heatmap: null == heatmap ? _self.heatmap : heatmap // ignore: cast_nullable_to_non_nullable
+as HeatmapSetting,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
 }
-
+/// Create a copy of User
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$HeatmapSettingCopyWith<$Res> get heatmap {
+  
+  return $HeatmapSettingCopyWith<$Res>(_self.heatmap, (value) {
+    return _then(_self.copyWith(heatmap: value));
+  });
+}
 }
 
 
@@ -165,10 +175,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String email,  String timezone,  String reminderTime,  bool hasAvatar,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String email,  String timezone,  String reminderTime,  bool hasAvatar,  HeatmapSetting heatmap,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
-return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTime,_that.hasAvatar,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTime,_that.hasAvatar,_that.heatmap,_that.createdAt);case _:
   return orElse();
 
 }
@@ -186,10 +196,10 @@ return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTim
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String email,  String timezone,  String reminderTime,  bool hasAvatar,  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String email,  String timezone,  String reminderTime,  bool hasAvatar,  HeatmapSetting heatmap,  DateTime createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _User():
-return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTime,_that.hasAvatar,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTime,_that.hasAvatar,_that.heatmap,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -206,10 +216,10 @@ return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTim
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String email,  String timezone,  String reminderTime,  bool hasAvatar,  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String email,  String timezone,  String reminderTime,  bool hasAvatar,  HeatmapSetting heatmap,  DateTime createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
-return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTime,_that.hasAvatar,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTime,_that.hasAvatar,_that.heatmap,_that.createdAt);case _:
   return null;
 
 }
@@ -221,7 +231,7 @@ return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTim
 @JsonSerializable()
 
 class _User implements User {
-  const _User({required this.id, required this.name, required this.email, required this.timezone, required this.reminderTime, required this.hasAvatar, required this.createdAt});
+  const _User({required this.id, required this.name, required this.email, required this.timezone, required this.reminderTime, required this.hasAvatar, this.heatmap = const HeatmapSetting(), required this.createdAt});
   factory _User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
 @override final  String id;
@@ -230,6 +240,7 @@ class _User implements User {
 @override final  String timezone;
 @override final  String reminderTime;
 @override final  bool hasAvatar;
+@override@JsonKey() final  HeatmapSetting heatmap;
 @override final  DateTime createdAt;
 
 /// Create a copy of User
@@ -245,18 +256,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _User&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.timezone, timezone) || other.timezone == timezone)&&(identical(other.reminderTime, reminderTime) || other.reminderTime == reminderTime)&&(identical(other.hasAvatar, hasAvatar) || other.hasAvatar == hasAvatar)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _User&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.timezone, timezone) || other.timezone == timezone)&&(identical(other.reminderTime, reminderTime) || other.reminderTime == reminderTime)&&(identical(other.hasAvatar, hasAvatar) || other.hasAvatar == hasAvatar)&&(identical(other.heatmap, heatmap) || other.heatmap == heatmap)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,email,timezone,reminderTime,hasAvatar,createdAt);
+    return Object.hash(runtimeType,id,name,email,timezone,reminderTime,hasAvatar,heatmap,createdAt);
 }
 
 @override
 String toString() {
-    return 'User(id: $id, name: $name, email: $email, timezone: $timezone, reminderTime: $reminderTime, hasAvatar: $hasAvatar, createdAt: $createdAt)';
+    return 'User(id: $id, name: $name, email: $email, timezone: $timezone, reminderTime: $reminderTime, hasAvatar: $hasAvatar, heatmap: $heatmap, createdAt: $createdAt)';
 }
 
 
@@ -267,11 +278,11 @@ abstract mixin class _$UserCopyWith<$Res> implements $UserCopyWith<$Res> {
   factory _$UserCopyWith(_User value, $Res Function(_User) _then) = __$UserCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String email, String timezone, String reminderTime, bool hasAvatar, DateTime createdAt
+ String id, String name, String email, String timezone, String reminderTime, bool hasAvatar, HeatmapSetting heatmap, DateTime createdAt
 });
 
 
-
+@override $HeatmapSettingCopyWith<$Res> get heatmap;
 
 }
 /// @nodoc
@@ -284,7 +295,7 @@ class __$UserCopyWithImpl<$Res>
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? email = null,Object? timezone = null,Object? reminderTime = null,Object? hasAvatar = null,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? email = null,Object? timezone = null,Object? reminderTime = null,Object? hasAvatar = null,Object? heatmap = null,Object? createdAt = null,}) {
   return _then(_User(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -292,8 +303,297 @@ as String,email: null == email ? _self.email : email // ignore: cast_nullable_to
 as String,timezone: null == timezone ? _self.timezone : timezone // ignore: cast_nullable_to_non_nullable
 as String,reminderTime: null == reminderTime ? _self.reminderTime : reminderTime // ignore: cast_nullable_to_non_nullable
 as String,hasAvatar: null == hasAvatar ? _self.hasAvatar : hasAvatar // ignore: cast_nullable_to_non_nullable
-as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as bool,heatmap: null == heatmap ? _self.heatmap : heatmap // ignore: cast_nullable_to_non_nullable
+as HeatmapSetting,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
+  ));
+}
+
+/// Create a copy of User
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$HeatmapSettingCopyWith<$Res> get heatmap {
+  
+  return $HeatmapSettingCopyWith<$Res>(_self.heatmap, (value) {
+    return _then(_self.copyWith(heatmap: value));
+  });
+}
+}
+
+
+/// @nodoc
+mixin _$HeatmapSetting {
+
+ HeatmapMode get mode; List<int> get thresholds;
+/// Create a copy of HeatmapSetting
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$HeatmapSettingCopyWith<HeatmapSetting> get copyWith => _$HeatmapSettingCopyWithImpl<HeatmapSetting>(this as HeatmapSetting, _$identity);
+
+  /// Serializes this HeatmapSetting to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  final _this = this as HeatmapSetting;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is HeatmapSetting&&(identical(other.mode, _this.mode) || other.mode == _this.mode)&&const DeepCollectionEquality().equals(other.thresholds, _this.thresholds));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+  final _this = this as HeatmapSetting;
+  return Object.hash(runtimeType,_this.mode,const DeepCollectionEquality().hash(_this.thresholds));
+}
+
+@override
+String toString() {
+  final _this = this as HeatmapSetting;
+  return 'HeatmapSetting(mode: ${_this.mode}, thresholds: ${_this.thresholds})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $HeatmapSettingCopyWith<$Res>  {
+  factory $HeatmapSettingCopyWith(HeatmapSetting value, $Res Function(HeatmapSetting) _then) = _$HeatmapSettingCopyWithImpl;
+@useResult
+$Res call({
+ HeatmapMode mode, List<int> thresholds
+});
+
+
+
+
+}
+/// @nodoc
+class _$HeatmapSettingCopyWithImpl<$Res>
+    implements $HeatmapSettingCopyWith<$Res> {
+  _$HeatmapSettingCopyWithImpl(this._self, this._then);
+
+  final HeatmapSetting _self;
+  final $Res Function(HeatmapSetting) _then;
+
+/// Create a copy of HeatmapSetting
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? mode = null,Object? thresholds = null,}) {
+  return _then(HeatmapSetting(
+mode: null == mode ? _self.mode : mode // ignore: cast_nullable_to_non_nullable
+as HeatmapMode,thresholds: null == thresholds ? _self.thresholds : thresholds // ignore: cast_nullable_to_non_nullable
+as List<int>,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [HeatmapSetting].
+extension HeatmapSettingPatterns on HeatmapSetting {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _HeatmapSetting value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _HeatmapSetting() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _HeatmapSetting value)  $default,){
+final _that = this;
+switch (_that) {
+case _HeatmapSetting():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _HeatmapSetting value)?  $default,){
+final _that = this;
+switch (_that) {
+case _HeatmapSetting() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( HeatmapMode mode,  List<int> thresholds)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _HeatmapSetting() when $default != null:
+return $default(_that.mode,_that.thresholds);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( HeatmapMode mode,  List<int> thresholds)  $default,) {final _that = this;
+switch (_that) {
+case _HeatmapSetting():
+return $default(_that.mode,_that.thresholds);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( HeatmapMode mode,  List<int> thresholds)?  $default,) {final _that = this;
+switch (_that) {
+case _HeatmapSetting() when $default != null:
+return $default(_that.mode,_that.thresholds);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _HeatmapSetting implements HeatmapSetting {
+  const _HeatmapSetting({this.mode = HeatmapMode.auto,  List<int> thresholds = const [50000, 100000, 200000]}): _thresholds = thresholds;
+  factory _HeatmapSetting.fromJson(Map<String, dynamic> json) => _$HeatmapSettingFromJson(json);
+
+@override@JsonKey() final  HeatmapMode mode;
+ final  List<int> _thresholds;
+@override@JsonKey() List<int> get thresholds {
+  if (_thresholds is EqualUnmodifiableListView) return _thresholds;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_thresholds);
+}
+
+
+/// Create a copy of HeatmapSetting
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$HeatmapSettingCopyWith<_HeatmapSetting> get copyWith => __$HeatmapSettingCopyWithImpl<_HeatmapSetting>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$HeatmapSettingToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _HeatmapSetting&&(identical(other.mode, mode) || other.mode == mode)&&const DeepCollectionEquality().equals(other.thresholds, _thresholds));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+    return Object.hash(runtimeType,mode,const DeepCollectionEquality().hash(_thresholds));
+}
+
+@override
+String toString() {
+    return 'HeatmapSetting(mode: $mode, thresholds: $thresholds)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$HeatmapSettingCopyWith<$Res> implements $HeatmapSettingCopyWith<$Res> {
+  factory _$HeatmapSettingCopyWith(_HeatmapSetting value, $Res Function(_HeatmapSetting) _then) = __$HeatmapSettingCopyWithImpl;
+@override @useResult
+$Res call({
+ HeatmapMode mode, List<int> thresholds
+});
+
+
+
+
+}
+/// @nodoc
+class __$HeatmapSettingCopyWithImpl<$Res>
+    implements _$HeatmapSettingCopyWith<$Res> {
+  __$HeatmapSettingCopyWithImpl(this._self, this._then);
+
+  final _HeatmapSetting _self;
+  final $Res Function(_HeatmapSetting) _then;
+
+/// Create a copy of HeatmapSetting
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? mode = null,Object? thresholds = null,}) {
+  return _then(_HeatmapSetting(
+mode: null == mode ? _self.mode : mode // ignore: cast_nullable_to_non_nullable
+as HeatmapMode,thresholds: null == thresholds ? _self._thresholds : thresholds // ignore: cast_nullable_to_non_nullable
+as List<int>,
   ));
 }
 

@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import type { Config } from '../../config.js';
+import { releaseNotes } from './release-notes.js';
 import { healthResponse, versionResponse } from './system.schemas.js';
 
 export function systemRoutes(app: FastifyInstance, config: Config) {
@@ -13,5 +14,6 @@ export function systemRoutes(app: FastifyInstance, config: Config) {
   routes.get('/version', { schema: { response: { 200: versionResponse } } }, () => ({
     latestVersion: config.LATEST_APK_VERSION,
     downloadUrl: config.LATEST_APK_URL,
+    releaseNotes,
   }));
 }

@@ -6,6 +6,7 @@ import '../../features/activity/data/activity_models.dart';
 import '../../features/activity/presentation/activity_form_screen.dart';
 import '../../features/archive/presentation/archive_screen.dart';
 import '../../features/attachment/presentation/photo_viewer_screen.dart';
+import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/budget/presentation/budget_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
@@ -15,11 +16,13 @@ import '../../features/category/presentation/categories_screen.dart';
 import '../../features/settings/presentation/theme_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/day/presentation/day_screen.dart';
+import '../../features/memories/presentation/memories_screen.dart';
 import '../../features/recurring/data/recurring_models.dart';
 import '../../features/recurring/presentation/recurring_form_screen.dart';
 import '../../features/recurring/presentation/recurring_list_screen.dart';
 import '../../features/report/presentation/category_transactions_screen.dart';
 import '../../features/report/presentation/report_screen.dart';
+import '../../features/report/presentation/wrapped_screen.dart';
 import '../../features/settings/presentation/profile_screen.dart';
 import '../../features/shell/presentation/animated_branch_container.dart';
 import '../../features/shell/presentation/app_shell.dart';
@@ -39,6 +42,7 @@ abstract final class Routes {
   static const splash = 'splash';
   static const login = 'login';
   static const register = 'register';
+  static const forgotPassword = 'forgotPassword';
   static const home = 'home';
   static const calendar = 'calendar';
   static const reports = 'reports';
@@ -61,11 +65,14 @@ abstract final class Routes {
   static const budgets = 'budgets';
   static const recurring = 'recurring';
   static const recurringForm = 'recurringForm';
+  static const wrapped = 'wrapped';
+  static const memories = 'memories';
 }
 
 const _splashPath = '/';
 const _loginPath = '/masuk';
 const _registerPath = '/daftar';
+const _forgotPath = '/lupa-password';
 const _homePath = '/beranda';
 
 // go_router 18 memeriksa MaterialApp dari package:material_ui, jadi rute
@@ -88,7 +95,10 @@ GoRouter appRouter(Ref ref) {
       if (session.isLoading && !session.hasValue) {
         return location == _splashPath ? null : _splashPath;
       }
-      final onAuthScreen = location == _loginPath || location == _registerPath;
+      final onAuthScreen =
+          location == _loginPath ||
+          location == _registerPath ||
+          location == _forgotPath;
       if (session.value != true) return onAuthScreen ? null : _loginPath;
       return onAuthScreen || location == _splashPath ? _homePath : null;
     },
@@ -102,6 +112,12 @@ GoRouter appRouter(Ref ref) {
         path: _loginPath,
         name: Routes.login,
         pageBuilder: (context, state) => _page(state, const LoginScreen()),
+      ),
+      GoRoute(
+        path: _forgotPath,
+        name: Routes.forgotPassword,
+        pageBuilder: (context, state) =>
+            _page(state, const ForgotPasswordScreen()),
       ),
       GoRoute(
         path: _registerPath,
@@ -159,6 +175,18 @@ GoRouter appRouter(Ref ref) {
         name: Routes.recurringForm,
         pageBuilder: (context, state) =>
             _page(state, RecurringFormScreen(rule: state.extra as Recurring?)),
+      ),
+      GoRoute(
+        path: '/kenangan',
+        name: Routes.memories,
+        pageBuilder: (context, state) =>
+            _page(state, MemoriesScreen(initialMonth: state.extra as String?)),
+      ),
+      GoRoute(
+        path: '/laporan/rekap',
+        name: Routes.wrapped,
+        pageBuilder: (context, state) =>
+            _page(state, WrappedScreen(month: state.extra! as String)),
       ),
       GoRoute(
         path: '/laporan/kategori',

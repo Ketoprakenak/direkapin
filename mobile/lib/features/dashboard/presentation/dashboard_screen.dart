@@ -12,6 +12,7 @@ import '../../../core/widgets/mascot.dart';
 import '../../../core/widgets/money_widgets.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../category/data/category_models.dart';
+import '../../memories/presentation/memory_card.dart';
 import '../../recurring/data/recurring_models.dart';
 import '../../recurring/presentation/widgets/record_sheet.dart';
 import '../../recurring/providers/recurring_providers.dart';
@@ -129,6 +130,7 @@ class _DashboardBody extends StatelessWidget {
       children: [
         _BalanceCard(data),
         const SizedBox(height: Spacing.xl),
+        const MemoryCard(),
         if (data.streak.current > 0 || data.streak.longest > 0) ...[
           FrameCard(
             child: Column(

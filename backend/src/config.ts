@@ -15,6 +15,17 @@ const envSchema = z.object({
   MAX_UPLOAD_BYTES: z.coerce.number().int().positive(),
   LATEST_APK_VERSION: z.string().min(1),
   LATEST_APK_URL: z.url(),
+  // Email reset password (AUTH-06). Wajib di production; kosong di dev = kode ditulis ke log.
+  SMTP_HOST: z.string().min(1).optional(),
+  SMTP_PORT: z.coerce.number().int().positive().default(465),
+  SMTP_USER: z.string().min(1).optional(),
+  SMTP_PASS: z.string().min(1).optional(),
+  SMTP_FROM: z.string().min(1).optional(),
+}).superRefine((env, ctx) => {
+  if (env.NODE_ENV !== 'production') return;
+  for (const name of ['SMTP_HOST', 'SMTP_USER', 'SMTP_PASS'] as const) {
+    if (!env[name]) ctx.addIssue({ code: 'custom', path: [name], message: 'Wajib di production' });
+  }
 });
 
 export type Config = z.infer<typeof envSchema>;

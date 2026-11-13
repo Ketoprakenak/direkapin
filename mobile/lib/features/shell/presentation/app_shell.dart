@@ -39,6 +39,7 @@ class _AppShellState extends ConsumerState<AppShell> {
         ref.invalidate(notificationsEnabledProvider);
         ref.invalidate(archivesProvider);
         ref.invalidate(recurringDueProvider);
+        ref.invalidate(recurringListProvider);
       },
     );
     unawaited(_start());
@@ -55,6 +56,10 @@ class _AppShellState extends ConsumerState<AppShell> {
     if (!mounted) return;
     if (payload == archivePayload) {
       ref.read(appRouterProvider).pushNamed(Routes.archives);
+      return;
+    }
+    if (payload == homePayload) {
+      ref.read(appRouterProvider).goNamed(Routes.home);
       return;
     }
     ref
@@ -98,6 +103,27 @@ class _AppShellState extends ConsumerState<AppShell> {
     unawaited(_reminders.syncArchives(ready, me.requireValue.timezone));
   }
 
+  void _syncRecurring() {
+    final rules = ref.read(recurringListProvider);
+    final me = ref.read(meProvider);
+    // Gagal memuat: jadwal lama tetap dipakai.
+    if (rules.isLoading || rules.hasError || !rules.hasValue) return;
+    if (me.isLoading || me.hasError || !me.hasValue) return;
+    unawaited(
+      _reminders.syncRecurring([
+        for (final rule in rules.requireValue)
+          if (rule.next case final next?)
+            (
+              dueDate: next.dueDate,
+              label: (rule.note?.trim().isNotEmpty ?? false)
+                  ? rule.note!.trim()
+                  : rule.category.name,
+              amount: rule.amount,
+            ),
+      ], me.requireValue.timezone),
+    );
+  }
+
   @override
   void dispose() {
     _lifecycle.dispose();
@@ -111,7 +137,9 @@ class _AppShellState extends ConsumerState<AppShell> {
     ref.listen(meProvider, (_, _) {
       _syncReminders();
       _syncArchives();
+      _syncRecurring();
     });
+    ref.listen(recurringListProvider, (_, _) => _syncRecurring());
     ref.listen(archivesProvider, (_, _) => _syncArchives());
     // Mencakup tombol Keluar dan sesi kedaluwarsa.
     ref.listen(sessionProvider, (_, next) {

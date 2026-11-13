@@ -4,6 +4,7 @@ import type { FastifyBaseLogger } from 'fastify';
 import sharp from 'sharp';
 import type { z } from 'zod';
 import { AppError } from '../../lib/app-error.js';
+import { toNumber } from '../../lib/money.js';
 import { readUpload, removeUploads, writeUpload } from '../../lib/storage.js';
 import type { updateMeBody, userResponse } from './me.schemas.js';
 
@@ -19,6 +20,7 @@ export function toUserResponse(user: User): z.infer<typeof userResponse> {
     timezone: user.timezone,
     reminderTime: user.reminderTime,
     hasAvatar: user.avatarPath !== null,
+    heatmap: { mode: user.heatmapMode, thresholds: user.heatmapThresholds.map(toNumber) },
     createdAt: user.createdAt.toISOString(),
   };
 }
@@ -41,7 +43,19 @@ export async function updateMe(
   input: z.infer<typeof updateMeBody>,
 ) {
   await getMe(prisma, userId);
-  return toUserResponse(await prisma.user.update({ where: { id: userId }, data: input }));
+  const { heatmap, ...rest } = input;
+  return toUserResponse(
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...rest,
+        ...(heatmap && {
+          heatmapMode: heatmap.mode,
+          heatmapThresholds: heatmap.thresholds.map(BigInt),
+        }),
+      },
+    }),
+  );
 }
 
 async function setAvatarPath(prisma: PrismaClient, userId: string, avatarPath: string | null) {

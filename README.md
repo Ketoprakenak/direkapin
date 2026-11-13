@@ -83,7 +83,7 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
-Setelah terbit, ubah `LATEST_APK_VERSION` di `.env` mini PC lalu jalankan ulang `api`. Banner update di aplikasi membaca nilai itu.
+Setelah terbit, ubah `LATEST_APK_VERSION` di `.env` mini PC lalu jalankan ulang `api`. Banner update di aplikasi membaca nilai itu. Sebelum tag, tambah entri versi baru di `backend/src/modules/system/release-notes.ts` (isi dialog "Yang baru di X") lalu deploy `api`.
 
 ## Menjalankan di mini PC
 
@@ -118,6 +118,18 @@ Seed hanya membuat kode pertama. Untuk user berikutnya, buat satu kode per akun,
 ```bash
 docker compose exec db psql -U direkapin -d direkapin -Atc "INSERT INTO invite_codes (code) VALUES (upper(replace(gen_random_uuid()::text,'-',''))) RETURNING code;"
 ```
+
+### Email reset password (Gmail)
+
+Fitur "Lupa password" mengirim kode lewat Gmail. `api` di production **tidak mau start** sampai SMTP diisi.
+
+1. Di akun Gmail pengirim, aktifkan verifikasi 2 langkah.
+2. Buka myaccount.google.com > Keamanan > Sandi aplikasi, buat sandi baru (16 huruf).
+3. Isi di `.env` mini PC (jangan di-commit, jangan dikirim ke chat):
+   `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=465`, `SMTP_USER=<alamat gmail>`, `SMTP_PASS=<sandi aplikasi>`, `SMTP_FROM=Direkapin <alamat gmail>`.
+4. `docker compose up -d --build api`, lalu coba "Lupa password?" di aplikasi.
+
+Di laptop tanpa SMTP, isi email (termasuk kodenya) ditulis ke log `npm run dev`.
 
 ### Backup
 

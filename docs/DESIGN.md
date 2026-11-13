@@ -41,6 +41,8 @@ Dilarang menulis warna hex, ukuran font, atau spacing langsung di widget.
 | Mint | `#A8D8C8` | `#E3F3EE` | `#F5FBF8` | `#15302A` / `#6A8A80` | `#287F5E` / `#B25656` | `#5E92CF` / `#E2AC45` | `#1F5C4A` | 14 / 6 | batang | garis | katak |
 | Gelap | `#2DD4BF` | `#134E4A` | `#0C0A09` | `#FAFAF9` / `#A8A29E` | `#4ADE80` / `#F87171` | `#60A5FA` / `#FBBF24` | `#2DD4BF` | 16 / 12 | ikon | pil | burung hantu |
 
+Heatmap pengeluaran kalender (CAL-06, D-68), 4 tingkat hemat ke boros, teks `onSurface`: Teal `#D5F5EE` `#FCE7A8` `#F9B98A` `#EF8A7E` · Kuning `#FBF0C4` `#F5D98A` `#EDB47A` `#DD8F6E` · Biru langit `#E3EEF8` `#BCD5EE` `#93B7E0` `#6D97CF` · Lavender `#EEE8F7` `#D9CBEE` `#C3ADE3` `#A98CD5` · Peach `#FDECE6` `#F9D2C2` `#F4B39D` `#EB907A` · Mint `#E3F3EE` `#BFE5D7` `#96D3BE` `#6FBFA5` · Gelap `#1F2B2A` `#3A2A1A` `#552A22` `#7A2E2A`.
+
 Tint mood sama di semua tema pastel: 😄 `#7BC79A` · 🙂 `#6FC1B5` · 😐 `#BDB7AE` · 😕 `#E8B96A` · 😢 `#8DB0E0`. Radius tanggal 12 = bulat. Warna kategori dan dompet tidak ikut tema.
 
 Aturan:
@@ -121,7 +123,7 @@ Nilai `icon` di database = nama ikon tanpa `Icons.` (contoh `restaurant_rounded`
 | Kartu dompet | Lebar 140, scroll horizontal, ikon dalam lingkaran warna dompet 15% opacity, nama + saldo |
 | List item transaksi | Tinggi 64; kiri ikon kategori (lingkaran 40, warna kategori 15%), tengah nama kategori + catatan/dompet (`bodyMedium` secondary), kanan nominal `amount` (+hijau / −merah) dan thumbnail 32 jika ada foto |
 | List item kegiatan | Garis kiri 3 px warna `activity`; judul, jam (atau "Seharian"); bintang `important` jika penting |
-| Sel kalender | Angka tanggal `labelSmall`; latar lingkaran tanggal diwarnai sesuai mood (`moodTints`, transparan 35%) (D-61); di bawahnya ikon 12 px: ↙ `income` (pemasukan), ↗ `expense` (pengeluaran), kalender `activity` (kegiatan) atau bintang `important` jika ada kegiatan penting; total keluar ringkas di bawahnya; hari ini = lingkaran outline `ink`. Penanda masuk/keluar mengikuti gaya tema: ikon (Teal, Peach, Gelap), titik kecil (Kuning, Lavender), atau batang kecil (Biru langit, Mint); kegiatan tetap ikon |
+| Sel kalender | Angka tanggal `labelSmall`; latar lingkaran tanggal diwarnai sesuai mood (`moodTints`, transparan 35%) (D-61); di bawahnya ikon 12 px: ↙ `income` (pemasukan), ↗ `expense` (pengeluaran), kalender `activity` (kegiatan) atau bintang `important` jika ada kegiatan penting; total keluar ringkas di bawahnya; hari ini = lingkaran outline `ink`. Tab **Pengeluaran** (bawaan): seluruh sel berlatar `heatmap` sesuai tingkat, tint mood disembunyikan, total keluar memakai `onSurface`; tab **Mood**: tint mood seperti di atas. Tingkat heatmap mengikuti Profil > Skala heatmap (D-71): Otomatis relatif ke hari paling boros bulan itu, Nominal tetap dari 3 batas user. Ikon info `InfoBubble` (`info_outline_rounded`, `textSecondary`) membuka balon `inverseSurface` maks. 1–2 kalimat yang hilang saat tap di luar. Legenda di bawah grid (Hemat ▢▢▢▢ Boros, atau 5 mood). Penanda masuk/keluar mengikuti gaya tema: ikon (Teal, Peach, Gelap), titik kecil (Kuning, Lavender), atau batang kecil (Biru langit, Mint); kegiatan tetap ikon |
 | Input nominal | Rata kanan, `displayAmount`, awalan "Rp", keyboard angka, pemisah ribuan otomatis saat mengetik |
 | Pemilih kategori | Grid 4 kolom ikon + label `labelSmall`, terpilih = border `ink` 2 px |
 | Toggle tipe | Segmented: Keluar · Masuk · Transfer (Keluar default) |

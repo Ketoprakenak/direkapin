@@ -95,6 +95,47 @@ final class ReportFamily extends $Family
   String toString() => r'reportProvider';
 }
 
+@ProviderFor(reportExporter)
+final reportExporterProvider = ReportExporterProvider._();
+
+final class ReportExporterProvider
+    extends $FunctionalProvider<ReportExporter, ReportExporter, ReportExporter>
+    with $Provider<ReportExporter> {
+  ReportExporterProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'reportExporterProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$reportExporterHash();
+
+  @$internal
+  @override
+  $ProviderElement<ReportExporter> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  ReportExporter create(Ref ref) {
+    return reportExporter(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ReportExporter value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ReportExporter>(value),
+    );
+  }
+}
+
+String _$reportExporterHash() => r'de396383b3ddd7e679ef4e9c4dd340b820ecdded';
+
 @ProviderFor(periodTransactions)
 final periodTransactionsProvider = PeriodTransactionsFamily._();
 

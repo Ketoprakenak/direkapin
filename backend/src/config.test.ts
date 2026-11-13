@@ -11,4 +11,9 @@ describe('loadConfig', () => {
     expect(() => loadConfig(env)).toThrow(/DATABASE_URL, JWT_SECRET/);
     expect(() => loadConfig(env)).not.toThrow(/rahasia-pendek/);
   });
+
+  it('production wajib SMTP untuk email reset password (D-75)', () => {
+    const env = { ...process.env, NODE_ENV: 'production', SMTP_HOST: undefined };
+    expect(() => loadConfig(env)).toThrow(/SMTP_HOST/);
+  });
 });

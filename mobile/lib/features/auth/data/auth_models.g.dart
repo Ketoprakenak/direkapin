@@ -13,6 +13,9 @@ _User _$UserFromJson(Map<String, dynamic> json) => _User(
   timezone: json['timezone'] as String,
   reminderTime: json['reminderTime'] as String,
   hasAvatar: json['hasAvatar'] as bool,
+  heatmap: json['heatmap'] == null
+      ? const HeatmapSetting()
+      : HeatmapSetting.fromJson(json['heatmap'] as Map<String, dynamic>),
   createdAt: DateTime.parse(json['createdAt'] as String),
 );
 
@@ -23,7 +26,31 @@ Map<String, dynamic> _$UserToJson(_User instance) => <String, dynamic>{
   'timezone': instance.timezone,
   'reminderTime': instance.reminderTime,
   'hasAvatar': instance.hasAvatar,
+  'heatmap': instance.heatmap,
   'createdAt': instance.createdAt.toIso8601String(),
+};
+
+_HeatmapSetting _$HeatmapSettingFromJson(Map<String, dynamic> json) =>
+    _HeatmapSetting(
+      mode:
+          $enumDecodeNullable(_$HeatmapModeEnumMap, json['mode']) ??
+          HeatmapMode.auto,
+      thresholds:
+          (json['thresholds'] as List<dynamic>?)
+              ?.map((e) => (e as num).toInt())
+              .toList() ??
+          const [50000, 100000, 200000],
+    );
+
+Map<String, dynamic> _$HeatmapSettingToJson(_HeatmapSetting instance) =>
+    <String, dynamic>{
+      'mode': _$HeatmapModeEnumMap[instance.mode]!,
+      'thresholds': instance.thresholds,
+    };
+
+const _$HeatmapModeEnumMap = {
+  HeatmapMode.auto: 'AUTO',
+  HeatmapMode.fixed: 'FIXED',
 };
 
 _AuthTokens _$AuthTokensFromJson(Map<String, dynamic> json) => _AuthTokens(

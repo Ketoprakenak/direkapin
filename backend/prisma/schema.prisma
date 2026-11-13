@@ -26,6 +26,12 @@ enum TxType {
   EXPENSE
 }
 
+/// Skala warna heatmap pengeluaran kalender (CAL-06, D-71).
+enum HeatmapMode {
+  AUTO // relatif ke hari paling boros di bulan itu
+  FIXED // 3 batas nominal dari heatmapThresholds
+}
+
 enum ArchiveStatus {
   READY
   DOWNLOADED
@@ -43,10 +49,13 @@ model User {
   avatarPath   String?
   timezone     String   @default("Asia/Jakarta") @db.VarChar(64)
   reminderTime String   @default("21:00") @db.VarChar(5) // HH:mm, waktu lokal user
+  heatmapMode       HeatmapMode @default(AUTO)
+  heatmapThresholds BigInt[]    @default([50000, 100000, 200000]) // 3 batas naik, Rupiah
   createdAt    DateTime @default(now()) @db.Timestamptz
   updatedAt    DateTime @updatedAt @db.Timestamptz
 
   refreshTokens RefreshToken[]
+  passwordResets PasswordReset[]
   wallets       Wallet[]
   categories    Category[]
   transactions  Transaction[]
@@ -75,6 +84,22 @@ model InviteCode {
   usedBy    User? @relation("InviteUsedBy", fields: [usedById], references: [id], onDelete: SetNull)
 
   @@map("invite_codes")
+}
+
+/// Kode reset password 6 angka lewat email (AUTH-06, D-75). Disimpan sebagai hash.
+model PasswordReset {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  codeHash  String
+  expiresAt DateTime  @db.Timestamptz
+  attempts  Int       @default(0)
+  usedAt    DateTime? @db.Timestamptz
+  createdAt DateTime  @default(now()) @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_resets")
 }
 
 model RefreshToken {

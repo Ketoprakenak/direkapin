@@ -135,6 +135,24 @@ void main() {
     expect(isNewerVersion('1.0', '1.0.0'), isFalse);
   });
 
+  test('notesBetween: lebih baru dari terpasang, tidak lewat latest', () {
+    final raw = [
+      {'version': '1.4.0', 'items': ['d']},
+      {'version': '1.3.0', 'items': ['c']},
+      {'version': '1.2.0', 'items': ['b', 7]},
+      {'version': '1.1.0', 'items': ['a']},
+      {'version': 'rusak'},
+    ];
+    final notes = notesBetween(raw, '1.1.0', '1.3.0');
+    expect(notes.map((n) => n.version), ['1.3.0', '1.2.0']);
+    expect(notes.map((n) => n.items), [
+      ['c'],
+      ['b'],
+    ]);
+    expect(notesBetween(null, '1.1.0', '1.3.0'), isEmpty);
+    expect(notesBetween('x', '1.1.0', '1.3.0'), isEmpty);
+  });
+
   group('jadwal pengingat', () {
     testWidgets('dipasang saat dibuka, memakai data server', (tester) async {
       final reminders = FakeReminderService();
@@ -321,6 +339,48 @@ void main() {
 
       expect(find.text('Versi baru 1.0.0 sudah ada.'), findsOneWidget);
       await tester.tap(find.text('Update'));
+      await tester.pumpAndSettle();
+      expect(opened, [
+        {'url': 'https://example.test/rilis'},
+      ]);
+    });
+
+    testWidgets('ada catatan: Update membuka dialog, Download membuka link', (
+      tester,
+    ) async {
+      final opened = <Object?>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('direkapin/links'),
+        (call) async => opened.add(call.arguments),
+      );
+      await pumpRoutedApp(
+        tester,
+        _server(
+          version: {
+            ...version,
+            'releaseNotes': [
+              {
+                'version': '1.0.0',
+                'items': ['Heatmap pengeluaran'],
+              },
+              {
+                'version': '0.1.0',
+                'items': ['Sudah terpasang'],
+              },
+            ],
+          },
+        ),
+        routeName: Routes.home,
+      );
+
+      await tester.tap(find.text('Update'));
+      await tester.pumpAndSettle();
+      expect(find.text('Yang baru di 1.0.0'), findsOneWidget);
+      expect(find.text('• Heatmap pengeluaran'), findsOneWidget);
+      expect(find.text('• Sudah terpasang'), findsNothing);
+      expect(opened, isEmpty);
+
+      await tester.tap(find.text('Download'));
       await tester.pumpAndSettle();
       expect(opened, [
         {'url': 'https://example.test/rilis'},

@@ -1,13 +1,15 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, randomInt } from 'node:crypto';
 import { Prisma, type PrismaClient, type User } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import jwt, { type JwtPayload, type SignOptions } from 'jsonwebtoken';
 import type { z } from 'zod';
+import type { FastifyBaseLogger } from 'fastify';
 import type { Config } from '../../config.js';
 import { AppError } from '../../lib/app-error.js';
 import { DEFAULT_CATEGORIES } from '../../lib/default-categories.js';
+import type { SendMail } from '../../lib/mailer.js';
 import { toUserResponse } from '../me/me.service.js';
-import type { loginBody, registerBody } from './auth.schemas.js';
+import type { loginBody, registerBody, resetPasswordBody } from './auth.schemas.js';
 
 const BCRYPT_COST = 12;
 
@@ -147,5 +149,89 @@ export async function logout(prisma: PrismaClient, refreshToken: string) {
   await prisma.refreshToken.updateMany({
     where: { tokenHash: hashToken(refreshToken), revokedAt: null },
     data: { revokedAt: new Date() },
+  });
+}
+
+const RESET_TTL_MS = 15 * 60_000;
+const RESET_MAX_ATTEMPTS = 5;
+
+function resetError() {
+  return new AppError('VALIDATION_ERROR', 400, 'Data belum valid', {
+    code: 'Kode salah atau sudah kedaluwarsa',
+  });
+}
+
+function hashResetCode(userId: string, code: string) {
+  return hashToken(`${userId}:${code}`);
+}
+
+/** Kirim kode 6 angka ke email (AUTH-06, D-75). Email tak terdaftar: diam-diam tidak ada apa-apa. */
+export async function forgotPassword(
+  prisma: PrismaClient,
+  sendMail: SendMail,
+  email: string,
+  log: FastifyBaseLogger,
+) {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) return;
+  const code = randomInt(0, 1_000_000).toString().padStart(6, '0');
+  const now = new Date();
+  await prisma.$transaction([
+    // Kode baru membatalkan kode lama yang belum dipakai.
+    prisma.passwordReset.updateMany({
+      where: { userId: user.id, usedAt: null },
+      data: { usedAt: now },
+    }),
+    prisma.passwordReset.create({
+      data: {
+        userId: user.id,
+        codeHash: hashResetCode(user.id, code),
+        expiresAt: new Date(now.getTime() + RESET_TTL_MS),
+      },
+    }),
+  ]);
+  // Tidak ditunggu: lama kirim email tidak boleh membedakan email terdaftar atau tidak.
+  sendMail(
+    user.email,
+    'Kode reset password Direkapin',
+    `Halo ${user.name},\n\nKode reset password kamu: ${code}\n` +
+      'Berlaku 15 menit. Kalau kamu tidak meminta reset, abaikan email ini.\n\nDirekapin',
+  ).catch((err: unknown) => log.error({ err }, 'gagal mengirim email reset password'));
+}
+
+/** Ganti password dengan kode; semua sesi lama dicabut. */
+export async function resetPassword(
+  prisma: PrismaClient,
+  input: z.infer<typeof resetPasswordBody>,
+) {
+  const user = await prisma.user.findUnique({ where: { email: input.email } });
+  const now = new Date();
+  const reset =
+    user &&
+    (await prisma.passwordReset.findFirst({
+      where: { userId: user.id, usedAt: null, expiresAt: { gt: now } },
+      orderBy: { createdAt: 'desc' },
+    }));
+  if (!user || !reset || reset.attempts >= RESET_MAX_ATTEMPTS) throw resetError();
+  if (reset.codeHash !== hashResetCode(user.id, input.code)) {
+    await prisma.passwordReset.update({
+      where: { id: reset.id },
+      data: { attempts: { increment: 1 } },
+    });
+    throw resetError();
+  }
+  const passwordHash = await bcrypt.hash(input.newPassword, BCRYPT_COST);
+  await prisma.$transaction(async (tx) => {
+    // Klaim atomik: dua permintaan bersamaan dengan kode sama, hanya satu yang lolos.
+    const claimed = await tx.passwordReset.updateMany({
+      where: { id: reset.id, usedAt: null, attempts: { lt: RESET_MAX_ATTEMPTS } },
+      data: { usedAt: now },
+    });
+    if (claimed.count !== 1) throw resetError();
+    await tx.user.update({ where: { id: user.id }, data: { passwordHash } });
+    await tx.refreshToken.updateMany({
+      where: { userId: user.id, revokedAt: null },
+      data: { revokedAt: now },
+    });
   });
 }

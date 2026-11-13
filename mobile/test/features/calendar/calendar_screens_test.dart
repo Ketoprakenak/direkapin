@@ -96,11 +96,19 @@ void main() {
       CalendarDay? data, {
       bool isToday = false,
       String themeId = 'teal',
+      bool showMood = true,
+      int? heat,
     }) => tester.pumpWidget(
       MaterialApp(
         theme: buildTheme(themeById(themeId)),
         home: Scaffold(
-          body: CalendarCell(day: 10, isToday: isToday, data: data),
+          body: CalendarCell(
+            day: 10,
+            isToday: isToday,
+            data: data,
+            showMood: showMood,
+            heat: heat,
+          ),
         ),
       ),
     );
@@ -129,6 +137,46 @@ void main() {
               as BoxDecoration)
           .color;
     }
+
+    test('heatLevel: 4 tingkat relatif ke hari paling boros', () {
+      expect(heatLevel(0, 1000), isNull);
+      expect(heatLevel(100, 0), isNull);
+      expect(heatLevel(250, 1000), 0);
+      expect(heatLevel(251, 1000), 1);
+      expect(heatLevel(500, 1000), 1);
+      expect(heatLevel(750, 1000), 2);
+      expect(heatLevel(751, 1000), 3);
+      expect(heatLevel(1000, 1000), 3);
+    });
+
+    testWidgets('mode Pengeluaran: sel berwarna heatmap, mood disembunyikan', (
+      tester,
+    ) async {
+      await pumpCell(
+        tester,
+        const CalendarDay(
+          date: '2026-11-10',
+          income: 0,
+          expense: 25000,
+          activityCount: 0,
+          hasImportant: false,
+          mood: '😢',
+        ),
+        showMood: false,
+        heat: 3,
+      );
+      final colors = themeById('teal').colors;
+      expect(dateTint(), isNull);
+      expect(
+        find.byWidgetPredicate(
+          (w) =>
+              w is Container &&
+              w.decoration is BoxDecoration &&
+              (w.decoration! as BoxDecoration).color == colors.heatmap[3],
+        ),
+        findsOneWidget,
+      );
+    });
 
     testWidgets(
       'ikon sesuai isi, kegiatan penting jadi bintang, total keluar',
@@ -187,7 +235,9 @@ void main() {
         themeById('teal').colors.moodTints['😢']!.withValues(alpha: 0.35),
       );
       final box = tester.widget<Container>(
-        find.ancestor(of: find.text('10'), matching: find.byType(Container)),
+        find
+            .ancestor(of: find.text('10'), matching: find.byType(Container))
+            .first,
       );
       expect(
         (box.decoration! as BoxDecoration).borderRadius,
@@ -285,6 +335,54 @@ void main() {
       await tester.tap(find.text('${now.day}'));
       await tester.pumpAndSettle();
       expect(find.text(formatLongDate(now)), findsOneWidget);
+    });
+
+    testWidgets('toggle Pengeluaran/Mood mengganti warna sel (CAL-06)', (
+      tester,
+    ) async {
+      final now = DateTime.now();
+      final server = FakeServer({
+        '/calendar': {
+          'month': monthKey(now),
+          'days': [
+            {
+              'date': dateKey(now),
+              'income': 0,
+              'expense': 25000,
+              'activityCount': 0,
+              'hasImportant': false,
+              'mood': '😄',
+            },
+          ],
+        },
+        '/dashboard': dashboardJson(),
+      });
+      await pumpRoutedApp(tester, server, routeName: Routes.calendar);
+      final colors = themeById('teal').colors;
+      Finder colored(Color c) => find.byWidgetPredicate(
+        (w) =>
+            w is Container &&
+            w.decoration is BoxDecoration &&
+            (w.decoration! as BoxDecoration).color == c,
+      );
+
+      // Bawaan Pengeluaran: hari satu-satunya = paling boros; legenda Hemat-Boros.
+      expect(find.text('Boros'), findsOneWidget);
+      expect(colored(colors.heatmap[3]), findsNWidgets(2));
+      expect(
+        colored(colors.moodTints['😄']!.withValues(alpha: 0.35)),
+        findsNothing,
+      );
+
+      await tester.tap(find.text('Mood'));
+      await tester.pumpAndSettle();
+      expect(find.text('Boros'), findsNothing);
+      expect(colored(colors.heatmap[3]), findsNothing);
+      // Bulatan tanggal + kotak legenda.
+      expect(
+        colored(colors.moodTints['😄']!.withValues(alpha: 0.35)),
+        findsNWidgets(2),
+      );
     });
 
     testWidgets('bulan kosong menampilkan ajakan', (tester) async {

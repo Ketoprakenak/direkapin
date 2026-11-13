@@ -110,6 +110,64 @@ Ref: FIN-15, D-67
 
 ---
 
+## Slice 12 — Heatmap pengeluaran (CAL-06) · Status: Sedang dikerjakan
+Ref: CAL-06, D-68
+- [x] Mobile: tab Pengeluaran / Mood di Kalender, sel heatmap 4 tingkat, legenda
+- [x] Token `heatmap` per tema (kontras teks >= 4.5 dicek test)
+- [x] Pemilih mood di Halaman Hari: label di atas, 5 chip rata satu baris (tidak turun ke bawah)
+- [x] Tab kapsul Laporan dipindah ke `core/widgets/pill_tabs.dart` (dipakai Kalender juga)
+- [x] Docs: D-68, DESIGN
+- [x] Skala heatmap Otomatis / Nominal tetap per user (D-71): migrasi `heatmap_settings`, `heatmap` di `/me`, Profil > Skala heatmap dengan ikon info
+- [x] Catatan update di banner (D-69): `releaseNotes` di `/version` + openapi, dialog "Yang baru di X"
+- [ ] Uji di HP asli lewat build debug, lalu commit
+
+---
+
+## Slice 13 — Export laporan CSV / PDF (FIN-14) · Status: Sedang dikerjakan
+Ref: FIN-14, D-70
+- [x] Backend: `GET /reports/export` (CSV + PDF `pdfkit`), helper `lib/csv.ts` dipakai bersama job arsip, test
+- [x] openapi `/reports/export`
+- [x] Mobile: tombol Export di Laporan, sheet CSV/PDF, simpan ke Download/Direkapin (kanal native menerima MIME)
+- [x] Docs: D-70, PRD FIN-14
+- [ ] Uji di HP asli lewat build debug, lalu commit
+
+---
+
+## Slice 14 — Rekap bulanan / wrapped (ENG-04) · Status: Sedang dikerjakan
+Ref: ENG-04, D-72
+- [x] Mobile: layar Rekap 6 kartu bertumpuk gaya poster dari Laporan Bulanan, grid 4 foto acak, kartu ringkasan 2-2-1 + Selesai, `ActivityApi.list` + `monthActivities`, state kosong/error
+- [x] Docs: D-72, PRD ENG-04
+- [ ] Uji di HP asli lewat build debug, lalu commit
+
+---
+
+## Slice 15 — Kenangan (ACT-06) · Status: Sedang dikerjakan
+Ref: ACT-06, D-73
+- [x] Mobile: layar Kenangan (pilihan bulan, grid per kegiatan, layar foto), menu Profil
+- [x] Kartu Kenangan di Beranda saat pergantian bulan, polaroid miring, tutup per bulan
+- [x] Docs: D-73, PRD ACT-06
+- [ ] Uji di HP asli lewat build debug, lalu commit
+
+---
+
+## Slice 16 — Notifikasi jatuh tempo (FIN-15) · Status: Sedang dikerjakan
+Ref: FIN-15, D-74
+- [x] Mobile: `ReminderService.syncRecurring` (09.00 di `next.dueDate`), dipasang ulang dari `AppShell`, tap buka Beranda
+- [x] Docs: D-74, PRD FIN-15
+- [ ] Uji di HP asli lewat build debug, lalu commit
+
+---
+
+## Slice 17 — Lupa password (AUTH-06) · Status: Sedang dikerjakan
+Ref: AUTH-06, D-75
+- [x] Backend: migrasi `password_resets`, `POST /auth/forgot-password`, `POST /auth/reset-password`, mailer Gmail SMTP, test
+- [x] openapi, `.env.example`, README (cara App Password Gmail)
+- [x] Mobile: link Lupa password di Login, layar email + kode + password baru
+- [ ] Isi SMTP di `.env` mini PC sebelum deploy (api tidak start tanpanya)
+- [ ] Uji di HP asli lewat build debug, lalu commit
+
+---
+
 ## Log
 | Tanggal | Slice | Catatan |
 |---|---|---|

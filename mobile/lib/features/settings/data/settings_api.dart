@@ -23,6 +23,10 @@ class SettingsApi {
     await _dio.patch<void>('/me', data: {'reminderTime': time});
   });
 
+  Future<void> updateHeatmap(HeatmapSetting heatmap) => apiCall(() async {
+    await _dio.patch<void>('/me', data: {'heatmap': heatmap.toJson()});
+  });
+
   Future<void> uploadAvatar(String filePath) => apiCall(
     () => _dio.put<void>(
       '/me/avatar',

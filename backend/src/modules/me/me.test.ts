@@ -108,6 +108,34 @@ describe('PATCH /me', () => {
     });
   });
 
+  it('heatmap: bawaan AUTO, bisa disimpan FIXED (D-71)', async () => {
+    const { accessToken } = await createUser(app);
+    const me = await app.inject({ url: '/api/v1/me', headers: authHeader(accessToken) });
+    expect(me.json().heatmap).toEqual({ mode: 'AUTO', thresholds: [50000, 100000, 200000] });
+
+    const res = await patch(accessToken, {
+      heatmap: { mode: 'FIXED', thresholds: [20000, 75000, 150000] },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().heatmap).toEqual({ mode: 'FIXED', thresholds: [20000, 75000, 150000] });
+
+    // PATCH tanpa heatmap tidak mengubahnya.
+    expect((await patch(accessToken, { name: 'Lain' })).json().heatmap.mode).toBe('FIXED');
+  });
+
+  it.each([
+    ['tidak naik', { mode: 'FIXED', thresholds: [100000, 100000, 200000] }, 'heatmap.thresholds'],
+    ['bukan 3', { mode: 'FIXED', thresholds: [1000, 2000] }, 'heatmap.thresholds'],
+    ['nol', { mode: 'FIXED', thresholds: [0, 2000, 3000] }, 'heatmap.thresholds.0'],
+    ['terlalu besar', { mode: 'FIXED', thresholds: [1, 2, 1_000_000_000] }, 'heatmap.thresholds.2'],
+    ['mode asing', { mode: 'BUDGET', thresholds: [1, 2, 3] }, 'heatmap.mode'],
+  ])('heatmap %s ditolak 400', async (_name, heatmap, field) => {
+    const { accessToken } = await createUser(app);
+    const res = await patch(accessToken, { heatmap });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error.details).toHaveProperty([field]);
+  });
+
   it('tanpa token 401', async () => {
     const res = await app.inject({ method: 'PATCH', url: '/api/v1/me', payload: {} });
     expect(res.statusCode).toBe(401);

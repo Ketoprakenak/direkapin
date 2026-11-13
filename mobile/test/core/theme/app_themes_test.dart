@@ -110,6 +110,24 @@ void main() {
     }
   });
 
+  test('heatmap CAL-06: 4 tingkat, makin boros makin pekat, teks terbaca', () {
+    for (final t in appThemes) {
+      final levels = t.colors.heatmap;
+      expect(levels, hasLength(4), reason: t.id);
+      final distance = [for (final c in levels) contrast(c, t.scheme.surface)];
+      for (var i = 1; i < 4; i++) {
+        expect(distance[i], greaterThan(distance[i - 1]), reason: t.id);
+      }
+      for (final c in levels) {
+        expect(
+          contrast(t.scheme.onSurface, c),
+          greaterThanOrEqualTo(4.5),
+          reason: t.id,
+        );
+      }
+    }
+  });
+
   testWidgets('tab dan kursor memakai ink, bukan primary pastel', (
     tester,
   ) async {

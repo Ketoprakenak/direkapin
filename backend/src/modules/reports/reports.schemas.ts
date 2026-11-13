@@ -19,14 +19,26 @@ export const monthlyReportQuery = z.object({ month: calendarQuery.shape.month, w
 
 const dayMs = 86_400_000;
 
+type Range = { from: string; to: string };
+const toAfterFrom = [
+  ({ from, to }: Range) => to >= from,
+  { error: 'Tanggal akhir tidak boleh sebelum tanggal awal' },
+] as const;
+const maxRange = [
+  ({ from, to }: Range) =>
+    (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / dayMs <= 365,
+  { error: 'Rentang maksimal 366 hari' },
+] as const;
+
 export const rangeReportQuery = z
   .object({ from: dateString, to: dateString, wallet })
-  .refine(({ from, to }) => to >= from, { error: 'Tanggal akhir tidak boleh sebelum tanggal awal' })
-  .refine(
-    ({ from, to }) =>
-      (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / dayMs <= 365,
-    { error: 'Rentang maksimal 366 hari' },
-  );
+  .refine(...toAfterFrom)
+  .refine(...maxRange);
+
+export const exportReportQuery = z
+  .object({ from: dateString, to: dateString, wallet, format: z.enum(['csv', 'pdf']) })
+  .refine(...toAfterFrom)
+  .refine(...maxRange);
 
 export const reportResponse = z.object({
   period: z.object({

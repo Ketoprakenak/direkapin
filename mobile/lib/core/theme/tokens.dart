@@ -14,6 +14,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.incomeTint,
     required this.expenseTint,
     required this.importantTint,
+    required this.heatmap,
   });
 
   final Color income;
@@ -35,6 +36,10 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color expenseTint;
   final Color importantTint;
 
+  /// Latar sel kalender mode Pengeluaran (CAL-06), 4 tingkat hemat ke boros;
+  /// opak, teks di atasnya = onSurface.
+  final List<Color> heatmap;
+
   static const light = AppColors(
     income: Color(0xFF15803D),
     expense: Color(0xFFDC2626),
@@ -53,6 +58,12 @@ class AppColors extends ThemeExtension<AppColors> {
     incomeTint: Color(0xFFCDEBD7),
     expenseTint: Color(0xFFF6D3CC),
     importantTint: Color(0xFFF7E3A8),
+    heatmap: [
+      Color(0xFFD5F5EE),
+      Color(0xFFFCE7A8),
+      Color(0xFFF9B98A),
+      Color(0xFFEF8A7E),
+    ],
   );
 
   static const dark = AppColors(
@@ -73,6 +84,12 @@ class AppColors extends ThemeExtension<AppColors> {
     incomeTint: Color(0xFF14301F),
     expenseTint: Color(0xFF3B1A18),
     importantTint: Color(0xFF3A2E0C),
+    heatmap: [
+      Color(0xFF1F2B2A),
+      Color(0xFF3A2A1A),
+      Color(0xFF552A22),
+      Color(0xFF7A2E2A),
+    ],
   );
 
   static AppColors of(BuildContext context) =>

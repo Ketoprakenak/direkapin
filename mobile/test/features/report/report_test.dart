@@ -1,13 +1,17 @@
-import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:direkapin/core/api/api_error.dart';
 import 'package:direkapin/core/format/dates.dart';
 import 'package:direkapin/core/router/router.dart';
 import 'package:direkapin/core/widgets/frame.dart';
+import 'package:direkapin/features/archive/providers/archive_providers.dart';
 import 'package:direkapin/features/report/data/report_models.dart';
 import 'package:direkapin/features/report/presentation/report_screen.dart';
+import 'package:direkapin/features/report/providers/report_providers.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -53,6 +57,42 @@ Map<String, Object?> transactionJson(String note) => {
   'category': _category,
   'attachments': <Object>[],
 };
+
+class _FakeFiles extends ArchiveFiles {
+  final saved = <({String fileName, String mimeType})>[];
+  Object? saveError;
+
+  @override
+  Future<String> tempPath(String fileName) async =>
+      '${Directory.systemTemp.path}/direkapin_test_$fileName';
+
+  @override
+  Future<void> saveToDownloads(
+    String path,
+    String fileName, {
+    String mimeType = 'application/zip',
+  }) async {
+    if (saveError != null) throw saveError!;
+    saved.add((fileName: fileName, mimeType: mimeType));
+  }
+}
+
+class _FakeExporter implements ReportExporter {
+  final calls = <String>[];
+  Object? error;
+
+  @override
+  Future<String> export({
+    required String from,
+    required String to,
+    required ExportFormat format,
+    String? walletId,
+  }) async {
+    calls.add('$from $to ${format.name} $walletId');
+    if (error != null) throw error!;
+    return 'laporan.${format.name}';
+  }
+}
 
 /// Mencatat query param setiap GET supaya test bisa memeriksa periode dan dompet.
 class RecordingServer extends FakeServer {
@@ -535,5 +575,93 @@ void main() {
         'category': 'c1',
       });
     });
+
+    Future<void> exportAs(WidgetTester tester, String format) async {
+      await tester.tap(find.byTooltip('Export'));
+      await tester.pumpAndSettle();
+      expect(find.text('Export November 2026'), findsOneWidget);
+      await tester.tap(find.text(format));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('Export PDF: periode aktif dikirim, snackbar nama file', (
+      tester,
+    ) async {
+      final exporter = _FakeExporter();
+      await pumpRoutedApp(
+        tester,
+        server(),
+        routeName: Routes.reports,
+        overrides: [reportExporterProvider.overrideWithValue(exporter)],
+      );
+
+      await exportAs(tester, 'PDF');
+
+      expect(exporter.calls, ['2026-11-01 2026-11-30 pdf null']);
+      expect(
+        find.text('laporan.pdf tersimpan di Download/Direkapin'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('Export CSV: izin ditolak dan error server tampil', (
+      tester,
+    ) async {
+      final exporter = _FakeExporter()
+        ..error = PlatformException(code: 'permission_denied');
+      await pumpRoutedApp(
+        tester,
+        server(),
+        routeName: Routes.reports,
+        overrides: [reportExporterProvider.overrideWithValue(exporter)],
+      );
+
+      await exportAs(tester, 'CSV');
+      expect(
+        find.text('Izin penyimpanan ditolak. Aktifkan di pengaturan HP.'),
+        findsOneWidget,
+      );
+
+      exporter.error = const ApiException('INTERNAL_ERROR', 'Server error');
+      ScaffoldMessenger.of(tester.element(find.byType(ListView).first))
+          .removeCurrentSnackBar();
+      await tester.pumpAndSettle();
+      await exportAs(tester, 'CSV');
+      expect(find.text('Server error'), findsOneWidget);
+    });
   });
+
+  test(
+    'ReportExporter: query ke /reports/export, simpan dengan MIME',
+    () async {
+      final fake = server(
+        extra: {
+          '/reports/export': const {'ok': true},
+        },
+      );
+      final files = _FakeFiles();
+      final exporter = ReportExporter(
+        Dio(BaseOptions(baseUrl: 'https://example.test'))
+          ..httpClientAdapter = fake,
+        files,
+      );
+
+      final name = await exporter.export(
+        from: '2026-11-01',
+        to: '2026-11-30',
+        format: ExportFormat.csv,
+        walletId: 'w1',
+      );
+
+      expect(name, 'direkapin-laporan-2026-11-01_2026-11-30.csv');
+      expect(fake.queries['/reports/export'], {
+        'from': '2026-11-01',
+        'to': '2026-11-30',
+        'format': 'csv',
+        'wallet': 'w1',
+      });
+      expect(files.saved, [(fileName: name, mimeType: 'text/csv')]);
+      expect(File(await files.tempPath(name)).existsSync(), isFalse);
+    },
+  );
 }

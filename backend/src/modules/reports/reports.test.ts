@@ -27,7 +27,7 @@ async function setup(email = 'a@example.test') {
   const addTx = async (
     amount: number,
     occurredAt: string,
-    overrides: Partial<{ walletId: string; categoryId: string; type: string }> = {},
+    overrides: Partial<{ walletId: string; categoryId: string; type: string; note: string }> = {},
   ) => {
     const res = await post('/transactions', {
       walletId: cashId,
@@ -336,5 +336,73 @@ describe('GET /reports/range', () => {
     );
     expect(foreign.statusCode).toBe(200);
     expect(foreign.json().totals.transactionCount).toBe(0);
+  });
+});
+
+describe('GET /reports/export', () => {
+  it('CSV: transaksi di rentang, tanpa transfer, formula dinetralkan', async () => {
+    const { get, addTx, addIncome, post, cashId, addWallet } = await setup();
+    const bankId = await addWallet();
+    await addTx(1000, '2026-10-30T02:00:00.000Z', { note: '=SUM(A1)' });
+    await addIncome(7000, '2026-11-02T02:00:00.000Z');
+    await addTx(9000, '2026-11-03T02:00:00.000Z'); // di luar rentang
+    await post('/transfers', {
+      fromWalletId: cashId,
+      toWalletId: bankId,
+      amount: 5000,
+      occurredAt: '2026-10-31T02:00:00.000Z',
+    });
+
+    const res = await get('/reports/export?from=2026-10-30&to=2026-11-02&format=csv');
+
+    expect(res.statusCode).toBe(200);
+    expect(res.headers['content-type']).toContain('text/csv');
+    expect(res.headers['content-disposition']).toBe(
+      'attachment; filename="direkapin-laporan-2026-10-30_2026-11-02.csv"',
+    );
+    const lines = res.body.replace(/^\uFEFF/, '').trimEnd().split('\r\n');
+    expect(lines).toEqual([
+      '"tanggal","jam","jenis","dompet","kategori","nominal","catatan"',
+      `"2026-10-30","09:00","Pengeluaran","Cash","Makan","1000","'=SUM(A1)"`,
+      '"2026-11-02","09:00","Pemasukan","Cash","Gaji / Uang saku","7000",""',
+    ]);
+  });
+
+  it('PDF: file PDF dengan nama sesuai rentang', async () => {
+    const { get, addTx } = await setup();
+    await addTx(25000, '2026-11-01T02:00:00.000Z', { note: 'Bakso 🍜' });
+
+    const res = await get('/reports/export?from=2026-11-01&to=2026-11-30&format=pdf');
+
+    expect(res.statusCode).toBe(200);
+    expect(res.headers['content-type']).toBe('application/pdf');
+    expect(res.headers['content-disposition']).toContain(
+      'direkapin-laporan-2026-11-01_2026-11-30.pdf',
+    );
+    expect(res.rawPayload.subarray(0, 5).toString()).toBe('%PDF-');
+  });
+
+  it('menolak format, rentang tidak valid, dan tanpa token', async () => {
+    const { get } = await setup();
+    const status = async (query: string) => (await get(`/reports/export?${query}`)).statusCode;
+    expect(await status('from=2026-11-01&to=2026-11-02&format=xls')).toBe(400);
+    expect(await status('from=2026-11-02&to=2026-11-01&format=csv')).toBe(400);
+    expect(await status('from=2025-01-01&to=2026-01-02&format=csv')).toBe(400);
+    const res = await app.inject({
+      url: '/api/v1/reports/export?from=2026-11-01&to=2026-11-02&format=csv',
+    });
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('data user lain tidak ikut', async () => {
+    const owner = await setup('pemilik@example.test');
+    const other = await setup('lain@example.test');
+    await owner.addTx(1000, '2026-11-04T02:00:00.000Z');
+
+    const res = await other.get(
+      `/reports/export?from=2026-11-01&to=2026-11-30&format=csv&wallet=${owner.cashId}`,
+    );
+    expect(res.statusCode).toBe(200);
+    expect(res.body.trimEnd().split('\r\n')).toHaveLength(1);
   });
 });

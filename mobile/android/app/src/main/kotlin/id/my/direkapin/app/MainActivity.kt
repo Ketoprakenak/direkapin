@@ -36,7 +36,8 @@ class MainActivity : FlutterActivity() {
                     }
                     "saveZip" -> {
                         val source = File(call.argument<String>("path")!!)
-                        ({ saveZip(source, fileName) })
+                        val mimeType = call.argument<String>("mimeType") ?: "application/zip"
+                        ({ saveZip(source, fileName, mimeType) })
                     }
                     else -> return@setMethodCallHandler result.notImplemented()
                 }
@@ -92,9 +93,9 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun saveZip(source: File, fileName: String) {
+    private fun saveZip(source: File, fileName: String, mimeType: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            saveZipToMediaStore(source, fileName)
+            saveZipToMediaStore(source, fileName, mimeType)
         } else {
             saveZipToPublicFolder(source, fileName)
         }
@@ -132,10 +133,10 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun saveZipToMediaStore(source: File, fileName: String) {
+    private fun saveZipToMediaStore(source: File, fileName: String, mimeType: String) {
         val values = ContentValues().apply {
             put(MediaStore.Downloads.DISPLAY_NAME, fileName)
-            put(MediaStore.Downloads.MIME_TYPE, "application/zip")
+            put(MediaStore.Downloads.MIME_TYPE, mimeType)
             put(MediaStore.Downloads.RELATIVE_PATH, "${Environment.DIRECTORY_DOWNLOADS}/$GALLERY_ALBUM")
             put(MediaStore.Downloads.IS_PENDING, 1)
         }

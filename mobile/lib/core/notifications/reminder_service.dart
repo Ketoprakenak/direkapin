@@ -6,6 +6,7 @@ import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../format/dates.dart';
+import '../format/money.dart';
 
 part 'reminder_service.g.dart';
 
@@ -18,11 +19,19 @@ const _maxArchiveReminders = 20;
 const _firstArchiveNoticeId = 1300;
 const _firstBudgetAlertId = 1400;
 const _maxBudgetAlerts = 10;
+const _firstRecurringId = 1500;
+const _maxRecurring = 20;
+
+/// Uji notif jatuh tempo di HP: build debug dengan `--dart-define=RECURRING_NOTIFY_IN=<menit>`.
+const _debugNotifyIn = int.fromEnvironment('RECURRING_NOTIFY_IN');
 const _seenArchivesKey = 'archivesSeen';
 const _archiveLifetimeDays = 30;
 
 /// Isi `payload` notifikasi yang membuka layar Arsip.
 const archivePayload = 'archive';
+
+/// Isi `payload` notifikasi yang membuka Beranda (kartu Jatuh tempo).
+const homePayload = 'home';
 
 const _dailyDetails = NotificationDetails(
   android: AndroidNotificationDetails(
@@ -36,6 +45,15 @@ const _archiveDetails = NotificationDetails(
   android: AndroidNotificationDetails(
     'archive_reminder',
     'Arsip foto',
+    importance: Importance.high,
+    priority: Priority.high,
+  ),
+);
+
+const _recurringDetails = NotificationDetails(
+  android: AndroidNotificationDetails(
+    'recurring_due',
+    'Transaksi berulang',
     importance: Importance.high,
     priority: Priority.high,
   ),
@@ -106,6 +124,42 @@ List<({tz.TZDateTime date, int daysLeft})> archiveReminderDates(
         daysLeft: _archiveLifetimeDays - day,
       ),
   ].where((item) => item.date.isAfter(now)).toList();
+}
+
+/// Aturan transaksi berulang yang kejadian berikutnya perlu diingatkan.
+/// [dueDate] = `YYYY-MM-DD`; [label] = catatan aturan atau nama kategori.
+typedef RecurringReminder = ({String dueDate, String label, int amount});
+
+/// Jatuh tempo pukul 09.00 (FIN-15, D-74); yang sudah lewat dilewati,
+/// urut tanggal, maks. [_maxRecurring]. [testInMinutes] > 0 (uji di HP):
+/// semua aturan, termasuk yang sudah lewat, dimajukan ke [testInMinutes]
+/// menit lagi, selang 1 menit per aturan.
+List<({tz.TZDateTime date, String body})> recurringReminderDates(
+  List<RecurringReminder> rules,
+  tz.TZDateTime now, {
+  int testInMinutes = 0,
+}) {
+  final items =
+      [
+        for (final (index, rule) in rules.indexed)
+          (
+            date: testInMinutes > 0
+                ? now.add(Duration(minutes: testInMinutes + index))
+                : tz.TZDateTime(
+                    now.location,
+                    int.parse(rule.dueDate.substring(0, 4)),
+                    int.parse(rule.dueDate.substring(5, 7)),
+                    int.parse(rule.dueDate.substring(8, 10)),
+                    9,
+                  ),
+            body:
+                '${rule.label} ${formatRupiah(rule.amount)} jatuh tempo hari ini. '
+                'Catat atau lewati di Beranda.',
+          ),
+      ].where((item) => item.date.isAfter(now)).toList()..sort(
+        (a, b) => a.date.compareTo(b.date),
+      );
+  return items.take(_maxRecurring).toList();
 }
 
 /// Pengingat lokal: harian (ENG-01) dan arsip (ARC-03, ARC-04). Tanpa push server (D-21).
@@ -253,6 +307,31 @@ class ReminderService {
         }
       });
 
+  /// Pasang ulang notifikasi jatuh tempo transaksi berulang (FIN-15, D-74).
+  Future<void> syncRecurring(List<RecurringReminder> rules, String timezone) =>
+      _enqueue(() async {
+        await _ready;
+        final now = tz.TZDateTime.now(tz.getLocation(timezone));
+        final items = recurringReminderDates(
+          rules,
+          now,
+          testInMinutes: kDebugMode ? _debugNotifyIn : 0,
+        );
+        final mode = await _scheduleMode();
+        await _cancelRecurring();
+        for (final (index, item) in items.indexed) {
+          await _plugin.zonedSchedule(
+            id: _firstRecurringId + index,
+            title: 'Direkapin',
+            body: item.body,
+            scheduledDate: item.date,
+            notificationDetails: _recurringDetails,
+            androidScheduleMode: mode,
+            payload: homePayload,
+          );
+        }
+      });
+
   /// Peringatan budget langsung saat pengeluaran disimpan (FIN-12).
   Future<void> showBudgetAlerts(List<String> messages) => _enqueue(() async {
     await _ready;
@@ -270,6 +349,7 @@ class ReminderService {
     await _ready;
     await _cancelReminders();
     await _cancelArchiveReminders();
+    await _cancelRecurring();
     for (var offset = 0; offset < _monthlyCount; offset++) {
       await _plugin.cancel(id: _firstMonthlyId + offset);
     }
@@ -287,6 +367,12 @@ class ReminderService {
   Future<void> _cancelArchiveReminders() async {
     for (var offset = 0; offset < _maxArchiveReminders; offset++) {
       await _plugin.cancel(id: _firstArchiveReminderId + offset);
+    }
+  }
+
+  Future<void> _cancelRecurring() async {
+    for (var offset = 0; offset < _maxRecurring; offset++) {
+      await _plugin.cancel(id: _firstRecurringId + offset);
     }
   }
 

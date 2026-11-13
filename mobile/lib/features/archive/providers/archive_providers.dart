@@ -23,8 +23,11 @@ class ArchiveFiles {
   Future<String> tempPath(String fileName) async =>
       '${(await getTemporaryDirectory()).path}/$fileName';
 
-  Future<void> saveToDownloads(String path, String fileName) =>
-      saveFileToDownloads(path, fileName);
+  Future<void> saveToDownloads(
+    String path,
+    String fileName, {
+    String mimeType = 'application/zip',
+  }) => saveFileToDownloads(path, fileName, mimeType: mimeType);
 }
 
 @riverpod
@@ -50,8 +53,7 @@ class ArchiveDownloads extends _$ArchiveDownloads {
           .download(
             archive.id,
             temp,
-            onProgress: (progress) =>
-                state = {...state, archive.id: progress},
+            onProgress: (progress) => state = {...state, archive.id: progress},
           );
       await files.saveToDownloads(temp, fileName);
     } finally {
