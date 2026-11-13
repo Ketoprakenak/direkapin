@@ -8,7 +8,12 @@ export const releaseNotes: { version: string; items: string[] }[] = [
     version: '1.3.0',
     items: [
       'Kalender punya tab Pengeluaran: hari paling boros kelihatan dari warnanya',
-      'Warna heatmap menyesuaikan tema yang dipilih',
+      'Skala warna heatmap bisa Otomatis atau Nominal tetap (Profil > Skala heatmap)',
+      'Rekap bulanan ala wrapped dari Laporan Bulanan',
+      'Export laporan ke CSV atau PDF',
+      'Galeri Kenangan + kartu foto bulanan di Beranda',
+      'Notif di hari transaksi berulang jatuh tempo',
+      'Lupa password? Reset lewat kode di email',
       'Pilihan mood di Halaman Hari rapi satu baris',
       'Notif update sekarang menampilkan isi update',
     ],
