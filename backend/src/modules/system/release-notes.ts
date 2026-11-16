@@ -5,6 +5,16 @@
  */
 export const releaseNotes: { version: string; items: string[] }[] = [
   {
+    version: '1.4.0',
+    items: [
+      'Tabungan: sisihkan saldo dengan target, tap Total saldo di Beranda',
+      'Riwayat tabungan: kapan disetor dan kapan dipakai',
+      'Utang & Piutang: catat talangan teman dan utangmu, bisa dicicil',
+      'Bagi ke teman langsung dari pengeluaran, ada tombol Bagi rata',
+      'Cap Lunas terbayar saat utang atau piutang sudah beres',
+    ],
+  },
+  {
     version: '1.3.0',
     items: [
       'Kalender punya tab Pengeluaran: hari paling boros kelihatan dari warnanya',
