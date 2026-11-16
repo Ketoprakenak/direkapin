@@ -28,11 +28,42 @@ abstract class Receivable with _$Receivable {
     required int total,
     required int remaining,
     ReceivableLoan? loan,
+    ReceivableSourceRef? source,
     required List<Debtor> debtors,
   }) = _Receivable;
 
   factory Receivable.fromJson(Map<String, dynamic> json) =>
       _$ReceivableFromJson(json);
+}
+
+/// Pengeluaran asal piutang hasil "Bagi ke teman" (FIN-21, D-79).
+@freezed
+abstract class ReceivableSourceRef with _$ReceivableSourceRef {
+  const factory ReceivableSourceRef({
+    required String transactionId,
+    required int amount,
+    required String categoryName,
+  }) = _ReceivableSourceRef;
+
+  factory ReceivableSourceRef.fromJson(Map<String, dynamic> json) =>
+      _$ReceivableSourceRefFromJson(json);
+}
+
+/// Argumen form "Bagi ke teman": pengeluaran yang akan dibagi.
+class ReceivableSource {
+  const ReceivableSource({
+    required this.transactionId,
+    required this.amount,
+    required this.categoryName,
+    required this.date,
+  });
+
+  final String transactionId;
+  final int amount;
+  final String categoryName;
+
+  /// `YYYY-MM-DD` lokal tanggal pengeluaran.
+  final String date;
 }
 
 /// Pemasukan pinjam tunai yang menyertai utang (D-78).

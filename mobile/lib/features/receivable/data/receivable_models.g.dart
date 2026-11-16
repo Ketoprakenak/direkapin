@@ -19,6 +19,9 @@ _Receivable _$ReceivableFromJson(Map<String, dynamic> json) => _Receivable(
   loan: json['loan'] == null
       ? null
       : ReceivableLoan.fromJson(json['loan'] as Map<String, dynamic>),
+  source: json['source'] == null
+      ? null
+      : ReceivableSourceRef.fromJson(json['source'] as Map<String, dynamic>),
   debtors: (json['debtors'] as List<dynamic>)
       .map((e) => Debtor.fromJson(e as Map<String, dynamic>))
       .toList(),
@@ -34,12 +37,28 @@ Map<String, dynamic> _$ReceivableToJson(_Receivable instance) =>
       'total': instance.total,
       'remaining': instance.remaining,
       'loan': instance.loan,
+      'source': instance.source,
       'debtors': instance.debtors,
     };
 
 const _$ReceivableDirectionEnumMap = {
   ReceivableDirection.receivable: 'RECEIVABLE',
   ReceivableDirection.payable: 'PAYABLE',
+};
+
+_ReceivableSourceRef _$ReceivableSourceRefFromJson(Map<String, dynamic> json) =>
+    _ReceivableSourceRef(
+      transactionId: json['transactionId'] as String,
+      amount: (json['amount'] as num).toInt(),
+      categoryName: json['categoryName'] as String,
+    );
+
+Map<String, dynamic> _$ReceivableSourceRefToJson(
+  _ReceivableSourceRef instance,
+) => <String, dynamic>{
+  'transactionId': instance.transactionId,
+  'amount': instance.amount,
+  'categoryName': instance.categoryName,
 };
 
 _ReceivableLoan _$ReceivableLoanFromJson(Map<String, dynamic> json) =>

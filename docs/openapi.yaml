@@ -548,6 +548,10 @@ paths:
                       amount: { $ref: '#/components/schemas/Money' }
                 loanWalletId: { type: string, format: uuid, description: 'Hanya PAYABLE; dompet tujuan pinjam tunai' }
                 clientId: { type: string, format: uuid, description: 'Kirim ulang dengan clientId sama = 201 catatan yang sama, tanpa pinjaman dobel (D-58)' }
+                sourceTransactionId:
+                  type: string
+                  format: uuid
+                  description: 'Hanya RECEIVABLE (FIN-21). Pengeluaran milik user (400 "Pilih pengeluaran"), belum pernah dibagi (400 "Pengeluaran ini sudah dibagi"), Σ debtors <= nominalnya (400 debtors "Melebihi nominal pengeluaran Rp…")'
       responses:
         '201':
           description: Dibuat
@@ -1763,7 +1767,7 @@ components:
         sortOrder: { type: integer }
     Receivable:
       type: object
-      required: [id, direction, title, date, note, total, remaining, loan, debtors]
+      required: [id, direction, title, date, note, total, remaining, loan, source, debtors]
       properties:
         id: { type: string, format: uuid }
         direction: { type: string, enum: [RECEIVABLE, PAYABLE] }
@@ -1772,6 +1776,16 @@ components:
         note: { type: [string, 'null'] }
         total: { type: integer }
         remaining: { type: integer }
+        source:
+          description: 'Pengeluaran asal "Bagi ke teman" (FIN-21); null = dicatat manual atau pengeluarannya dihapus'
+          oneOf:
+            - type: 'null'
+            - type: object
+              required: [transactionId, amount, categoryName]
+              properties:
+                transactionId: { type: string, format: uuid }
+                amount: { type: integer }
+                categoryName: { type: string }
         loan:
           description: Pemasukan pinjam tunai (utang); null = talangan atau transaksinya dihapus
           oneOf:
@@ -2044,7 +2058,7 @@ components:
         note: { type: [string, 'null'], maxLength: 1000 }
     Transaction:
       type: object
-      required: [id, type, amount, occurredAt, note, wallet, category, attachments, createdAt, updatedAt]
+      required: [id, type, amount, occurredAt, note, wallet, category, attachments, receivableId, createdAt, updatedAt]
       properties:
         id: { type: string, format: uuid }
         type: { $ref: '#/components/schemas/TxType' }
@@ -2056,6 +2070,7 @@ components:
         attachments:
           type: array
           items: { $ref: '#/components/schemas/Attachment' }
+        receivableId: { type: [string, 'null'], format: uuid, description: 'Piutang hasil "Bagi ke teman" (FIN-21)' }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
 

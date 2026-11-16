@@ -19,7 +19,9 @@ import '../../attachment/presentation/widgets/photo_picker_row.dart';
 import '../../attachment/providers/attachment_providers.dart';
 import '../../budget/providers/budget_providers.dart';
 import '../../category/data/category_models.dart';
+import '../../category/providers/category_providers.dart';
 import '../../dashboard/providers/dashboard_providers.dart';
+import '../../receivable/data/receivable_models.dart';
 import '../../wallet/data/wallet_models.dart';
 import '../../wallet/providers/wallet_providers.dart';
 import '../data/transaction_models.dart';
@@ -83,6 +85,8 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
 
   /// Peringatan budget dari pengeluaran baru yang baru tersimpan (FIN-12).
   List<String> _budgetMessages = const [];
+  // FIN-21: setelah tersimpan, lanjut ke form "Bagi ke teman".
+  bool _split = false;
 
   /// Sama untuk semua percobaan Simpan di form ini, supaya tidak dobel (D-58).
   final _clientId = newClientId();
@@ -212,6 +216,24 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     final subject = _mode == _Mode.transfer ? 'Transfer' : 'Transaksi';
     final text = ['$subject tersimpan', ..._budgetMessages].join('\n');
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+    final savedId = _savedId;
+    if (_split && _mode == _Mode.expense && savedId != null) {
+      final category = ref
+          .read(categoriesProvider(type: TxType.expense))
+          .value
+          ?.where((c) => c.id == _categoryId)
+          .firstOrNull;
+      context.pushReplacementNamed(
+        Routes.receivableForm,
+        extra: ReceivableSource(
+          transactionId: savedId,
+          amount: parseRupiah(_amount.text) ?? 0,
+          categoryName: category?.name ?? 'Pengeluaran',
+          date: dateKey(_occurredAt),
+        ),
+      );
+      return;
+    }
     context.pop(true);
   }
 
@@ -541,6 +563,16 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                       locked: _savedId != null,
                     ),
                   ],
+                  if (!_isEdit && _mode == _Mode.expense)
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Bagi ke teman'),
+                      subtitle: const Text(
+                        'Lanjut isi bagian teman setelah simpan',
+                      ),
+                      value: _split,
+                      onChanged: (value) => setState(() => _split = value),
+                    ),
                 ],
               ),
             ),

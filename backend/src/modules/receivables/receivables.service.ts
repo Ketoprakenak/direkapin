@@ -42,6 +42,7 @@ async function upsertDefaultCategory(
 
 const receivableInclude = {
   loanTransaction: { select: { id: true, amount: true, wallet: walletRefSelect } },
+  sourceTransaction: { select: { id: true, amount: true, category: { select: { name: true } } } },
   debtors: {
     orderBy: { sortOrder: 'asc' },
     include: {
@@ -100,6 +101,11 @@ export function toReceivableResponse(row: ReceivableRow) {
       transactionId: row.loanTransaction.id,
       amount: toNumber(row.loanTransaction.amount),
       wallet: row.loanTransaction.wallet,
+    },
+    source: row.sourceTransaction && {
+      transactionId: row.sourceTransaction.id,
+      amount: toNumber(row.sourceTransaction.amount),
+      categoryName: row.sourceTransaction.category.name,
     },
     debtors,
   };
@@ -182,6 +188,29 @@ export async function createReceivable(
   const previous = await replay();
   if (previous) return previous;
 
+  // Bagi ke teman (FIN-21): sumber harus pengeluaran sendiri, bagian teman <= nominalnya.
+  const { sourceTransactionId } = input;
+  const alreadySplit = () => invalid('sourceTransactionId', 'Pengeluaran ini sudah dibagi');
+  if (sourceTransactionId) {
+    const source = await prisma.transaction.findFirst({
+      // Biaya admin transfer dan cicilan utang bukan pengeluaran yang bisa dibagi.
+      where: {
+        id: sourceTransactionId,
+        userId,
+        type: 'EXPENSE',
+        feeOf: { is: null },
+        receivablePayment: { is: null },
+      },
+      select: { amount: true, receivableSource: { select: { id: true } } },
+    });
+    if (!source) throw invalid('sourceTransactionId', 'Pilih pengeluaran');
+    if (source.receivableSource) throw alreadySplit();
+    const shared = input.debtors.reduce((sum, d) => sum + toBigInt(d.amount), 0n);
+    if (shared > source.amount) {
+      throw invalid('debtors', `Melebihi nominal pengeluaran ${formatRupiah(source.amount)}`);
+    }
+  }
+
   const create = () =>
     prisma.$transaction(async (tx) => {
       // Pinjam tunai: uang masuk ke dompet sebagai pemasukan "Pinjaman diterima" (D-78).
@@ -208,6 +237,7 @@ export async function createReceivable(
           direction: input.direction,
           loanTransactionId,
           clientId,
+          sourceTransactionId,
           title: input.title,
           date: toDbDate(input.date),
           note: input.note,
@@ -225,9 +255,12 @@ export async function createReceivable(
   try {
     return toReceivableResponse(await create());
   } catch (error) {
-    const winner = clientId && isUniqueViolation(error) ? await replay() : null;
-    if (!winner) throw error;
-    return winner;
+    if (!isUniqueViolation(error)) throw error;
+    const winner = clientId ? await replay() : null;
+    if (winner) return winner;
+    // Dua bagi bersamaan untuk pengeluaran yang sama: yang kalah dapat 400, bukan 500.
+    if (sourceTransactionId) throw alreadySplit();
+    throw error;
   }
 }
 

@@ -7,6 +7,7 @@ import '../../../core/format/dates.dart';
 import '../../../core/format/money.dart';
 import '../../../core/router/router.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../core/widgets/frame.dart';
 import '../../../core/widgets/money_widgets.dart';
 import '../../activity/data/activity_models.dart';
 import '../../activity/presentation/activity_form_screen.dart';
@@ -15,6 +16,7 @@ import '../../attachment/data/attachment_models.dart';
 import '../../attachment/presentation/widgets/attachment_image.dart';
 import '../../category/data/category_models.dart';
 import '../../dashboard/providers/dashboard_providers.dart';
+import '../../receivable/data/receivable_models.dart';
 import '../../wallet/data/wallet_models.dart';
 import '../../wallet/providers/wallet_providers.dart';
 import '../data/transaction_models.dart';
@@ -62,6 +64,7 @@ class TransactionDetailScreen extends ConsumerWidget {
         'Catatan': ?transaction.note,
       },
       attachments: transaction.attachments,
+      action: isIncome ? null : _SplitAction(transaction),
       editRoute: Routes.transactionForm,
       editArgs: TransactionFormArgs(transaction: transaction),
       deleteMessage: 'Hapus transaksi ini? Foto struknya juga ikut terhapus.',
@@ -145,6 +148,7 @@ class _DetailView extends ConsumerWidget {
     required this.header,
     required this.rows,
     this.attachments = const [],
+    this.action,
     required this.editRoute,
     required this.editArgs,
     required this.deleteMessage,
@@ -156,6 +160,9 @@ class _DetailView extends ConsumerWidget {
   final Widget header;
   final Map<String, String> rows;
   final List<Attachment> attachments;
+
+  /// Aksi khusus di atas tombol Ubah (mis. "Bagi ke teman").
+  final Widget? action;
   final String editRoute;
   final Object editArgs;
   final String deleteMessage;
@@ -218,6 +225,10 @@ class _DetailView extends ConsumerWidget {
             PhotoGallery(attachments),
             const SizedBox(height: Spacing.md),
           ],
+          if (action case final action?) ...[
+            action,
+            const SizedBox(height: Spacing.md),
+          ],
           const SizedBox(height: Spacing.md),
           FilledButton(
             onPressed: () => _edit(context),
@@ -230,6 +241,48 @@ class _DetailView extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Pengeluaran: "Bagi ke teman" bila belum dibagi, atau tautan ke piutangnya (FIN-21).
+class _SplitAction extends StatelessWidget {
+  const _SplitAction(this.transaction);
+
+  final Transaction transaction;
+
+  @override
+  Widget build(BuildContext context) {
+    final receivableId = transaction.receivableId;
+    if (receivableId != null) {
+      return FrameCard(
+        onTap: () => context.pushNamed(
+          Routes.receivableDetail,
+          pathParameters: {'id': receivableId},
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.group_rounded),
+            SizedBox(width: Spacing.md),
+            Expanded(child: Text('Dibagi ke teman')),
+            Icon(Icons.chevron_right_rounded),
+          ],
+        ),
+      );
+    }
+    return OutlinedButton.icon(
+      // Detail ini usang setelah dibagi, jadi digantikan form bagi.
+      onPressed: () => context.pushReplacementNamed(
+        Routes.receivableForm,
+        extra: ReceivableSource(
+          transactionId: transaction.id,
+          amount: transaction.amount,
+          categoryName: transaction.category.name,
+          date: dateKey(transaction.occurredAt.toLocal()),
+        ),
+      ),
+      icon: const Icon(Icons.group_add_rounded),
+      label: const Text('Bagi ke teman'),
     );
   }
 }

@@ -2,6 +2,8 @@ import 'package:direkapin/core/router/router.dart';
 import 'package:direkapin/core/theme/tokens.dart';
 import 'package:direkapin/core/widgets/state_views.dart';
 import 'package:direkapin/features/receivable/data/receivable_models.dart';
+import 'package:direkapin/features/transaction/data/transaction_models.dart';
+import 'package:direkapin/features/receivable/presentation/receivable_form_screen.dart';
 import 'package:direkapin/features/receivable/presentation/receivables_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -381,5 +383,211 @@ void main() {
     expect(write.path, '/receivables/debtors/d3/payments');
     expect(write.body, containsPair('categoryId', 'c1'));
     expect(write.body, containsPair('walletId', 'w1'));
+  });
+
+  test('splitEvenly: rata termasuk owner, sisa milik owner', () {
+    expect(splitEvenly(200000, 2), [66666, 66666]);
+    expect(splitEvenly(1, 1), [0]);
+  });
+
+  const makan = ReceivableSource(
+    transactionId: 't1',
+    amount: 200000,
+    categoryName: 'Makan',
+    date: '2026-11-16',
+  );
+
+  testWidgets('bagi ke teman: terisi dari pengeluaran, Bagi rata, body', (
+    tester,
+  ) async {
+    final fake = server();
+    await pumpRoutedApp(
+      tester,
+      fake,
+      routeName: Routes.receivableForm,
+      extra: makan,
+    );
+    expect(find.text('Bagi ke teman'), findsOneWidget);
+    expect(find.text('Dari pengeluaran Makan Rp200.000'), findsOneWidget);
+    expect(find.widgetWithText(TextFormField, 'Makan'), findsOneWidget);
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Nama 1'),
+      'Budi',
+    );
+    await tester.tap(find.text('Tambah orang'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Nama 2'),
+      'Andi',
+    );
+    await tester.ensureVisible(find.text('Bagi rata'));
+    await tester.tap(find.text('Bagi rata'));
+    await tester.pumpAndSettle();
+    expect(find.text('66.666'), findsNWidgets(2));
+    expect(find.text('Bagian kamu Rp66.668'), findsOneWidget);
+    await tester.ensureVisible(find.text('Simpan'));
+    await tester.tap(find.text('Simpan'));
+    await tester.pumpAndSettle();
+
+    final write = fake.writes.single;
+    expect(write.body, containsPair('sourceTransactionId', 't1'));
+    expect(write.body, containsPair('date', '2026-11-16'));
+    expect(write.body, containsPair('title', 'Makan'));
+    expect(write.body!['debtors'], [
+      {'name': 'Budi', 'amount': 66666},
+      {'name': 'Andi', 'amount': 66666},
+    ]);
+  });
+
+  testWidgets('bagi ke teman: melebihi nominal dan bagian 0 ditolak', (
+    tester,
+  ) async {
+    final fake = server();
+    await pumpRoutedApp(
+      tester,
+      fake,
+      routeName: Routes.receivableForm,
+      extra: makan,
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Nama 1'),
+      'Budi',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Nominal'),
+      '250000',
+    );
+    await tester.ensureVisible(find.text('Simpan'));
+    await tester.tap(find.text('Simpan'));
+    await tester.pumpAndSettle();
+    expect(find.text('Melebihi nominal pengeluaran Rp200.000'), findsOneWidget);
+    expect(fake.writes, isEmpty);
+  });
+
+  testWidgets('bagi rata hasil 0 ditolak validasi baris', (tester) async {
+    final fake = server();
+    await pumpRoutedApp(
+      tester,
+      fake,
+      routeName: Routes.receivableForm,
+      extra: const ReceivableSource(
+        transactionId: 't1',
+        amount: 1,
+        categoryName: 'Makan',
+        date: '2026-11-16',
+      ),
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Nama 1'),
+      'Budi',
+    );
+    await tester.ensureVisible(find.text('Bagi rata'));
+    await tester.tap(find.text('Bagi rata'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Simpan'));
+    await tester.tap(find.text('Simpan'));
+    await tester.pumpAndSettle();
+    expect(find.text('Nominal harus lebih dari 0'), findsOneWidget);
+    expect(fake.writes, isEmpty);
+  });
+
+  Transaction expense({String type = 'EXPENSE', String? receivableId}) =>
+      Transaction.fromJson({
+        'id': 't1',
+        'type': type,
+        'amount': 200000,
+        'occurredAt': '2026-11-16T05:30:00.000Z',
+        'note': null,
+        'wallet': {
+          'id': 'w1',
+          'name': 'BCA',
+          'icon': 'account_balance_rounded',
+          'color': '#3B82F6',
+        },
+        'category': {
+          'id': 'c1',
+          'name': 'Makan',
+          'icon': 'restaurant_rounded',
+          'color': '#F97316',
+        },
+        'attachments': <Object>[],
+        'receivableId': receivableId,
+      });
+
+  testWidgets('detail pengeluaran: tombol Bagi ke teman membuka form bagi', (
+    tester,
+  ) async {
+    await pumpRoutedApp(
+      tester,
+      server(),
+      routeName: Routes.transactionDetail,
+      extra: expense(),
+    );
+    await tester.ensureVisible(
+      find.widgetWithText(OutlinedButton, 'Bagi ke teman'),
+    );
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Bagi ke teman'));
+    await tester.pumpAndSettle();
+    expect(find.text('Dari pengeluaran Makan Rp200.000'), findsOneWidget);
+  });
+
+  testWidgets('detail: sudah dibagi = baris, pemasukan = tanpa apa-apa', (
+    tester,
+  ) async {
+    await pumpRoutedApp(
+      tester,
+      server(),
+      routeName: Routes.transactionDetail,
+      extra: expense(receivableId: 'r1'),
+    );
+    expect(find.text('Dibagi ke teman'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, 'Bagi ke teman'), findsNothing);
+    await tester.ensureVisible(find.text('Dibagi ke teman'));
+    await tester.tap(find.text('Dibagi ke teman'));
+    await tester.pumpAndSettle();
+    expect(find.text('Makan bakso'), findsWidgets);
+  });
+
+  testWidgets('detail pemasukan: tanpa Bagi ke teman', (tester) async {
+    await pumpRoutedApp(
+      tester,
+      server(),
+      routeName: Routes.transactionDetail,
+      extra: expense(type: 'INCOME'),
+    );
+    expect(find.textContaining('ibagi ke teman'), findsNothing);
+    expect(find.textContaining('Bagi ke teman'), findsNothing);
+  });
+
+  testWidgets('detail piutang: info asal, tap membuka transaksi', (
+    tester,
+  ) async {
+    final fake = FakeServer({
+      ...server().responses,
+      '/receivables': {
+        'items': [
+          {
+            ...bakso,
+            'source': {
+              'transactionId': 't1',
+              'amount': 200000,
+              'categoryName': 'Makan',
+            },
+          },
+        ],
+        'totalRemaining': 30000,
+      },
+      '/transactions/t1': expense().toJson(),
+    });
+    await pumpRoutedApp(
+      tester,
+      fake,
+      routeName: Routes.receivableDetail,
+      pathParameters: {'id': 'r1'},
+    );
+    expect(find.text('Dari pengeluaran Makan Rp200.000'), findsOneWidget);
+    await tester.tap(find.text('Dari pengeluaran Makan Rp200.000'));
+    await tester.pumpAndSettle();
+    expect(find.text('Detail transaksi'), findsOneWidget);
   });
 }

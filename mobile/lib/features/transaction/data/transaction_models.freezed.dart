@@ -16,7 +16,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Transaction {
 
- String get id; TxType get type; int get amount; DateTime get occurredAt; String? get note; WalletRef get wallet; CategoryRef get category; List<Attachment> get attachments;
+ String get id; TxType get type; int get amount; DateTime get occurredAt; String? get note; WalletRef get wallet; CategoryRef get category; List<Attachment> get attachments;/// Piutang hasil "Bagi ke teman" (FIN-21); null = belum dibagi.
+ String? get receivableId;
 /// Create a copy of Transaction
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +31,20 @@ $TransactionCopyWith<Transaction> get copyWith => _$TransactionCopyWithImpl<Tran
 @override
 bool operator ==(Object other) {
   final _this = this as Transaction;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Transaction&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.type, _this.type) || other.type == _this.type)&&(identical(other.amount, _this.amount) || other.amount == _this.amount)&&(identical(other.occurredAt, _this.occurredAt) || other.occurredAt == _this.occurredAt)&&(identical(other.note, _this.note) || other.note == _this.note)&&(identical(other.wallet, _this.wallet) || other.wallet == _this.wallet)&&(identical(other.category, _this.category) || other.category == _this.category)&&const DeepCollectionEquality().equals(other.attachments, _this.attachments));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Transaction&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.type, _this.type) || other.type == _this.type)&&(identical(other.amount, _this.amount) || other.amount == _this.amount)&&(identical(other.occurredAt, _this.occurredAt) || other.occurredAt == _this.occurredAt)&&(identical(other.note, _this.note) || other.note == _this.note)&&(identical(other.wallet, _this.wallet) || other.wallet == _this.wallet)&&(identical(other.category, _this.category) || other.category == _this.category)&&const DeepCollectionEquality().equals(other.attachments, _this.attachments)&&(identical(other.receivableId, _this.receivableId) || other.receivableId == _this.receivableId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Transaction;
-  return Object.hash(runtimeType,_this.id,_this.type,_this.amount,_this.occurredAt,_this.note,_this.wallet,_this.category,const DeepCollectionEquality().hash(_this.attachments));
+  return Object.hash(runtimeType,_this.id,_this.type,_this.amount,_this.occurredAt,_this.note,_this.wallet,_this.category,const DeepCollectionEquality().hash(_this.attachments),_this.receivableId);
 }
 
 @override
 String toString() {
   final _this = this as Transaction;
-  return 'Transaction(id: ${_this.id}, type: ${_this.type}, amount: ${_this.amount}, occurredAt: ${_this.occurredAt}, note: ${_this.note}, wallet: ${_this.wallet}, category: ${_this.category}, attachments: ${_this.attachments})';
+  return 'Transaction(id: ${_this.id}, type: ${_this.type}, amount: ${_this.amount}, occurredAt: ${_this.occurredAt}, note: ${_this.note}, wallet: ${_this.wallet}, category: ${_this.category}, attachments: ${_this.attachments}, receivableId: ${_this.receivableId})';
 }
 
 
@@ -54,7 +55,7 @@ abstract mixin class $TransactionCopyWith<$Res>  {
   factory $TransactionCopyWith(Transaction value, $Res Function(Transaction) _then) = _$TransactionCopyWithImpl;
 @useResult
 $Res call({
- String id, TxType type, int amount, DateTime occurredAt, String? note, WalletRef wallet, CategoryRef category, List<Attachment> attachments
+ String id, TxType type, int amount, DateTime occurredAt, String? note, WalletRef wallet, CategoryRef category, List<Attachment> attachments, String? receivableId
 });
 
 
@@ -71,7 +72,7 @@ class _$TransactionCopyWithImpl<$Res>
 
 /// Create a copy of Transaction
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? type = null,Object? amount = null,Object? occurredAt = null,Object? note = freezed,Object? wallet = null,Object? category = null,Object? attachments = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? type = null,Object? amount = null,Object? occurredAt = null,Object? note = freezed,Object? wallet = null,Object? category = null,Object? attachments = null,Object? receivableId = freezed,}) {
   return _then(Transaction(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
@@ -81,7 +82,8 @@ as DateTime,note: freezed == note ? _self.note : note // ignore: cast_nullable_t
 as String?,wallet: null == wallet ? _self.wallet : wallet // ignore: cast_nullable_to_non_nullable
 as WalletRef,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
 as CategoryRef,attachments: null == attachments ? _self.attachments : attachments // ignore: cast_nullable_to_non_nullable
-as List<Attachment>,
+as List<Attachment>,receivableId: freezed == receivableId ? _self.receivableId : receivableId // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 /// Create a copy of Transaction
@@ -184,10 +186,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  TxType type,  int amount,  DateTime occurredAt,  String? note,  WalletRef wallet,  CategoryRef category,  List<Attachment> attachments)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  TxType type,  int amount,  DateTime occurredAt,  String? note,  WalletRef wallet,  CategoryRef category,  List<Attachment> attachments,  String? receivableId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Transaction() when $default != null:
-return $default(_that.id,_that.type,_that.amount,_that.occurredAt,_that.note,_that.wallet,_that.category,_that.attachments);case _:
+return $default(_that.id,_that.type,_that.amount,_that.occurredAt,_that.note,_that.wallet,_that.category,_that.attachments,_that.receivableId);case _:
   return orElse();
 
 }
@@ -205,10 +207,10 @@ return $default(_that.id,_that.type,_that.amount,_that.occurredAt,_that.note,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  TxType type,  int amount,  DateTime occurredAt,  String? note,  WalletRef wallet,  CategoryRef category,  List<Attachment> attachments)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  TxType type,  int amount,  DateTime occurredAt,  String? note,  WalletRef wallet,  CategoryRef category,  List<Attachment> attachments,  String? receivableId)  $default,) {final _that = this;
 switch (_that) {
 case _Transaction():
-return $default(_that.id,_that.type,_that.amount,_that.occurredAt,_that.note,_that.wallet,_that.category,_that.attachments);case _:
+return $default(_that.id,_that.type,_that.amount,_that.occurredAt,_that.note,_that.wallet,_that.category,_that.attachments,_that.receivableId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -225,10 +227,10 @@ return $default(_that.id,_that.type,_that.amount,_that.occurredAt,_that.note,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  TxType type,  int amount,  DateTime occurredAt,  String? note,  WalletRef wallet,  CategoryRef category,  List<Attachment> attachments)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  TxType type,  int amount,  DateTime occurredAt,  String? note,  WalletRef wallet,  CategoryRef category,  List<Attachment> attachments,  String? receivableId)?  $default,) {final _that = this;
 switch (_that) {
 case _Transaction() when $default != null:
-return $default(_that.id,_that.type,_that.amount,_that.occurredAt,_that.note,_that.wallet,_that.category,_that.attachments);case _:
+return $default(_that.id,_that.type,_that.amount,_that.occurredAt,_that.note,_that.wallet,_that.category,_that.attachments,_that.receivableId);case _:
   return null;
 
 }
@@ -240,7 +242,7 @@ return $default(_that.id,_that.type,_that.amount,_that.occurredAt,_that.note,_th
 @JsonSerializable()
 
 class _Transaction implements Transaction {
-  const _Transaction({required this.id, required this.type, required this.amount, required this.occurredAt, this.note, required this.wallet, required this.category, required  List<Attachment> attachments}): _attachments = attachments;
+  const _Transaction({required this.id, required this.type, required this.amount, required this.occurredAt, this.note, required this.wallet, required this.category, required  List<Attachment> attachments, this.receivableId}): _attachments = attachments;
   factory _Transaction.fromJson(Map<String, dynamic> json) => _$TransactionFromJson(json);
 
 @override final  String id;
@@ -257,6 +259,8 @@ class _Transaction implements Transaction {
   return EqualUnmodifiableListView(_attachments);
 }
 
+/// Piutang hasil "Bagi ke teman" (FIN-21); null = belum dibagi.
+@override final  String? receivableId;
 
 /// Create a copy of Transaction
 /// with the given fields replaced by the non-null parameter values.
@@ -271,18 +275,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Transaction&&(identical(other.id, id) || other.id == id)&&(identical(other.type, type) || other.type == type)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.occurredAt, occurredAt) || other.occurredAt == occurredAt)&&(identical(other.note, note) || other.note == note)&&(identical(other.wallet, wallet) || other.wallet == wallet)&&(identical(other.category, category) || other.category == category)&&const DeepCollectionEquality().equals(other.attachments, _attachments));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Transaction&&(identical(other.id, id) || other.id == id)&&(identical(other.type, type) || other.type == type)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.occurredAt, occurredAt) || other.occurredAt == occurredAt)&&(identical(other.note, note) || other.note == note)&&(identical(other.wallet, wallet) || other.wallet == wallet)&&(identical(other.category, category) || other.category == category)&&const DeepCollectionEquality().equals(other.attachments, _attachments)&&(identical(other.receivableId, receivableId) || other.receivableId == receivableId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,type,amount,occurredAt,note,wallet,category,const DeepCollectionEquality().hash(_attachments));
+    return Object.hash(runtimeType,id,type,amount,occurredAt,note,wallet,category,const DeepCollectionEquality().hash(_attachments),receivableId);
 }
 
 @override
 String toString() {
-    return 'Transaction(id: $id, type: $type, amount: $amount, occurredAt: $occurredAt, note: $note, wallet: $wallet, category: $category, attachments: $attachments)';
+    return 'Transaction(id: $id, type: $type, amount: $amount, occurredAt: $occurredAt, note: $note, wallet: $wallet, category: $category, attachments: $attachments, receivableId: $receivableId)';
 }
 
 
@@ -293,7 +297,7 @@ abstract mixin class _$TransactionCopyWith<$Res> implements $TransactionCopyWith
   factory _$TransactionCopyWith(_Transaction value, $Res Function(_Transaction) _then) = __$TransactionCopyWithImpl;
 @override @useResult
 $Res call({
- String id, TxType type, int amount, DateTime occurredAt, String? note, WalletRef wallet, CategoryRef category, List<Attachment> attachments
+ String id, TxType type, int amount, DateTime occurredAt, String? note, WalletRef wallet, CategoryRef category, List<Attachment> attachments, String? receivableId
 });
 
 
@@ -310,7 +314,7 @@ class __$TransactionCopyWithImpl<$Res>
 
 /// Create a copy of Transaction
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? type = null,Object? amount = null,Object? occurredAt = null,Object? note = freezed,Object? wallet = null,Object? category = null,Object? attachments = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? type = null,Object? amount = null,Object? occurredAt = null,Object? note = freezed,Object? wallet = null,Object? category = null,Object? attachments = null,Object? receivableId = freezed,}) {
   return _then(_Transaction(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
@@ -320,7 +324,8 @@ as DateTime,note: freezed == note ? _self.note : note // ignore: cast_nullable_t
 as String?,wallet: null == wallet ? _self.wallet : wallet // ignore: cast_nullable_to_non_nullable
 as WalletRef,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
 as CategoryRef,attachments: null == attachments ? _self._attachments : attachments // ignore: cast_nullable_to_non_nullable
-as List<Attachment>,
+as List<Attachment>,receivableId: freezed == receivableId ? _self.receivableId : receivableId // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

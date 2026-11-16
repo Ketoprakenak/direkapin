@@ -49,6 +49,7 @@ export const transactionResponse = z.object({
   wallet: walletRef,
   category: categoryRef,
   attachments: z.array(attachmentResponse),
+  receivableId: z.uuid().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

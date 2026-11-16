@@ -43,6 +43,11 @@ class TransactionApi {
     return response.data!['id'] as String;
   });
 
+  Future<Transaction> get(String id) => apiCall(() async {
+    final response = await _dio.get<Map<String, dynamic>>('/transactions/$id');
+    return Transaction.fromJson(response.data!);
+  });
+
   Future<void> update(String id, Map<String, Object?> data) =>
       apiCall(() => _dio.patch<void>('/transactions/$id', data: data));
 

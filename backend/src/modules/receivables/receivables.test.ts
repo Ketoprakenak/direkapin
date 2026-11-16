@@ -376,3 +376,144 @@ describe('payables (utang, FIN-20)', () => {
     expect(dashboard.totalBalance).toBe(120_000);
   });
 });
+
+describe('bagi pengeluaran (FIN-21)', () => {
+  type Ctx = Awaited<ReturnType<typeof setup>>;
+  const category = async (ctx: Ctx, type: string, name: string) =>
+    (await ctx.call('GET', `/categories?type=${type}`))
+      .json()
+      .items.find((c: { name: string }) => c.name === name).id as string;
+  const expense = async (ctx: Ctx, type = 'EXPENSE', name = 'Makan') =>
+    (
+      await ctx.call('POST', '/transactions', {
+        type,
+        amount: 200_000,
+        walletId: ctx.bca,
+        categoryId: await category(ctx, type, name),
+        occurredAt: now(),
+      })
+    ).json().id as string;
+  const split = (ctx: Ctx, sourceTransactionId: string, amounts: number[], extra: object = {}) =>
+    ctx.call('POST', '/receivables', {
+      title: 'Makan',
+      date: '2026-11-16',
+      sourceTransactionId,
+      debtors: amounts.map((amount, i) => ({ name: `T${i}`, amount })),
+      ...extra,
+    });
+
+  it('bagi: piutang tertaut, transaksi tahu piutangnya', async () => {
+    const ctx = await setup();
+    const id = await expense(ctx);
+    const res = await split(ctx, id, [66_666, 66_666]);
+    expect(res.statusCode).toBe(201);
+    expect(res.json().source).toEqual({
+      transactionId: id,
+      amount: 200_000,
+      categoryName: 'Makan',
+    });
+    const tx = (await ctx.call('GET', `/transactions/${id}`)).json();
+    expect(tx.receivableId).toBe(res.json().id);
+    const plain = (
+      await ctx.call('POST', '/receivables', {
+        title: 'X',
+        date: '2026-11-16',
+        debtors: [{ name: 'A', amount: 1 }],
+      })
+    ).json();
+    expect(plain.source).toBeNull();
+  });
+
+  it('batas: melebihi nominal ditolak, tepat sama boleh', async () => {
+    const ctx = await setup();
+    const id = await expense(ctx);
+    const over = await split(ctx, id, [100_000, 100_001]);
+    expect(over.statusCode).toBe(400);
+    expect(over.json().error.details.debtors).toBe('Melebihi nominal pengeluaran Rp200.000');
+    expect((await split(ctx, id, [100_000, 100_000])).statusCode).toBe(201);
+  });
+
+  it('sekali saja; kiriman ulang clientId sama = catatan yang sama', async () => {
+    const ctx = await setup();
+    const id = await expense(ctx);
+    const clientId = randomUUID();
+    const first = await split(ctx, id, [1_000], { clientId });
+    const again = await split(ctx, id, [1_000], { clientId });
+    expect(again.statusCode).toBe(201);
+    expect(again.json().id).toBe(first.json().id);
+    const second = await split(ctx, id, [1_000], { clientId: randomUUID() });
+    expect(second.statusCode).toBe(400);
+    expect(second.json().error.details.sourceTransactionId).toBe('Pengeluaran ini sudah dibagi');
+  });
+
+  it('sumber salah: pemasukan, milik user lain, atau utang ditolak', async () => {
+    const ctx = await setup();
+    const other = await setup('b@example.test');
+    const income = await split(ctx, await expense(ctx, 'INCOME', 'Gaji / Uang saku'), [1_000]);
+    expect(income.json().error.details.sourceTransactionId).toBe('Pilih pengeluaran');
+    const foreign = await split(ctx, await expense(other), [1_000]);
+    expect(foreign.statusCode).toBe(400);
+    expect(foreign.json().error.details.sourceTransactionId).toBe('Pilih pengeluaran');
+    const payable = await split(ctx, await expense(ctx), [1_000], { direction: 'PAYABLE' });
+    expect(payable.statusCode).toBe(400);
+    expect(payable.json().error.details.sourceTransactionId).toBe('Hanya untuk piutang');
+  });
+
+  it('pengeluaran yang sudah dibagi tidak bisa jadi pemasukan', async () => {
+    const ctx = await setup();
+    const id = await expense(ctx);
+    await split(ctx, id, [50_000]);
+    const res = await ctx.call('PATCH', `/transactions/${id}`, {
+      type: 'INCOME',
+      categoryId: await category(ctx, 'INCOME', 'Gaji / Uang saku'),
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error.details.amount).toBe('Ubah lewat menu Utang & Piutang');
+    const amount = await ctx.call('PATCH', `/transactions/${id}`, { amount: 150_000 });
+    expect(amount.statusCode).toBe(200);
+  });
+
+  it('biaya admin transfer dan cicilan utang tidak bisa dibagi', async () => {
+    const ctx = await setup();
+    const cash = (await ctx.call('GET', '/wallets'))
+      .json()
+      .items.find((w: { id: string }) => w.id !== ctx.bca).id as string;
+    await ctx.call('POST', '/transfers', {
+      fromWalletId: ctx.bca,
+      toWalletId: cash,
+      amount: 10_000,
+      fee: 2_500,
+      feePaidBy: 'FROM',
+      occurredAt: now(),
+    });
+    const fee = (await ctx.call('GET', '/transactions')).json().items[0].id as string;
+    const feeSplit = await split(ctx, fee, [1_000]);
+    expect(feeSplit.statusCode).toBe(400);
+    expect(feeSplit.json().error.details.sourceTransactionId).toBe('Pilih pengeluaran');
+
+    const debt = (
+      await ctx.call('POST', '/receivables', {
+        direction: 'PAYABLE',
+        title: 'Utang',
+        date: '2026-11-16',
+        debtors: [{ name: 'Rina', amount: 50_000 }],
+      })
+    ).json();
+    await ctx.pay(debt.debtors[0].id, 10_000, {
+      categoryId: await category(ctx, 'EXPENSE', 'Makan'),
+    });
+    const repayment = (await ctx.call('GET', '/transactions')).json().items[0].id as string;
+    expect((await split(ctx, repayment, [1_000])).statusCode).toBe(400);
+  });
+
+  it('hapus pengeluaran: piutang dan cicilan tetap, source null', async () => {
+    const ctx = await setup();
+    const id = await expense(ctx);
+    const created = (await split(ctx, id, [50_000])).json();
+    await ctx.pay(created.debtors[0].id, 20_000);
+    expect((await ctx.call('DELETE', `/transactions/${id}`)).statusCode).toBe(204);
+    const after = (await ctx.call('GET', '/receivables')).json().items[0];
+    expect(after).toMatchObject({ id: created.id, source: null });
+    expect(after.debtors[0].paid).toBe(20_000);
+  });
+});

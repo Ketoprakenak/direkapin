@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Receivable {
 
- String get id; ReceivableDirection get direction; String get title; String get date; String? get note; int get total; int get remaining; ReceivableLoan? get loan; List<Debtor> get debtors;
+ String get id; ReceivableDirection get direction; String get title; String get date; String? get note; int get total; int get remaining; ReceivableLoan? get loan; ReceivableSourceRef? get source; List<Debtor> get debtors;
 /// Create a copy of Receivable
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +30,20 @@ $ReceivableCopyWith<Receivable> get copyWith => _$ReceivableCopyWithImpl<Receiva
 @override
 bool operator ==(Object other) {
   final _this = this as Receivable;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Receivable&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.direction, _this.direction) || other.direction == _this.direction)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.date, _this.date) || other.date == _this.date)&&(identical(other.note, _this.note) || other.note == _this.note)&&(identical(other.total, _this.total) || other.total == _this.total)&&(identical(other.remaining, _this.remaining) || other.remaining == _this.remaining)&&(identical(other.loan, _this.loan) || other.loan == _this.loan)&&const DeepCollectionEquality().equals(other.debtors, _this.debtors));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Receivable&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.direction, _this.direction) || other.direction == _this.direction)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.date, _this.date) || other.date == _this.date)&&(identical(other.note, _this.note) || other.note == _this.note)&&(identical(other.total, _this.total) || other.total == _this.total)&&(identical(other.remaining, _this.remaining) || other.remaining == _this.remaining)&&(identical(other.loan, _this.loan) || other.loan == _this.loan)&&(identical(other.source, _this.source) || other.source == _this.source)&&const DeepCollectionEquality().equals(other.debtors, _this.debtors));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Receivable;
-  return Object.hash(runtimeType,_this.id,_this.direction,_this.title,_this.date,_this.note,_this.total,_this.remaining,_this.loan,const DeepCollectionEquality().hash(_this.debtors));
+  return Object.hash(runtimeType,_this.id,_this.direction,_this.title,_this.date,_this.note,_this.total,_this.remaining,_this.loan,_this.source,const DeepCollectionEquality().hash(_this.debtors));
 }
 
 @override
 String toString() {
   final _this = this as Receivable;
-  return 'Receivable(id: ${_this.id}, direction: ${_this.direction}, title: ${_this.title}, date: ${_this.date}, note: ${_this.note}, total: ${_this.total}, remaining: ${_this.remaining}, loan: ${_this.loan}, debtors: ${_this.debtors})';
+  return 'Receivable(id: ${_this.id}, direction: ${_this.direction}, title: ${_this.title}, date: ${_this.date}, note: ${_this.note}, total: ${_this.total}, remaining: ${_this.remaining}, loan: ${_this.loan}, source: ${_this.source}, debtors: ${_this.debtors})';
 }
 
 
@@ -54,11 +54,11 @@ abstract mixin class $ReceivableCopyWith<$Res>  {
   factory $ReceivableCopyWith(Receivable value, $Res Function(Receivable) _then) = _$ReceivableCopyWithImpl;
 @useResult
 $Res call({
- String id, ReceivableDirection direction, String title, String date, String? note, int total, int remaining, ReceivableLoan? loan, List<Debtor> debtors
+ String id, ReceivableDirection direction, String title, String date, String? note, int total, int remaining, ReceivableLoan? loan, ReceivableSourceRef? source, List<Debtor> debtors
 });
 
 
-$ReceivableLoanCopyWith<$Res>? get loan;
+$ReceivableLoanCopyWith<$Res>? get loan;$ReceivableSourceRefCopyWith<$Res>? get source;
 
 }
 /// @nodoc
@@ -71,7 +71,7 @@ class _$ReceivableCopyWithImpl<$Res>
 
 /// Create a copy of Receivable
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? direction = null,Object? title = null,Object? date = null,Object? note = freezed,Object? total = null,Object? remaining = null,Object? loan = freezed,Object? debtors = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? direction = null,Object? title = null,Object? date = null,Object? note = freezed,Object? total = null,Object? remaining = null,Object? loan = freezed,Object? source = freezed,Object? debtors = null,}) {
   return _then(Receivable(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,direction: null == direction ? _self.direction : direction // ignore: cast_nullable_to_non_nullable
@@ -81,7 +81,8 @@ as String,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_
 as String?,total: null == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
 as int,remaining: null == remaining ? _self.remaining : remaining // ignore: cast_nullable_to_non_nullable
 as int,loan: freezed == loan ? _self.loan : loan // ignore: cast_nullable_to_non_nullable
-as ReceivableLoan?,debtors: null == debtors ? _self.debtors : debtors // ignore: cast_nullable_to_non_nullable
+as ReceivableLoan?,source: freezed == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
+as ReceivableSourceRef?,debtors: null == debtors ? _self.debtors : debtors // ignore: cast_nullable_to_non_nullable
 as List<Debtor>,
   ));
 }
@@ -96,6 +97,18 @@ $ReceivableLoanCopyWith<$Res>? get loan {
 
   return $ReceivableLoanCopyWith<$Res>(_self.loan!, (value) {
     return _then(_self.copyWith(loan: value));
+  });
+}/// Create a copy of Receivable
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ReceivableSourceRefCopyWith<$Res>? get source {
+    if (_self.source == null) {
+    return null;
+  }
+
+  return $ReceivableSourceRefCopyWith<$Res>(_self.source!, (value) {
+    return _then(_self.copyWith(source: value));
   });
 }
 }
@@ -179,10 +192,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  ReceivableDirection direction,  String title,  String date,  String? note,  int total,  int remaining,  ReceivableLoan? loan,  List<Debtor> debtors)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  ReceivableDirection direction,  String title,  String date,  String? note,  int total,  int remaining,  ReceivableLoan? loan,  ReceivableSourceRef? source,  List<Debtor> debtors)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Receivable() when $default != null:
-return $default(_that.id,_that.direction,_that.title,_that.date,_that.note,_that.total,_that.remaining,_that.loan,_that.debtors);case _:
+return $default(_that.id,_that.direction,_that.title,_that.date,_that.note,_that.total,_that.remaining,_that.loan,_that.source,_that.debtors);case _:
   return orElse();
 
 }
@@ -200,10 +213,10 @@ return $default(_that.id,_that.direction,_that.title,_that.date,_that.note,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  ReceivableDirection direction,  String title,  String date,  String? note,  int total,  int remaining,  ReceivableLoan? loan,  List<Debtor> debtors)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  ReceivableDirection direction,  String title,  String date,  String? note,  int total,  int remaining,  ReceivableLoan? loan,  ReceivableSourceRef? source,  List<Debtor> debtors)  $default,) {final _that = this;
 switch (_that) {
 case _Receivable():
-return $default(_that.id,_that.direction,_that.title,_that.date,_that.note,_that.total,_that.remaining,_that.loan,_that.debtors);case _:
+return $default(_that.id,_that.direction,_that.title,_that.date,_that.note,_that.total,_that.remaining,_that.loan,_that.source,_that.debtors);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -220,10 +233,10 @@ return $default(_that.id,_that.direction,_that.title,_that.date,_that.note,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  ReceivableDirection direction,  String title,  String date,  String? note,  int total,  int remaining,  ReceivableLoan? loan,  List<Debtor> debtors)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  ReceivableDirection direction,  String title,  String date,  String? note,  int total,  int remaining,  ReceivableLoan? loan,  ReceivableSourceRef? source,  List<Debtor> debtors)?  $default,) {final _that = this;
 switch (_that) {
 case _Receivable() when $default != null:
-return $default(_that.id,_that.direction,_that.title,_that.date,_that.note,_that.total,_that.remaining,_that.loan,_that.debtors);case _:
+return $default(_that.id,_that.direction,_that.title,_that.date,_that.note,_that.total,_that.remaining,_that.loan,_that.source,_that.debtors);case _:
   return null;
 
 }
@@ -235,7 +248,7 @@ return $default(_that.id,_that.direction,_that.title,_that.date,_that.note,_that
 @JsonSerializable()
 
 class _Receivable implements Receivable {
-  const _Receivable({required this.id, this.direction = ReceivableDirection.receivable, required this.title, required this.date, this.note, required this.total, required this.remaining, this.loan, required  List<Debtor> debtors}): _debtors = debtors;
+  const _Receivable({required this.id, this.direction = ReceivableDirection.receivable, required this.title, required this.date, this.note, required this.total, required this.remaining, this.loan, this.source, required  List<Debtor> debtors}): _debtors = debtors;
   factory _Receivable.fromJson(Map<String, dynamic> json) => _$ReceivableFromJson(json);
 
 @override final  String id;
@@ -246,6 +259,7 @@ class _Receivable implements Receivable {
 @override final  int total;
 @override final  int remaining;
 @override final  ReceivableLoan? loan;
+@override final  ReceivableSourceRef? source;
  final  List<Debtor> _debtors;
 @override List<Debtor> get debtors {
   if (_debtors is EqualUnmodifiableListView) return _debtors;
@@ -267,18 +281,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Receivable&&(identical(other.id, id) || other.id == id)&&(identical(other.direction, direction) || other.direction == direction)&&(identical(other.title, title) || other.title == title)&&(identical(other.date, date) || other.date == date)&&(identical(other.note, note) || other.note == note)&&(identical(other.total, total) || other.total == total)&&(identical(other.remaining, remaining) || other.remaining == remaining)&&(identical(other.loan, loan) || other.loan == loan)&&const DeepCollectionEquality().equals(other.debtors, _debtors));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Receivable&&(identical(other.id, id) || other.id == id)&&(identical(other.direction, direction) || other.direction == direction)&&(identical(other.title, title) || other.title == title)&&(identical(other.date, date) || other.date == date)&&(identical(other.note, note) || other.note == note)&&(identical(other.total, total) || other.total == total)&&(identical(other.remaining, remaining) || other.remaining == remaining)&&(identical(other.loan, loan) || other.loan == loan)&&(identical(other.source, source) || other.source == source)&&const DeepCollectionEquality().equals(other.debtors, _debtors));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,direction,title,date,note,total,remaining,loan,const DeepCollectionEquality().hash(_debtors));
+    return Object.hash(runtimeType,id,direction,title,date,note,total,remaining,loan,source,const DeepCollectionEquality().hash(_debtors));
 }
 
 @override
 String toString() {
-    return 'Receivable(id: $id, direction: $direction, title: $title, date: $date, note: $note, total: $total, remaining: $remaining, loan: $loan, debtors: $debtors)';
+    return 'Receivable(id: $id, direction: $direction, title: $title, date: $date, note: $note, total: $total, remaining: $remaining, loan: $loan, source: $source, debtors: $debtors)';
 }
 
 
@@ -289,11 +303,11 @@ abstract mixin class _$ReceivableCopyWith<$Res> implements $ReceivableCopyWith<$
   factory _$ReceivableCopyWith(_Receivable value, $Res Function(_Receivable) _then) = __$ReceivableCopyWithImpl;
 @override @useResult
 $Res call({
- String id, ReceivableDirection direction, String title, String date, String? note, int total, int remaining, ReceivableLoan? loan, List<Debtor> debtors
+ String id, ReceivableDirection direction, String title, String date, String? note, int total, int remaining, ReceivableLoan? loan, ReceivableSourceRef? source, List<Debtor> debtors
 });
 
 
-@override $ReceivableLoanCopyWith<$Res>? get loan;
+@override $ReceivableLoanCopyWith<$Res>? get loan;@override $ReceivableSourceRefCopyWith<$Res>? get source;
 
 }
 /// @nodoc
@@ -306,7 +320,7 @@ class __$ReceivableCopyWithImpl<$Res>
 
 /// Create a copy of Receivable
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? direction = null,Object? title = null,Object? date = null,Object? note = freezed,Object? total = null,Object? remaining = null,Object? loan = freezed,Object? debtors = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? direction = null,Object? title = null,Object? date = null,Object? note = freezed,Object? total = null,Object? remaining = null,Object? loan = freezed,Object? source = freezed,Object? debtors = null,}) {
   return _then(_Receivable(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,direction: null == direction ? _self.direction : direction // ignore: cast_nullable_to_non_nullable
@@ -316,7 +330,8 @@ as String,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_
 as String?,total: null == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
 as int,remaining: null == remaining ? _self.remaining : remaining // ignore: cast_nullable_to_non_nullable
 as int,loan: freezed == loan ? _self.loan : loan // ignore: cast_nullable_to_non_nullable
-as ReceivableLoan?,debtors: null == debtors ? _self._debtors : debtors // ignore: cast_nullable_to_non_nullable
+as ReceivableLoan?,source: freezed == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
+as ReceivableSourceRef?,debtors: null == debtors ? _self._debtors : debtors // ignore: cast_nullable_to_non_nullable
 as List<Debtor>,
   ));
 }
@@ -333,7 +348,295 @@ $ReceivableLoanCopyWith<$Res>? get loan {
   return $ReceivableLoanCopyWith<$Res>(_self.loan!, (value) {
     return _then(_self.copyWith(loan: value));
   });
+}/// Create a copy of Receivable
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ReceivableSourceRefCopyWith<$Res>? get source {
+    if (_self.source == null) {
+    return null;
+  }
+
+  return $ReceivableSourceRefCopyWith<$Res>(_self.source!, (value) {
+    return _then(_self.copyWith(source: value));
+  });
 }
+}
+
+
+/// @nodoc
+mixin _$ReceivableSourceRef {
+
+ String get transactionId; int get amount; String get categoryName;
+/// Create a copy of ReceivableSourceRef
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ReceivableSourceRefCopyWith<ReceivableSourceRef> get copyWith => _$ReceivableSourceRefCopyWithImpl<ReceivableSourceRef>(this as ReceivableSourceRef, _$identity);
+
+  /// Serializes this ReceivableSourceRef to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  final _this = this as ReceivableSourceRef;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReceivableSourceRef&&(identical(other.transactionId, _this.transactionId) || other.transactionId == _this.transactionId)&&(identical(other.amount, _this.amount) || other.amount == _this.amount)&&(identical(other.categoryName, _this.categoryName) || other.categoryName == _this.categoryName));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+  final _this = this as ReceivableSourceRef;
+  return Object.hash(runtimeType,_this.transactionId,_this.amount,_this.categoryName);
+}
+
+@override
+String toString() {
+  final _this = this as ReceivableSourceRef;
+  return 'ReceivableSourceRef(transactionId: ${_this.transactionId}, amount: ${_this.amount}, categoryName: ${_this.categoryName})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ReceivableSourceRefCopyWith<$Res>  {
+  factory $ReceivableSourceRefCopyWith(ReceivableSourceRef value, $Res Function(ReceivableSourceRef) _then) = _$ReceivableSourceRefCopyWithImpl;
+@useResult
+$Res call({
+ String transactionId, int amount, String categoryName
+});
+
+
+
+
+}
+/// @nodoc
+class _$ReceivableSourceRefCopyWithImpl<$Res>
+    implements $ReceivableSourceRefCopyWith<$Res> {
+  _$ReceivableSourceRefCopyWithImpl(this._self, this._then);
+
+  final ReceivableSourceRef _self;
+  final $Res Function(ReceivableSourceRef) _then;
+
+/// Create a copy of ReceivableSourceRef
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? transactionId = null,Object? amount = null,Object? categoryName = null,}) {
+  return _then(ReceivableSourceRef(
+transactionId: null == transactionId ? _self.transactionId : transactionId // ignore: cast_nullable_to_non_nullable
+as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as int,categoryName: null == categoryName ? _self.categoryName : categoryName // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [ReceivableSourceRef].
+extension ReceivableSourceRefPatterns on ReceivableSourceRef {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ReceivableSourceRef value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _ReceivableSourceRef() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ReceivableSourceRef value)  $default,){
+final _that = this;
+switch (_that) {
+case _ReceivableSourceRef():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ReceivableSourceRef value)?  $default,){
+final _that = this;
+switch (_that) {
+case _ReceivableSourceRef() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String transactionId,  int amount,  String categoryName)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _ReceivableSourceRef() when $default != null:
+return $default(_that.transactionId,_that.amount,_that.categoryName);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String transactionId,  int amount,  String categoryName)  $default,) {final _that = this;
+switch (_that) {
+case _ReceivableSourceRef():
+return $default(_that.transactionId,_that.amount,_that.categoryName);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String transactionId,  int amount,  String categoryName)?  $default,) {final _that = this;
+switch (_that) {
+case _ReceivableSourceRef() when $default != null:
+return $default(_that.transactionId,_that.amount,_that.categoryName);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _ReceivableSourceRef implements ReceivableSourceRef {
+  const _ReceivableSourceRef({required this.transactionId, required this.amount, required this.categoryName});
+  factory _ReceivableSourceRef.fromJson(Map<String, dynamic> json) => _$ReceivableSourceRefFromJson(json);
+
+@override final  String transactionId;
+@override final  int amount;
+@override final  String categoryName;
+
+/// Create a copy of ReceivableSourceRef
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ReceivableSourceRefCopyWith<_ReceivableSourceRef> get copyWith => __$ReceivableSourceRefCopyWithImpl<_ReceivableSourceRef>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$ReceivableSourceRefToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ReceivableSourceRef&&(identical(other.transactionId, transactionId) || other.transactionId == transactionId)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+    return Object.hash(runtimeType,transactionId,amount,categoryName);
+}
+
+@override
+String toString() {
+    return 'ReceivableSourceRef(transactionId: $transactionId, amount: $amount, categoryName: $categoryName)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ReceivableSourceRefCopyWith<$Res> implements $ReceivableSourceRefCopyWith<$Res> {
+  factory _$ReceivableSourceRefCopyWith(_ReceivableSourceRef value, $Res Function(_ReceivableSourceRef) _then) = __$ReceivableSourceRefCopyWithImpl;
+@override @useResult
+$Res call({
+ String transactionId, int amount, String categoryName
+});
+
+
+
+
+}
+/// @nodoc
+class __$ReceivableSourceRefCopyWithImpl<$Res>
+    implements _$ReceivableSourceRefCopyWith<$Res> {
+  __$ReceivableSourceRefCopyWithImpl(this._self, this._then);
+
+  final _ReceivableSourceRef _self;
+  final $Res Function(_ReceivableSourceRef) _then;
+
+/// Create a copy of ReceivableSourceRef
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? transactionId = null,Object? amount = null,Object? categoryName = null,}) {
+  return _then(_ReceivableSourceRef(
+transactionId: null == transactionId ? _self.transactionId : transactionId // ignore: cast_nullable_to_non_nullable
+as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as int,categoryName: null == categoryName ? _self.categoryName : categoryName // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
 }
 
 

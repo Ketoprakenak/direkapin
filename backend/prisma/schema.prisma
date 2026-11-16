@@ -187,6 +187,7 @@ model Transaction {
   feeOf       Transfer?    @relation("TransferFee")
   receivablePayment ReceivablePayment?
   receivableLoan    Receivable?        @relation("ReceivableLoan")
+  receivableSource  Receivable?        @relation("ReceivableSource")
 
   @@unique([userId, clientId])
   @@index([userId, occurredAt])
@@ -255,20 +256,23 @@ enum ReceivableDirection {
 
 // PAYABLE = utang owner (FIN-20): tepat 1 orang; loanTransaction = pemasukan pinjam tunai (D-78)
 model Receivable {
-  id                String              @id @default(uuid()) @db.Uuid
-  userId            String              @db.Uuid
-  direction         ReceivableDirection @default(RECEIVABLE)
-  loanTransactionId String?             @unique @db.Uuid
-  clientId          String?             @db.Uuid // anti dobel saat kirim ulang (D-58)
-  title             String              @db.VarChar(60)
-  date              DateTime            @db.Date
-  note              String?             @db.VarChar(1000)
-  createdAt         DateTime            @default(now()) @db.Timestamptz
-  updatedAt         DateTime            @updatedAt @db.Timestamptz
+  id                  String              @id @default(uuid()) @db.Uuid
+  userId              String              @db.Uuid
+  direction           ReceivableDirection @default(RECEIVABLE)
+  loanTransactionId   String?             @unique @db.Uuid
+  clientId            String?             @db.Uuid // anti dobel saat kirim ulang (D-58)
+  // FIN-21: pengeluaran asal "Bagi ke teman"; dihapus = piutang tetap (D-79)
+  sourceTransactionId String?             @unique @db.Uuid
+  title               String              @db.VarChar(60)
+  date                DateTime            @db.Date
+  note                String?             @db.VarChar(1000)
+  createdAt           DateTime            @default(now()) @db.Timestamptz
+  updatedAt           DateTime            @updatedAt @db.Timestamptz
 
-  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  debtors         ReceivableDebtor[]
-  loanTransaction Transaction?       @relation("ReceivableLoan", fields: [loanTransactionId], references: [id], onDelete: SetNull)
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  debtors           ReceivableDebtor[]
+  loanTransaction   Transaction?       @relation("ReceivableLoan", fields: [loanTransactionId], references: [id], onDelete: SetNull)
+  sourceTransaction Transaction?       @relation("ReceivableSource", fields: [sourceTransactionId], references: [id], onDelete: SetNull)
 
   @@unique([userId, clientId])
   @@index([userId, date])

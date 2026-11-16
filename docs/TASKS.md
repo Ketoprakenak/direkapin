@@ -189,6 +189,13 @@ Ref: FIN-20, D-78. Spec `docs/superpowers/specs/2026-11-16-utang-design.md`, pla
 - [x] `clientId` saat catat utang/piutang (migrasi `receivable_client_id`) + cap LUNAS TERBAYAR di kartu dan detail
 - [x] Uji di HP asli lewat build debug, lalu commit
 
+## Slice 21 — Bagi pengeluaran ke teman (FIN-21) · Status: Selesai
+Ref: FIN-21, D-79. Spec `docs/superpowers/specs/2026-11-16-bagi-pengeluaran-design.md`, plan `docs/superpowers/plans/2026-11-16-bagi-pengeluaran.md`
+- [x] Backend: migrasi `receivable_source`, `sourceTransactionId` di `POST /receivables`, `source` + `receivableId`, test
+- [x] openapi, PRD, DECISIONS
+- [x] Mobile: form Bagi ke teman (Bagi rata), switch di form pengeluaran, tombol di detail, info asal di detail piutang
+- [x] Uji di HP asli lewat build debug, lalu commit
+
 ---
 
 ## Log
@@ -239,3 +246,4 @@ Ref: FIN-20, D-78. Spec `docs/superpowers/specs/2026-11-16-utang-design.md`, pla
 | 2026-11-10 | 10 | Kode selesai, belum di-commit: backend 196 lolos + 1 dilewati, mobile 170 lolos, lint dan analyze bersih. Sisa: uji HP lewat build debug ke backend laptop, lalu commit, deploy, rilis `v1.2.0` |
 | 2026-11-12 | 10, 11 | Commit `0a68fea` di `main`, backend di-deploy di mini PC (3 migrasi baru; route `/api/v1/recurring`, `/me/avatar`, `/reports/range` membalas 401 tanpa token). Tag `v1.2.0`: workflow sukses, APK terbit. Sisa: `LATEST_APK_VERSION=1.2.0` di mini PC, uji HP asli |
 | 2026-11-16 | 18, 19, 20 | Tabungan, piutang talangan, dan utang (+ `clientId` saat catat, cap LUNAS TERBAYAR, kunci nominal transaksi tertaut, `/wallets` menolak tabungan) jalan di HP asli menurut owner. Backend 307 lolos + 1 dilewati, mobile 308 lolos, lint dan analyze bersih. Commit di `feat/p1-batch`; belum deploy dan rilis |
+| 2026-11-16 | 21 | Bagi ke teman jalan di HP asli menurut owner. Backend 314 lolos + 1 dilewati, mobile 318 lolos. Release notes `1.4.0` ditambahkan; merge `feat/p1-batch` ke `main`. Sisa: deploy backend (5 migrasi baru) di mini PC, `LATEST_APK_VERSION=1.4.0`, tag `v1.4.0` |

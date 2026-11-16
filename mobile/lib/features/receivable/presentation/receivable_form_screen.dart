@@ -14,15 +14,22 @@ import '../../wallet/providers/wallet_providers.dart';
 import '../data/receivable_models.dart';
 import '../providers/receivable_providers.dart';
 
+/// Bagi rata ke [friends] teman + owner; sisa pembulatan milik owner (D-79).
+List<int> splitEvenly(int total, int friends) =>
+    List.filled(friends, total ~/ (friends + 1));
+
 /// Catat talangan/utang baru, atau ubah judul/tanggal/catatan [receivable].
+/// Dengan [source]: "Bagi ke teman" dari pengeluaran (FIN-21).
 class ReceivableFormScreen extends ConsumerStatefulWidget {
   const ReceivableFormScreen({
     super.key,
     this.receivable,
     this.direction = ReceivableDirection.receivable,
+    this.source,
   });
 
   final Receivable? receivable;
+  final ReceivableSource? source;
 
   /// Arah catatan baru; diabaikan saat mengubah [receivable].
   final ReceivableDirection direction;
@@ -44,11 +51,15 @@ class _Row {
 
 class _ReceivableFormScreenState extends ConsumerState<ReceivableFormScreen> {
   final _formKey = GlobalKey<FormState>();
-  late final _title = TextEditingController(text: widget.receivable?.title);
+  late final _title = TextEditingController(
+    text: widget.receivable?.title ?? widget.source?.categoryName,
+  );
   late final _note = TextEditingController(text: widget.receivable?.note);
-  late DateTime _date = widget.receivable == null
-      ? DateTime.now()
-      : DateTime.parse(widget.receivable!.date);
+  late DateTime _date = switch ((widget.receivable, widget.source)) {
+    (final r?, _) => DateTime.parse(r.date),
+    (_, final s?) => DateTime.parse(s.date),
+    _ => DateTime.now(),
+  };
   final _rows = [_Row()];
   // Sekali per form: Simpan ulang setelah timeout tidak membuat catatan dobel (D-58).
   final _clientId = newClientId();
@@ -77,6 +88,13 @@ class _ReceivableFormScreenState extends ConsumerState<ReceivableFormScreen> {
 
   void _addRow() => setState(() => _rows.add(_Row()));
 
+  void _splitEvenly() => setState(() {
+    final shares = splitEvenly(widget.source!.amount, _rows.length);
+    for (final (index, row) in _rows.indexed) {
+      row.amount.text = rupiahInputText(shares[index]);
+    }
+  });
+
   void _removeRow(_Row row) => setState(() {
     _rows.remove(row);
     row.dispose();
@@ -94,6 +112,14 @@ class _ReceivableFormScreenState extends ConsumerState<ReceivableFormScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    final source = widget.source;
+    if (source != null && _total > source.amount) {
+      setState(
+        () => _error =
+            'Melebihi nominal pengeluaran ${formatRupiah(source.amount)}',
+      );
+      return;
+    }
     setState(() {
       _busy = true;
       _error = null;
@@ -117,6 +143,7 @@ class _ReceivableFormScreenState extends ConsumerState<ReceivableFormScreen> {
           'clientId': _clientId,
           if (_payable) 'direction': 'PAYABLE',
           if (_payable && _cash) 'loanWalletId': _walletId,
+          'sourceTransactionId': ?widget.source?.transactionId,
           if (note.isNotEmpty) 'note': note,
           'debtors': [
             for (final row in _rows)
@@ -187,8 +214,17 @@ class _ReceivableFormScreenState extends ConsumerState<ReceivableFormScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final noun = _payable ? 'utang' : 'piutang';
+    final source = widget.source;
     return Scaffold(
-      appBar: AppBar(title: Text(_isEdit ? 'Ubah $noun' : 'Catat $noun')),
+      appBar: AppBar(
+        title: Text(
+          source != null
+              ? 'Bagi ke teman'
+              : _isEdit
+              ? 'Ubah $noun'
+              : 'Catat $noun',
+        ),
+      ),
       body: Form(
         key: _formKey,
         // Bukan ListView: baris yang ter-scroll keluar layar tetap harus divalidasi.
@@ -197,6 +233,23 @@ class _ReceivableFormScreenState extends ConsumerState<ReceivableFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (source != null) ...[
+                FrameCard(
+                  child: Row(
+                    children: [
+                      const Icon(Icons.receipt_long_rounded),
+                      const SizedBox(width: Spacing.md),
+                      Expanded(
+                        child: Text(
+                          'Dari pengeluaran ${source.categoryName} '
+                          '${formatRupiah(source.amount)}',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: Spacing.md),
+              ],
               TextFormField(
                 controller: _title,
                 maxLength: 60,
@@ -278,20 +331,46 @@ class _ReceivableFormScreenState extends ConsumerState<ReceivableFormScreen> {
                 if (_payable) ..._loanFields(context),
               ],
               if (!_isEdit && !_payable) ...[
-                OutlinedButton.icon(
-                  onPressed: _rows.length >= 20 ? null : _addRow,
-                  icon: const Icon(Icons.person_add_alt_rounded),
-                  label: const Text('Tambah orang'),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _rows.length >= 20 ? null : _addRow,
+                        icon: const Icon(Icons.person_add_alt_rounded),
+                        label: const Text('Tambah orang'),
+                      ),
+                    ),
+                    if (source != null) ...[
+                      const SizedBox(width: Spacing.sm),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _splitEvenly,
+                          icon: const Icon(Icons.call_split_rounded),
+                          label: const Text('Bagi rata'),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: Spacing.md),
                 FrameCard(
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Expanded(child: Text('Total piutang')),
-                      Text(
-                        formatRupiah(_total),
-                        style: theme.textTheme.titleSmall,
+                      Row(
+                        children: [
+                          const Expanded(child: Text('Total piutang')),
+                          Text(
+                            formatRupiah(_total),
+                            style: theme.textTheme.titleSmall,
+                          ),
+                        ],
                       ),
+                      if (source != null)
+                        Text(
+                          'Bagian kamu ${formatRupiah(source.amount - _total)}',
+                          style: theme.textTheme.labelSmall,
+                        ),
                     ],
                   ),
                 ),

@@ -15,6 +15,7 @@ import '../../../core/widgets/state_views.dart';
 import '../../category/data/category_models.dart';
 import '../../category/providers/category_providers.dart';
 import '../../dashboard/providers/dashboard_providers.dart';
+import '../../transaction/providers/transaction_providers.dart';
 import '../../wallet/providers/wallet_providers.dart';
 import '../data/receivable_models.dart';
 import '../providers/receivable_providers.dart';
@@ -163,6 +164,10 @@ class _Detail extends StatelessWidget {
             ],
           ),
         ),
+        if (r.source case final source?) ...[
+          const SizedBox(height: Spacing.md),
+          _SourceCard(source),
+        ],
         const SizedBox(height: Spacing.md),
         for (final debtor in r.debtors)
           Padding(
@@ -485,4 +490,42 @@ class _DebtorSheetState extends ConsumerState<_DebtorSheet> {
       ),
     );
   }
+}
+
+/// Pengeluaran asal "Bagi ke teman"; tap membuka detail transaksinya (FIN-21).
+class _SourceCard extends ConsumerWidget {
+  const _SourceCard(this.source);
+
+  final ReceivableSourceRef source;
+
+  Future<void> _open(BuildContext context, WidgetRef ref) async {
+    final router = GoRouter.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final transaction = await ref
+          .read(transactionApiProvider)
+          .get(source.transactionId);
+      router.pushNamed(Routes.transactionDetail, extra: transaction);
+    } on ApiException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => FrameCard(
+    onTap: () => _open(context, ref),
+    child: Row(
+      children: [
+        const Icon(Icons.receipt_long_rounded),
+        const SizedBox(width: Spacing.md),
+        Expanded(
+          child: Text(
+            'Dari pengeluaran ${source.categoryName} '
+            '${formatRupiah(source.amount)}',
+          ),
+        ),
+        const Icon(Icons.chevron_right_rounded),
+      ],
+    ),
+  );
 }

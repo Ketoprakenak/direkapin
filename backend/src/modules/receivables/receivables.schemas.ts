@@ -23,10 +23,18 @@ export const createReceivableBody = z
     debtors: z.array(debtor).min(1, 'Tambah minimal 1 orang').max(20, 'Maksimal 20 orang'),
     loanWalletId: z.uuid('Pilih dompet').optional(),
     clientId: clientId.optional(),
+    sourceTransactionId: z.uuid('Pilih pengeluaran').optional(),
   })
   .superRefine((body, ctx) => {
     if (body.direction === 'PAYABLE' && body.debtors.length > 1) {
       ctx.addIssue({ code: 'custom', path: ['debtors'], message: 'Utang hanya untuk 1 orang' });
+    }
+    if (body.direction === 'PAYABLE' && body.sourceTransactionId) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['sourceTransactionId'],
+        message: 'Hanya untuk piutang',
+      });
     }
     if (body.direction === 'RECEIVABLE' && body.loanWalletId) {
       ctx.addIssue({
@@ -74,6 +82,7 @@ export const receivableResponse = z.object({
   total: money,
   remaining: money,
   loan: z.object({ transactionId: z.uuid(), amount: money, wallet: walletRef }).nullable(),
+  source: z.object({ transactionId: z.uuid(), amount: money, categoryName: z.string() }).nullable(),
   debtors: z.array(
     z.object({
       id: z.uuid(),

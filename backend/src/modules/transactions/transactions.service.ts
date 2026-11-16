@@ -24,6 +24,7 @@ export const transactionInclude = {
   wallet: true,
   category: true,
   attachments: attachmentsInclude,
+  receivableSource: { select: { id: true } },
 } satisfies Prisma.TransactionInclude;
 type TransactionRow = Prisma.TransactionGetPayload<{ include: typeof transactionInclude }>;
 
@@ -47,6 +48,7 @@ export function toTransactionResponse(row: TransactionRow) {
       color: row.category.color,
     },
     attachments: row.attachments.map(toAttachmentResponse),
+    receivableId: row.receivableSource?.id ?? null,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -118,14 +120,18 @@ export async function updateTransaction(
   const existing = await findOwned(prisma, userId, id);
   // Cicilan dan pinjaman utang/piutang: nominal dan jenis menentukan sisa, jadi hanya diubah
   // lewat menu Utang & Piutang (D-78). Catatan, dompet, dan tanggal tetap boleh.
-  const changesMoney =
-    (input.amount !== undefined && toBigInt(input.amount) !== existing.amount) ||
-    (input.type !== undefined && input.type !== existing.type);
-  if (changesMoney) {
+  const changesAmount = input.amount !== undefined && toBigInt(input.amount) !== existing.amount;
+  const changesType = input.type !== undefined && input.type !== existing.type;
+  if (changesAmount || changesType) {
     const linked = await prisma.transaction.count({
       where: {
         id,
-        OR: [{ receivablePayment: { isNot: null } }, { receivableLoan: { isNot: null } }],
+        OR: [
+          { receivablePayment: { isNot: null } },
+          { receivableLoan: { isNot: null } },
+          // Pengeluaran yang sudah dibagi (FIN-21) tetap boleh diubah nominalnya, tapi bukan jenisnya.
+          ...(changesType ? [{ receivableSource: { isNot: null } }] : []),
+        ],
       },
     });
     if (linked > 0) {

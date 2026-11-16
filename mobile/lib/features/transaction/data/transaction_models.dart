@@ -18,6 +18,9 @@ abstract class Transaction with _$Transaction {
     required WalletRef wallet,
     required CategoryRef category,
     required List<Attachment> attachments,
+
+    /// Piutang hasil "Bagi ke teman" (FIN-21); null = belum dibagi.
+    String? receivableId,
   }) = _Transaction;
 
   factory Transaction.fromJson(Map<String, dynamic> json) =>

@@ -328,6 +328,55 @@ void main() {
       expect(server.writes, isEmpty);
     });
 
+    testWidgets('Bagi ke teman: simpan lalu lanjut ke form bagi (FIN-21)', (
+      tester,
+    ) async {
+      final server = formServer();
+      await pumpRoutedApp(tester, server, routeName: Routes.transactionForm);
+      await tester.enterText(field('Nominal'), '200000');
+      await tester.tap(find.text('Makan'));
+      await tester.pump();
+      await tester.ensureVisible(find.text('Bagi ke teman'));
+      await tester.tap(find.text('Bagi ke teman'));
+      await tester.pump();
+      await tapSave(tester);
+
+      expect(server.writes.single.path, '/transactions');
+      expect(find.text('Dari pengeluaran Makan Rp200.000'), findsOneWidget);
+      expect(find.text('Bagi rata'), findsOneWidget);
+    });
+
+    testWidgets('form bagi ditutup tanpa simpan: pengeluaran tetap tersimpan', (
+      tester,
+    ) async {
+      final server = formServer();
+      await pumpRoutedApp(tester, server, routeName: Routes.transactionForm);
+      await tester.enterText(field('Nominal'), '200000');
+      await tester.tap(find.text('Makan'));
+      await tester.pump();
+      await tester.ensureVisible(find.text('Bagi ke teman'));
+      await tester.tap(find.text('Bagi ke teman'));
+      await tester.pump();
+      await tapSave(tester);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bagi rata'), findsNothing);
+      expect(server.writes.map((w) => w.path), ['/transactions']);
+    });
+
+    testWidgets('switch Bagi ke teman hanya di Keluar', (tester) async {
+      await pumpRoutedApp(
+        tester,
+        formServer(),
+        routeName: Routes.transactionForm,
+      );
+      expect(find.text('Bagi ke teman'), findsOneWidget);
+      await tester.tap(find.text('Masuk'));
+      await tester.pumpAndSettle();
+      expect(find.text('Bagi ke teman'), findsNothing);
+    });
+
     testWidgets(
       'cukup nominal + kategori: terkirim sebagai Keluar, integer, UTC',
       (tester) async {

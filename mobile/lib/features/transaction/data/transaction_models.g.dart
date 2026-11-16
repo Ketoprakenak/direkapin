@@ -17,6 +17,7 @@ _Transaction _$TransactionFromJson(Map<String, dynamic> json) => _Transaction(
   attachments: (json['attachments'] as List<dynamic>)
       .map((e) => Attachment.fromJson(e as Map<String, dynamic>))
       .toList(),
+  receivableId: json['receivableId'] as String?,
 );
 
 Map<String, dynamic> _$TransactionToJson(_Transaction instance) =>
@@ -29,6 +30,7 @@ Map<String, dynamic> _$TransactionToJson(_Transaction instance) =>
       'wallet': instance.wallet,
       'category': instance.category,
       'attachments': instance.attachments,
+      'receivableId': instance.receivableId,
     };
 
 const _$TxTypeEnumMap = {TxType.income: 'INCOME', TxType.expense: 'EXPENSE'};

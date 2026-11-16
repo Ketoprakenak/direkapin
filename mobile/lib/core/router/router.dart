@@ -285,6 +285,7 @@ GoRouter appRouter(Ref ref) {
                 final ReceivableDirection d => ReceivableFormScreen(
                   direction: d,
                 ),
+                final ReceivableSource s => ReceivableFormScreen(source: s),
                 _ => const ReceivableFormScreen(),
               },
             ),
