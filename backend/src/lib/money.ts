@@ -7,3 +7,8 @@ export function toNumber(amount: bigint): number {
 export function toBigInt(amount: number): bigint {
   return BigInt(amount);
 }
+
+/** "Rp30.000" untuk pesan error ke user. */
+export function formatRupiah(amount: bigint): string {
+  return `Rp${toNumber(amount).toLocaleString('id-ID')}`;
+}

@@ -7,7 +7,8 @@ part 'wallet_models.g.dart';
 enum WalletType {
   cash('Cash', 'account_balance_wallet_rounded'),
   bank('Bank', 'account_balance_rounded'),
-  ewallet('E-wallet', 'phone_iphone_rounded');
+  ewallet('E-wallet', 'phone_iphone_rounded'),
+  savings('Tabungan', 'savings_rounded');
 
   const WalletType(this.label, this.icon);
 
@@ -24,6 +25,7 @@ abstract class Wallet with _$Wallet {
     required String name,
     required WalletType type,
     required int initialBalance,
+    int? targetAmount,
     required int balance,
     required String icon,
     required String color,

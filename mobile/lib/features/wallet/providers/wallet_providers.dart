@@ -10,8 +10,13 @@ part 'wallet_providers.g.dart';
 WalletApi walletApi(Ref ref) => WalletApi(ref.watch(apiClientProvider));
 
 @riverpod
-Future<List<Wallet>> wallets(Ref ref, {bool includeArchived = false}) =>
-    ref.watch(walletApiProvider).list(includeArchived: includeArchived);
+Future<List<Wallet>> wallets(
+  Ref ref, {
+  bool includeArchived = false,
+  bool includeSavings = false,
+}) => ref
+    .watch(walletApiProvider)
+    .list(includeArchived: includeArchived, includeSavings: includeSavings);
 
 @riverpod
 Future<List<Transfer>> transfers(Ref ref) =>

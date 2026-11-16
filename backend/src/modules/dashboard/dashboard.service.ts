@@ -3,6 +3,8 @@ import { addDays, dateRange, localDate, monthRange, toDbDate } from '../../lib/d
 import { toNumber } from '../../lib/money.js';
 import { activityInclude, activityOrder, toActivityResponse } from '../activities/activities.service.js';
 import { getTimezone } from '../me/me.service.js';
+import { receivableRemaining } from '../receivables/receivables.service.js';
+import { listSavings } from '../savings/savings.service.js';
 import { listWallets } from '../wallets/wallets.service.js';
 
 /**
@@ -69,21 +71,25 @@ export async function getDashboard(prisma: PrismaClient, userId: string, now = n
   const timezone = await getTimezone(prisma, userId);
   const today = localDate(now, timezone);
 
-  const [wallets, monthTotals, last7Days, days, activities] = await Promise.all([
-    listWallets(prisma, userId, false),
-    prisma.transaction.groupBy({
-      by: ['type'],
-      where: { userId, occurredAt: monthRange(today, timezone) },
-      _sum: { amount: true },
-    }),
-    dailySeries(prisma, userId, timezone, today),
-    recordedDays(prisma, userId, timezone),
-    prisma.activity.findMany({
-      where: { userId, date: toDbDate(today) },
-      include: activityInclude,
-      orderBy: activityOrder,
-    }),
-  ]);
+  const [wallets, savings, piutang, utang, monthTotals, last7Days, days, activities] =
+    await Promise.all([
+      listWallets(prisma, userId, false),
+      listSavings(prisma, userId),
+      receivableRemaining(prisma, userId, 'RECEIVABLE'),
+      receivableRemaining(prisma, userId, 'PAYABLE'),
+      prisma.transaction.groupBy({
+        by: ['type'],
+        where: { userId, occurredAt: monthRange(today, timezone) },
+        _sum: { amount: true },
+      }),
+      dailySeries(prisma, userId, timezone, today),
+      recordedDays(prisma, userId, timezone),
+      prisma.activity.findMany({
+        where: { userId, date: toDbDate(today) },
+        include: activityInclude,
+        orderBy: activityOrder,
+      }),
+    ]);
 
   const monthTotal = (type: string) =>
     toNumber(monthTotals.find((row) => row.type === type)?._sum.amount ?? 0n);
@@ -91,8 +97,13 @@ export async function getDashboard(prisma: PrismaClient, userId: string, now = n
   const expense = monthTotal('EXPENSE');
 
   return {
-    totalBalance: wallets.totalBalance,
+    // Saldo total = bisa digunakan + semua tabungan (FIN-18).
+    totalBalance: savings.reduce((sum, s) => sum + s.balance, wallets.totalBalance),
+    availableBalance: wallets.totalBalance,
     wallets: wallets.items,
+    savings,
+    receivableRemaining: piutang,
+    payableRemaining: utang,
     month: { income, expense, net: income - expense },
     today: {
       date: today,

@@ -10,7 +10,11 @@ export const seriesPoint = z.object({
 
 export const dashboardResponse = z.object({
   totalBalance: z.number().int(),
+  availableBalance: z.number().int(),
   wallets: z.array(walletResponse),
+  savings: z.array(walletResponse),
+  receivableRemaining: z.number().int(),
+  payableRemaining: z.number().int(),
   month: z.object({
     income: z.number().int(),
     expense: z.number().int(),

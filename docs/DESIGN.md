@@ -47,6 +47,7 @@ Tint mood sama di semua tema pastel: 😄 `#7BC79A` · 🙂 `#6FC1B5` · 😐 `#
 
 Aturan:
 - Warna masuk/keluar tema **hanya** untuk arah uang (masuk/keluar). Jangan dipakai untuk status lain.
+  Pengecualian: cap "LUNAS TERBAYAR" dan label "Lunas" di Utang & Piutang (FIN-19, FIN-20) memakai warna masuk untuk teks, centang, dan garis tipis (`frameWidth × 0.75`) di atas latar kartu (`surface`), tanpa bayangan; cap miring −0,1 rad dengan ruang atas/bawah supaya tidak menabrak bar. Bar progres tetap `ink`. Lunas = uangnya sudah beres; hijau tiap tema sudah disetel kontrasnya.
 - Warna kategori dan dompet diambil dari palet kategori di bawah, bukan warna bebas. Satu pengecualian: kategori bawaan "Lainnya" pengeluaran memakai abu-abu `#78716C`.
 
 **Palet kategori/dompet (8 warna):** `#EF4444` `#F97316` `#EAB308` `#22C55E` `#14B8A6` `#3B82F6` `#8B5CF6` `#EC4899`

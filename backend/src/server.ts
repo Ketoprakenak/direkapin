@@ -20,6 +20,8 @@ import { reportRoutes } from './modules/reports/reports.routes.js';
 import { systemRoutes } from './modules/system/system.routes.js';
 import { transactionRoutes } from './modules/transactions/transactions.routes.js';
 import { transferRoutes } from './modules/transfers/transfers.routes.js';
+import { receivableRoutes } from './modules/receivables/receivables.routes.js';
+import { savingsRoutes } from './modules/savings/savings.routes.js';
 import { walletRoutes } from './modules/wallets/wallets.routes.js';
 import { setupAuth } from './plugins/auth.js';
 import { setupErrors } from './plugins/errors.js';
@@ -56,6 +58,8 @@ export function buildApp(config: Config, deps: { sendMail?: SendMail } = {}) {
       authRoutes(api, config, deps.sendMail ?? createMailer(config, app.log));
       meRoutes(api, config);
       walletRoutes(api);
+      savingsRoutes(api);
+      receivableRoutes(api);
       transferRoutes(api);
       categoryRoutes(api);
       transactionRoutes(api, config);

@@ -54,7 +54,11 @@ abstract class Streak with _$Streak {
 abstract class Dashboard with _$Dashboard {
   const factory Dashboard({
     required int totalBalance,
+    required int availableBalance,
     required List<Wallet> wallets,
+    required List<Wallet> savings,
+    @Default(0) int receivableRemaining,
+    @Default(0) int payableRemaining,
     required MonthSummary month,
     required TodaySummary today,
     required List<SeriesPoint> last7Days,

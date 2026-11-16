@@ -5,7 +5,7 @@ import { occurredAtFilter } from '../../lib/dates.js';
 import { toBigInt, toNumber } from '../../lib/money.js';
 import { createOnce, toPage } from '../../lib/schemas.js';
 import { getTimezone } from '../me/me.service.js';
-import { assertActiveWallet } from '../wallets/wallets.service.js';
+import { assertActiveWallet, assertNotSavings } from '../wallets/wallets.service.js';
 import {
   FEE_TOO_BIG_ERROR,
   SAME_WALLET_ERROR,
@@ -122,6 +122,7 @@ export async function createTransfer(
   input: z.infer<typeof createTransferBody>,
 ) {
   await assertActiveWallet(prisma, userId, input.fromWalletId, 'fromWalletId');
+  await assertNotSavings(prisma, userId, input.fromWalletId, 'fromWalletId');
   await assertActiveWallet(prisma, userId, input.toWalletId, 'toWalletId');
   const { fee = 0, feePaidBy = 'TO', ...fields } = input;
   const transfer = await createOnce(
@@ -160,6 +161,7 @@ export async function updateTransfer(
   // Dompet lama boleh sudah diarsipkan; hanya dompet baru yang harus aktif (D-29).
   if (fromWalletId !== existing.fromWalletId) {
     await assertActiveWallet(prisma, userId, fromWalletId, 'fromWalletId');
+    await assertNotSavings(prisma, userId, fromWalletId, 'fromWalletId');
   }
   if (toWalletId !== existing.toWalletId) {
     await assertActiveWallet(prisma, userId, toWalletId, 'toWalletId');

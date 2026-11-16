@@ -1126,7 +1126,7 @@ as int,
 /// @nodoc
 mixin _$Dashboard {
 
- int get totalBalance; List<Wallet> get wallets; MonthSummary get month; TodaySummary get today; List<SeriesPoint> get last7Days; Streak get streak;
+ int get totalBalance; int get availableBalance; List<Wallet> get wallets; List<Wallet> get savings; int get receivableRemaining; int get payableRemaining; MonthSummary get month; TodaySummary get today; List<SeriesPoint> get last7Days; Streak get streak;
 /// Create a copy of Dashboard
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1140,20 +1140,20 @@ $DashboardCopyWith<Dashboard> get copyWith => _$DashboardCopyWithImpl<Dashboard>
 @override
 bool operator ==(Object other) {
   final _this = this as Dashboard;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Dashboard&&(identical(other.totalBalance, _this.totalBalance) || other.totalBalance == _this.totalBalance)&&const DeepCollectionEquality().equals(other.wallets, _this.wallets)&&(identical(other.month, _this.month) || other.month == _this.month)&&(identical(other.today, _this.today) || other.today == _this.today)&&const DeepCollectionEquality().equals(other.last7Days, _this.last7Days)&&(identical(other.streak, _this.streak) || other.streak == _this.streak));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Dashboard&&(identical(other.totalBalance, _this.totalBalance) || other.totalBalance == _this.totalBalance)&&(identical(other.availableBalance, _this.availableBalance) || other.availableBalance == _this.availableBalance)&&const DeepCollectionEquality().equals(other.wallets, _this.wallets)&&const DeepCollectionEquality().equals(other.savings, _this.savings)&&(identical(other.receivableRemaining, _this.receivableRemaining) || other.receivableRemaining == _this.receivableRemaining)&&(identical(other.payableRemaining, _this.payableRemaining) || other.payableRemaining == _this.payableRemaining)&&(identical(other.month, _this.month) || other.month == _this.month)&&(identical(other.today, _this.today) || other.today == _this.today)&&const DeepCollectionEquality().equals(other.last7Days, _this.last7Days)&&(identical(other.streak, _this.streak) || other.streak == _this.streak));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Dashboard;
-  return Object.hash(runtimeType,_this.totalBalance,const DeepCollectionEquality().hash(_this.wallets),_this.month,_this.today,const DeepCollectionEquality().hash(_this.last7Days),_this.streak);
+  return Object.hash(runtimeType,_this.totalBalance,_this.availableBalance,const DeepCollectionEquality().hash(_this.wallets),const DeepCollectionEquality().hash(_this.savings),_this.receivableRemaining,_this.payableRemaining,_this.month,_this.today,const DeepCollectionEquality().hash(_this.last7Days),_this.streak);
 }
 
 @override
 String toString() {
   final _this = this as Dashboard;
-  return 'Dashboard(totalBalance: ${_this.totalBalance}, wallets: ${_this.wallets}, month: ${_this.month}, today: ${_this.today}, last7Days: ${_this.last7Days}, streak: ${_this.streak})';
+  return 'Dashboard(totalBalance: ${_this.totalBalance}, availableBalance: ${_this.availableBalance}, wallets: ${_this.wallets}, savings: ${_this.savings}, receivableRemaining: ${_this.receivableRemaining}, payableRemaining: ${_this.payableRemaining}, month: ${_this.month}, today: ${_this.today}, last7Days: ${_this.last7Days}, streak: ${_this.streak})';
 }
 
 
@@ -1164,7 +1164,7 @@ abstract mixin class $DashboardCopyWith<$Res>  {
   factory $DashboardCopyWith(Dashboard value, $Res Function(Dashboard) _then) = _$DashboardCopyWithImpl;
 @useResult
 $Res call({
- int totalBalance, List<Wallet> wallets, MonthSummary month, TodaySummary today, List<SeriesPoint> last7Days, Streak streak
+ int totalBalance, int availableBalance, List<Wallet> wallets, List<Wallet> savings, int receivableRemaining, int payableRemaining, MonthSummary month, TodaySummary today, List<SeriesPoint> last7Days, Streak streak
 });
 
 
@@ -1181,11 +1181,15 @@ class _$DashboardCopyWithImpl<$Res>
 
 /// Create a copy of Dashboard
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? totalBalance = null,Object? wallets = null,Object? month = null,Object? today = null,Object? last7Days = null,Object? streak = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? totalBalance = null,Object? availableBalance = null,Object? wallets = null,Object? savings = null,Object? receivableRemaining = null,Object? payableRemaining = null,Object? month = null,Object? today = null,Object? last7Days = null,Object? streak = null,}) {
   return _then(Dashboard(
 totalBalance: null == totalBalance ? _self.totalBalance : totalBalance // ignore: cast_nullable_to_non_nullable
+as int,availableBalance: null == availableBalance ? _self.availableBalance : availableBalance // ignore: cast_nullable_to_non_nullable
 as int,wallets: null == wallets ? _self.wallets : wallets // ignore: cast_nullable_to_non_nullable
-as List<Wallet>,month: null == month ? _self.month : month // ignore: cast_nullable_to_non_nullable
+as List<Wallet>,savings: null == savings ? _self.savings : savings // ignore: cast_nullable_to_non_nullable
+as List<Wallet>,receivableRemaining: null == receivableRemaining ? _self.receivableRemaining : receivableRemaining // ignore: cast_nullable_to_non_nullable
+as int,payableRemaining: null == payableRemaining ? _self.payableRemaining : payableRemaining // ignore: cast_nullable_to_non_nullable
+as int,month: null == month ? _self.month : month // ignore: cast_nullable_to_non_nullable
 as MonthSummary,today: null == today ? _self.today : today // ignore: cast_nullable_to_non_nullable
 as TodaySummary,last7Days: null == last7Days ? _self.last7Days : last7Days // ignore: cast_nullable_to_non_nullable
 as List<SeriesPoint>,streak: null == streak ? _self.streak : streak // ignore: cast_nullable_to_non_nullable
@@ -1301,10 +1305,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int totalBalance,  List<Wallet> wallets,  MonthSummary month,  TodaySummary today,  List<SeriesPoint> last7Days,  Streak streak)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int totalBalance,  int availableBalance,  List<Wallet> wallets,  List<Wallet> savings,  int receivableRemaining,  int payableRemaining,  MonthSummary month,  TodaySummary today,  List<SeriesPoint> last7Days,  Streak streak)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Dashboard() when $default != null:
-return $default(_that.totalBalance,_that.wallets,_that.month,_that.today,_that.last7Days,_that.streak);case _:
+return $default(_that.totalBalance,_that.availableBalance,_that.wallets,_that.savings,_that.receivableRemaining,_that.payableRemaining,_that.month,_that.today,_that.last7Days,_that.streak);case _:
   return orElse();
 
 }
@@ -1322,10 +1326,10 @@ return $default(_that.totalBalance,_that.wallets,_that.month,_that.today,_that.l
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int totalBalance,  List<Wallet> wallets,  MonthSummary month,  TodaySummary today,  List<SeriesPoint> last7Days,  Streak streak)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int totalBalance,  int availableBalance,  List<Wallet> wallets,  List<Wallet> savings,  int receivableRemaining,  int payableRemaining,  MonthSummary month,  TodaySummary today,  List<SeriesPoint> last7Days,  Streak streak)  $default,) {final _that = this;
 switch (_that) {
 case _Dashboard():
-return $default(_that.totalBalance,_that.wallets,_that.month,_that.today,_that.last7Days,_that.streak);case _:
+return $default(_that.totalBalance,_that.availableBalance,_that.wallets,_that.savings,_that.receivableRemaining,_that.payableRemaining,_that.month,_that.today,_that.last7Days,_that.streak);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1342,10 +1346,10 @@ return $default(_that.totalBalance,_that.wallets,_that.month,_that.today,_that.l
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int totalBalance,  List<Wallet> wallets,  MonthSummary month,  TodaySummary today,  List<SeriesPoint> last7Days,  Streak streak)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int totalBalance,  int availableBalance,  List<Wallet> wallets,  List<Wallet> savings,  int receivableRemaining,  int payableRemaining,  MonthSummary month,  TodaySummary today,  List<SeriesPoint> last7Days,  Streak streak)?  $default,) {final _that = this;
 switch (_that) {
 case _Dashboard() when $default != null:
-return $default(_that.totalBalance,_that.wallets,_that.month,_that.today,_that.last7Days,_that.streak);case _:
+return $default(_that.totalBalance,_that.availableBalance,_that.wallets,_that.savings,_that.receivableRemaining,_that.payableRemaining,_that.month,_that.today,_that.last7Days,_that.streak);case _:
   return null;
 
 }
@@ -1357,10 +1361,11 @@ return $default(_that.totalBalance,_that.wallets,_that.month,_that.today,_that.l
 @JsonSerializable()
 
 class _Dashboard implements Dashboard {
-  const _Dashboard({required this.totalBalance, required  List<Wallet> wallets, required this.month, required this.today, required  List<SeriesPoint> last7Days, required this.streak}): _wallets = wallets,_last7Days = last7Days;
+  const _Dashboard({required this.totalBalance, required this.availableBalance, required  List<Wallet> wallets, required  List<Wallet> savings, this.receivableRemaining = 0, this.payableRemaining = 0, required this.month, required this.today, required  List<SeriesPoint> last7Days, required this.streak}): _wallets = wallets,_savings = savings,_last7Days = last7Days;
   factory _Dashboard.fromJson(Map<String, dynamic> json) => _$DashboardFromJson(json);
 
 @override final  int totalBalance;
+@override final  int availableBalance;
  final  List<Wallet> _wallets;
 @override List<Wallet> get wallets {
   if (_wallets is EqualUnmodifiableListView) return _wallets;
@@ -1368,6 +1373,15 @@ class _Dashboard implements Dashboard {
   return EqualUnmodifiableListView(_wallets);
 }
 
+ final  List<Wallet> _savings;
+@override List<Wallet> get savings {
+  if (_savings is EqualUnmodifiableListView) return _savings;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_savings);
+}
+
+@override@JsonKey() final  int receivableRemaining;
+@override@JsonKey() final  int payableRemaining;
 @override final  MonthSummary month;
 @override final  TodaySummary today;
  final  List<SeriesPoint> _last7Days;
@@ -1392,18 +1406,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Dashboard&&(identical(other.totalBalance, totalBalance) || other.totalBalance == totalBalance)&&const DeepCollectionEquality().equals(other.wallets, _wallets)&&(identical(other.month, month) || other.month == month)&&(identical(other.today, today) || other.today == today)&&const DeepCollectionEquality().equals(other.last7Days, _last7Days)&&(identical(other.streak, streak) || other.streak == streak));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Dashboard&&(identical(other.totalBalance, totalBalance) || other.totalBalance == totalBalance)&&(identical(other.availableBalance, availableBalance) || other.availableBalance == availableBalance)&&const DeepCollectionEquality().equals(other.wallets, _wallets)&&const DeepCollectionEquality().equals(other.savings, _savings)&&(identical(other.receivableRemaining, receivableRemaining) || other.receivableRemaining == receivableRemaining)&&(identical(other.payableRemaining, payableRemaining) || other.payableRemaining == payableRemaining)&&(identical(other.month, month) || other.month == month)&&(identical(other.today, today) || other.today == today)&&const DeepCollectionEquality().equals(other.last7Days, _last7Days)&&(identical(other.streak, streak) || other.streak == streak));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,totalBalance,const DeepCollectionEquality().hash(_wallets),month,today,const DeepCollectionEquality().hash(_last7Days),streak);
+    return Object.hash(runtimeType,totalBalance,availableBalance,const DeepCollectionEquality().hash(_wallets),const DeepCollectionEquality().hash(_savings),receivableRemaining,payableRemaining,month,today,const DeepCollectionEquality().hash(_last7Days),streak);
 }
 
 @override
 String toString() {
-    return 'Dashboard(totalBalance: $totalBalance, wallets: $wallets, month: $month, today: $today, last7Days: $last7Days, streak: $streak)';
+    return 'Dashboard(totalBalance: $totalBalance, availableBalance: $availableBalance, wallets: $wallets, savings: $savings, receivableRemaining: $receivableRemaining, payableRemaining: $payableRemaining, month: $month, today: $today, last7Days: $last7Days, streak: $streak)';
 }
 
 
@@ -1414,7 +1428,7 @@ abstract mixin class _$DashboardCopyWith<$Res> implements $DashboardCopyWith<$Re
   factory _$DashboardCopyWith(_Dashboard value, $Res Function(_Dashboard) _then) = __$DashboardCopyWithImpl;
 @override @useResult
 $Res call({
- int totalBalance, List<Wallet> wallets, MonthSummary month, TodaySummary today, List<SeriesPoint> last7Days, Streak streak
+ int totalBalance, int availableBalance, List<Wallet> wallets, List<Wallet> savings, int receivableRemaining, int payableRemaining, MonthSummary month, TodaySummary today, List<SeriesPoint> last7Days, Streak streak
 });
 
 
@@ -1431,11 +1445,15 @@ class __$DashboardCopyWithImpl<$Res>
 
 /// Create a copy of Dashboard
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? totalBalance = null,Object? wallets = null,Object? month = null,Object? today = null,Object? last7Days = null,Object? streak = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? totalBalance = null,Object? availableBalance = null,Object? wallets = null,Object? savings = null,Object? receivableRemaining = null,Object? payableRemaining = null,Object? month = null,Object? today = null,Object? last7Days = null,Object? streak = null,}) {
   return _then(_Dashboard(
 totalBalance: null == totalBalance ? _self.totalBalance : totalBalance // ignore: cast_nullable_to_non_nullable
+as int,availableBalance: null == availableBalance ? _self.availableBalance : availableBalance // ignore: cast_nullable_to_non_nullable
 as int,wallets: null == wallets ? _self._wallets : wallets // ignore: cast_nullable_to_non_nullable
-as List<Wallet>,month: null == month ? _self.month : month // ignore: cast_nullable_to_non_nullable
+as List<Wallet>,savings: null == savings ? _self._savings : savings // ignore: cast_nullable_to_non_nullable
+as List<Wallet>,receivableRemaining: null == receivableRemaining ? _self.receivableRemaining : receivableRemaining // ignore: cast_nullable_to_non_nullable
+as int,payableRemaining: null == payableRemaining ? _self.payableRemaining : payableRemaining // ignore: cast_nullable_to_non_nullable
+as int,month: null == month ? _self.month : month // ignore: cast_nullable_to_non_nullable
 as MonthSummary,today: null == today ? _self.today : today // ignore: cast_nullable_to_non_nullable
 as TodaySummary,last7Days: null == last7Days ? _self._last7Days : last7Days // ignore: cast_nullable_to_non_nullable
 as List<SeriesPoint>,streak: null == streak ? _self.streak : streak // ignore: cast_nullable_to_non_nullable

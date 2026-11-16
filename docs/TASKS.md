@@ -166,6 +166,29 @@ Ref: AUTH-06, D-75
 - [ ] Isi SMTP di `.env` mini PC sebelum deploy (api tidak start tanpanya)
 - [ ] Uji di HP asli lewat build debug, lalu commit
 
+## Slice 18 — Tabungan (FIN-18) · Status: Selesai
+Ref: FIN-18, D-76. Spec `docs/superpowers/specs/2026-11-16-tabungan-design.md`, plan `docs/superpowers/plans/2026-11-16-tabungan.md`
+- [x] Backend: enum `SAVINGS` + `targetAmount` (migrasi `savings`), `/savings` buat/target/hapus, `includeSavings`, tolak tarik, dashboard `availableBalance` + `savings`, test
+- [x] openapi, PRD, DECISIONS
+- [x] Mobile: bottom sheet Saldo total, buat/setor/target/hapus tabungan, pemilih dompet form transaksi
+- [x] Mobile: layar Riwayat tabungan (tap kartu / menu Riwayat): Disetor/Dipakai + daftar per bulan dari `/transfers?wallet=` + `/transactions?wallet=`; perbaikan audit UI (bar `ink`, `displayMedium`/`labelSmall`, `AmountText`)
+- [x] Uji di HP asli lewat build debug, lalu commit
+
+## Slice 19 — Piutang talangan (FIN-19) · Status: Selesai
+Ref: FIN-19, D-77. Spec `docs/superpowers/specs/2026-11-16-piutang-design.md`, plan `docs/superpowers/plans/2026-11-16-piutang.md`
+- [x] Backend: migrasi `receivables`, CRUD talangan, cicilan (pemasukan "Piutang dibayar"), `dashboard.receivableRemaining`, test
+- [x] openapi, PRD, DECISIONS
+- [x] Mobile: layar Piutang, form, detail + sheet Bayar, baris Piutang di sheet Saldo total
+- [x] Uji di HP asli lewat build debug, lalu commit
+
+## Slice 20 — Utang (FIN-20) · Status: Selesai
+Ref: FIN-20, D-78. Spec `docs/superpowers/specs/2026-11-16-utang-design.md`, plan `docs/superpowers/plans/2026-11-16-utang.md`
+- [x] Backend: migrasi `payables` (`direction`, `loanTransactionId`), utang talangan/pinjam tunai, cicilan pengeluaran berkategori, `dashboard.payableRemaining`, test
+- [x] openapi, PRD, DECISIONS
+- [x] Mobile: toggle Piutang/Utang, form Catat utang, sheet Bayar dengan Kategori, Piutang + Utang berdampingan di sheet Saldo total
+- [x] `clientId` saat catat utang/piutang (migrasi `receivable_client_id`) + cap LUNAS TERBAYAR di kartu dan detail
+- [x] Uji di HP asli lewat build debug, lalu commit
+
 ---
 
 ## Log
@@ -215,3 +238,4 @@ Ref: AUTH-06, D-75
 | 2026-11-09 | — | Gate sebelum mengundang teman dipersingkat jadi 3 hari atas keputusan owner (D-57). Job arsip pergantian bulan dan rotasi backup 14 hari dicek saat terjadi |
 | 2026-11-10 | 10 | Kode selesai, belum di-commit: backend 196 lolos + 1 dilewati, mobile 170 lolos, lint dan analyze bersih. Sisa: uji HP lewat build debug ke backend laptop, lalu commit, deploy, rilis `v1.2.0` |
 | 2026-11-12 | 10, 11 | Commit `0a68fea` di `main`, backend di-deploy di mini PC (3 migrasi baru; route `/api/v1/recurring`, `/me/avatar`, `/reports/range` membalas 401 tanpa token). Tag `v1.2.0`: workflow sukses, APK terbit. Sisa: `LATEST_APK_VERSION=1.2.0` di mini PC, uji HP asli |
+| 2026-11-16 | 18, 19, 20 | Tabungan, piutang talangan, dan utang (+ `clientId` saat catat, cap LUNAS TERBAYAR, kunci nominal transaksi tertaut, `/wallets` menolak tabungan) jalan di HP asli menurut owner. Backend 307 lolos + 1 dilewati, mobile 308 lolos, lint dan analyze bersih. Commit di `feat/p1-batch`; belum deploy dan rilis |

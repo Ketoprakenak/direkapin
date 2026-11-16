@@ -340,6 +340,10 @@ paths:
         - name: includeArchived
           in: query
           schema: { type: boolean, default: false }
+        - name: includeSavings
+          in: query
+          schema: { type: boolean, default: false }
+          description: Ikut tabungan (type SAVINGS). Default tidak, supaya APK <=1.3.0 tetap jalan
       responses:
         '200':
           description: OK
@@ -376,6 +380,7 @@ paths:
     patch:
       tags: [wallets]
       summary: Ubah atau arsipkan dompet
+      description: Tabungan (type SAVINGS) = 404; ubah lewat PATCH /savings/{id}.
       requestBody:
         required: true
         content:
@@ -406,6 +411,240 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+
+  # ---------------- Savings (FIN-18) ----------------
+  /savings:
+    post:
+      tags: [savings]
+      summary: Buat tabungan, opsional dengan setoran awal dari dompet biasa (FIN-18)
+      description: >
+        Tabungan = Wallet bertipe SAVINGS, ikon savings_rounded. Setoran awal dicatat sebagai
+        transfer fromWalletId -> tabungan (atomik). Setor berikutnya lewat POST /transfers dengan
+        toWalletId = tabungan. Transfer dari tabungan ditolak (400 fromWalletId
+        "Tabungan tidak bisa ditarik").
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, minLength: 1, maxLength: 30 }
+                targetAmount: { type: integer, minimum: 1, maximum: 999999999 }
+                initialAmount: { type: integer, minimum: 0, maximum: 999999999, default: 0 }
+                fromWalletId:
+                  type: string
+                  format: uuid
+                  description: Wajib jika initialAmount > 0; dompet aktif bukan tabungan
+      responses:
+        '201':
+          description: Dibuat
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Wallet' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { $ref: '#/components/responses/NameTaken' }
+
+  /savings/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    patch:
+      tags: [savings]
+      summary: Ubah atau hapus target tabungan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [targetAmount]
+              properties:
+                targetAmount:
+                  type: [integer, 'null']
+                  minimum: 1
+                  maximum: 999999999
+                  description: null = tanpa target
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Wallet' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [savings]
+      summary: Hapus tabungan; sisa saldo dipindah ke dompet pilihan, riwayat tetap
+      description: >
+        Sisa > 0 dicatat sebagai transfer tabungan -> toWalletId, sisa < 0 sebagai transfer
+        toWalletId -> tabungan (catatan "Tutup tabungan <nama>"), lalu tabungan diarsip.
+        Sisa 0 tidak butuh toWalletId.
+      parameters:
+        - name: toWalletId
+          in: query
+          schema: { type: string, format: uuid }
+          description: 'Wajib jika sisa saldo != 0; 400 toWalletId "Pilih dompet untuk sisa saldo"'
+      responses:
+        '204': { description: Terhapus }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ---------------- Receivables (FIN-19) ----------------
+  /receivables:
+    get:
+      tags: [receivables]
+      summary: Daftar piutang talangan (FIN-19) atau utang (FIN-20)
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string, enum: [open, all], default: open }
+          description: open = masih ada orang yang belum lunas
+        - name: direction
+          in: query
+          schema: { type: string, enum: [receivable, payable], default: receivable }
+          description: receivable = piutang (orang berutang ke saya); payable = utang saya
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, totalRemaining]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Receivable' }
+                  totalRemaining: { type: integer, description: Sisa semua catatan arah ini (bukan hanya items) }
+    post:
+      tags: [receivables]
+      summary: Catat talangan (beberapa orang, nominal manual) atau utang (1 orang)
+      description: >
+        direction PAYABLE wajib tepat 1 orang (400 debtors "Utang hanya untuk 1 orang").
+        loanWalletId (hanya PAYABLE, dompet aktif) = pinjam tunai: dibuat transaksi INCOME
+        berkategori "Pinjaman diterima" (otomatis) sebesar nominal, catatan "Pinjam <nama> · <judul>".
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, date, debtors]
+              properties:
+                direction: { type: string, enum: [RECEIVABLE, PAYABLE], default: RECEIVABLE }
+                title: { type: string, minLength: 1, maxLength: 60 }
+                date: { type: string, format: date }
+                note: { type: string, maxLength: 1000 }
+                debtors:
+                  type: array
+                  minItems: 1
+                  maxItems: 20
+                  items:
+                    type: object
+                    required: [name, amount]
+                    properties:
+                      name: { type: string, minLength: 1, maxLength: 30 }
+                      amount: { $ref: '#/components/schemas/Money' }
+                loanWalletId: { type: string, format: uuid, description: 'Hanya PAYABLE; dompet tujuan pinjam tunai' }
+                clientId: { type: string, format: uuid, description: 'Kirim ulang dengan clientId sama = 201 catatan yang sama, tanpa pinjaman dobel (D-58)' }
+      responses:
+        '201':
+          description: Dibuat
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Receivable' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+  /receivables/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    patch:
+      tags: [receivables]
+      summary: Ubah judul, tanggal, atau catatan talangan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string, minLength: 1, maxLength: 60 }
+                date: { type: string, format: date }
+                note: { type: [string, 'null'], maxLength: 1000 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Receivable' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [receivables]
+      summary: Hapus talangan/utang; transaksi pembayaran dan pinjaman tetap ada
+      responses:
+        '204': { description: Terhapus }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /receivables/debtors/{debtorId}:
+    parameters:
+      - { name: debtorId, in: path, required: true, schema: { type: string, format: uuid } }
+    patch:
+      tags: [receivables]
+      summary: Ubah nama atau nominal satu orang
+      description: 'amount tidak boleh kurang dari yang sudah dibayar (400 amount "Nominal tidak boleh kurang dari yang sudah dibayar")'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, minLength: 1, maxLength: 30 }
+                amount: { $ref: '#/components/schemas/Money' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Receivable' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /receivables/debtors/{debtorId}/payments:
+    parameters:
+      - { name: debtorId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      tags: [receivables]
+      summary: Catat cicilan satu orang lewat dompet pilihan
+      description: >
+        Piutang: transaksi INCOME berkategori "Piutang dibayar" (dibuat otomatis), catatan
+        "Bayar <nama> · <judul>". Utang: transaksi EXPENSE berkategori categoryId (wajib, EXPENSE
+        milik user; 400 categoryId "Pilih kategori"), catatan "Bayar utang <nama> · <judul>".
+        Melebihi sisa = 400 amount "Melebihi sisa utang Rp…".
+        Hapus pembayaran = DELETE /transactions/{transactionId}.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount, walletId, occurredAt]
+              properties:
+                amount: { $ref: '#/components/schemas/Money' }
+                walletId: { type: string, format: uuid, description: Dompet aktif tujuan/sumber }
+                categoryId: { type: string, format: uuid, description: 'Wajib untuk utang; diabaikan untuk piutang' }
+                occurredAt: { type: string, format: date-time }
+                clientId: { type: string, format: uuid }
+      responses:
+        '201':
+          description: Dibuat
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Receivable' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
 
   # ---------------- Transfers ----------------
   /transfers:
@@ -627,6 +866,7 @@ paths:
     patch:
       tags: [transactions]
       summary: Edit transaksi (FIN-03)
+      description: 'Cicilan/pinjaman utang-piutang (FIN-19, FIN-20): mengubah amount atau type = 400 amount "Ubah lewat menu Utang & Piutang".'
       requestBody:
         required: true
         content:
@@ -1243,12 +1483,28 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [totalBalance, wallets, month, today, last7Days, streak]
+                required: [totalBalance, availableBalance, wallets, savings, receivableRemaining, payableRemaining, month, today, last7Days, streak]
                 properties:
-                  totalBalance: { type: integer, description: 'Dihitung, boleh negatif' }
+                  totalBalance:
+                    type: integer
+                    description: 'Saldo total = availableBalance + saldo semua tabungan aktif; boleh negatif'
+                  availableBalance:
+                    type: integer
+                    description: Saldo bisa digunakan = total dompet aktif bukan tabungan (FIN-18)
                   wallets:
                     type: array
+                    description: Dompet aktif, tanpa tabungan
                     items: { $ref: '#/components/schemas/Wallet' }
+                  savings:
+                    type: array
+                    description: Tabungan aktif (type SAVINGS), urut sortOrder lalu createdAt
+                    items: { $ref: '#/components/schemas/Wallet' }
+                  receivableRemaining:
+                    type: integer
+                    description: Sisa semua piutang talangan (FIN-19); tidak termasuk di totalBalance
+                  payableRemaining:
+                    type: integer
+                    description: Sisa semua utang (FIN-20); hanya info, tidak termasuk di totalBalance
                   month:
                     type: object
                     required: [income, expense, net]
@@ -1505,14 +1761,61 @@ components:
         icon: { type: string }
         color: { $ref: '#/components/schemas/HexColor' }
         sortOrder: { type: integer }
+    Receivable:
+      type: object
+      required: [id, direction, title, date, note, total, remaining, loan, debtors]
+      properties:
+        id: { type: string, format: uuid }
+        direction: { type: string, enum: [RECEIVABLE, PAYABLE] }
+        title: { type: string }
+        date: { type: string, format: date }
+        note: { type: [string, 'null'] }
+        total: { type: integer }
+        remaining: { type: integer }
+        loan:
+          description: Pemasukan pinjam tunai (utang); null = talangan atau transaksinya dihapus
+          oneOf:
+            - type: 'null'
+            - type: object
+              required: [transactionId, amount, wallet]
+              properties:
+                transactionId: { type: string, format: uuid }
+                amount: { type: integer }
+                wallet: { $ref: '#/components/schemas/WalletRef' }
+        debtors:
+          type: array
+          items:
+            type: object
+            required: [id, name, amount, paid, remaining, payments]
+            properties:
+              id: { type: string, format: uuid }
+              name: { type: string }
+              amount: { type: integer }
+              paid: { type: integer }
+              remaining: { type: integer }
+              payments:
+                type: array
+                description: Terbaru dulu
+                items:
+                  type: object
+                  required: [transactionId, amount, occurredAt, wallet]
+                  properties:
+                    transactionId: { type: string, format: uuid }
+                    amount: { type: integer }
+                    occurredAt: { type: string, format: date-time }
+                    wallet: { $ref: '#/components/schemas/WalletRef' }
     Wallet:
       type: object
-      required: [id, name, type, initialBalance, balance, icon, color, isArchived, sortOrder]
+      required: [id, name, type, initialBalance, targetAmount, balance, icon, color, isArchived, sortOrder]
       properties:
         id: { type: string, format: uuid }
         name: { type: string }
-        type: { $ref: '#/components/schemas/WalletType' }
+        type:
+          type: string
+          enum: [CASH, BANK, EWALLET, SAVINGS]
+          description: SAVINGS = tabungan (FIN-18), hanya dibuat lewat POST /savings
         initialBalance: { type: integer }
+        targetAmount: { type: [integer, 'null'], description: 'Target tabungan; null = tanpa target / bukan tabungan' }
         balance: { type: integer, description: 'Dihitung, boleh negatif' }
         icon: { type: string }
         color: { $ref: '#/components/schemas/HexColor' }

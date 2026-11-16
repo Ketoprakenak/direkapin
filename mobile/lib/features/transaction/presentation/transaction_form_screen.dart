@@ -36,11 +36,15 @@ class TransactionFormArgs {
     this.transaction,
     this.transfer,
     this.initialDate,
+    this.initialWalletId,
   });
 
   final Transaction? transaction;
   final Transfer? transfer;
   final DateTime? initialDate;
+
+  /// Dompet terpilih awal, mis. tabungan dari "Catat pengeluaran" (FIN-18).
+  final String? initialWalletId;
 }
 
 class TransactionFormScreen extends ConsumerStatefulWidget {
@@ -100,6 +104,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     final now = DateTime.now();
     final date = widget.args.initialDate;
     _occurredAt = date?.copyWith(hour: now.hour, minute: now.minute) ?? now;
+    _walletId = widget.args.initialWalletId;
 
     final transaction = _transaction;
     if (transaction != null) {
@@ -133,6 +138,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   }
 
   /// Dompet arsip hanya muncul jika sedang dipakai data yang diedit (D-34).
+  /// Tabungan tidak dipilih di transfer; setor lewat sheet Saldo total (FIN-18).
   List<Wallet> _options(List<Wallet> wallets) {
     final current = {
       _transaction?.wallet.id,
@@ -141,7 +147,11 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     };
     return [
       for (final wallet in wallets)
-        if (!wallet.isArchived || current.contains(wallet.id)) wallet,
+        if (current.contains(wallet.id) ||
+            (!wallet.isArchived &&
+                !(_mode == _Mode.transfer &&
+                    wallet.type == WalletType.savings)))
+          wallet,
     ];
   }
 
@@ -298,7 +308,9 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final wallets = ref.watch(walletsProvider(includeArchived: _isEdit));
+    final wallets = ref.watch(
+      walletsProvider(includeArchived: _isEdit, includeSavings: true),
+    );
     return PopScope(
       // Transaksi sudah tersimpan: keluar harus lewat _finish supaya layar asal ikut segar.
       canPop: _savedId == null,

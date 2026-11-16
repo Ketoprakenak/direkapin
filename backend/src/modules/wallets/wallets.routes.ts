@@ -17,7 +17,12 @@ export function walletRoutes(app: FastifyInstance) {
   routes.get(
     '/wallets',
     { onRequest, schema: { querystring: listWalletsQuery, response: { 200: walletListResponse } } },
-    (request) => listWallets(app.prisma, request.userId, request.query.includeArchived),
+    (request) => listWallets(
+        app.prisma,
+        request.userId,
+        request.query.includeArchived,
+        request.query.includeSavings,
+      ),
   );
 
   routes.post(

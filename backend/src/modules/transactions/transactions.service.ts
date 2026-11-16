@@ -116,6 +116,24 @@ export async function updateTransaction(
   input: z.infer<typeof updateTransactionBody>,
 ) {
   const existing = await findOwned(prisma, userId, id);
+  // Cicilan dan pinjaman utang/piutang: nominal dan jenis menentukan sisa, jadi hanya diubah
+  // lewat menu Utang & Piutang (D-78). Catatan, dompet, dan tanggal tetap boleh.
+  const changesMoney =
+    (input.amount !== undefined && toBigInt(input.amount) !== existing.amount) ||
+    (input.type !== undefined && input.type !== existing.type);
+  if (changesMoney) {
+    const linked = await prisma.transaction.count({
+      where: {
+        id,
+        OR: [{ receivablePayment: { isNot: null } }, { receivableLoan: { isNot: null } }],
+      },
+    });
+    if (linked > 0) {
+      throw new AppError('VALIDATION_ERROR', 400, 'Data belum valid', {
+        amount: 'Ubah lewat menu Utang & Piutang',
+      });
+    }
+  }
   // Dompet lama boleh sudah diarsipkan; hanya dompet baru yang harus aktif (D-29).
   if (input.walletId && input.walletId !== existing.walletId) {
     await assertActiveWallet(prisma, userId, input.walletId, 'walletId');

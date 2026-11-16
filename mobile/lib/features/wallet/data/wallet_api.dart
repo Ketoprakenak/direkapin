@@ -8,10 +8,16 @@ class WalletApi {
 
   final Dio _dio;
 
-  Future<List<Wallet>> list({required bool includeArchived}) => apiCall(() async {
+  Future<List<Wallet>> list({
+    required bool includeArchived,
+    bool includeSavings = false,
+  }) => apiCall(() async {
     final response = await _dio.get<Map<String, dynamic>>(
       '/wallets',
-      queryParameters: {'includeArchived': includeArchived},
+      queryParameters: {
+        'includeArchived': includeArchived,
+        'includeSavings': includeSavings,
+      },
     );
     return (response.data!['items'] as List)
         .map((item) => Wallet.fromJson(item as Map<String, dynamic>))
@@ -27,11 +33,26 @@ class WalletApi {
   Future<void> delete(String id) =>
       apiCall(() => _dio.delete<void>('/wallets/$id'));
 
+  Future<void> createSavings(Map<String, Object?> data) =>
+      apiCall(() => _dio.post<void>('/savings', data: data));
+
+  Future<void> updateSavingsTarget(String id, int? targetAmount) => apiCall(
+    () =>
+        _dio.patch<void>('/savings/$id', data: {'targetAmount': targetAmount}),
+  );
+
+  Future<void> deleteSavings(String id, {String? toWalletId}) => apiCall(
+    () => _dio.delete<void>(
+      '/savings/$id',
+      queryParameters: {'toWalletId': ?toWalletId},
+    ),
+  );
+
   // shortcut: hanya 100 transfer terbaru, tambah "muat lagi" jika riwayatnya melebihi itu.
-  Future<List<Transfer>> transfers() => apiCall(() async {
+  Future<List<Transfer>> transfers({String? walletId}) => apiCall(() async {
     final response = await _dio.get<Map<String, dynamic>>(
       '/transfers',
-      queryParameters: {'limit': 100},
+      queryParameters: {'limit': 100, 'wallet': ?walletId},
     );
     return (response.data!['items'] as List)
         .map((item) => Transfer.fromJson(item as Map<String, dynamic>))

@@ -10,6 +10,7 @@ const balance = z
 
 export const listWalletsQuery = z.object({
   includeArchived: z.stringbool().default(false),
+  includeSavings: z.stringbool().default(false),
 });
 
 export const createWalletBody = z.object({
@@ -34,8 +35,9 @@ export const updateWalletBody = z.object({
 export const walletResponse = z.object({
   id: z.uuid(),
   name: z.string(),
-  type: walletType,
+  type: z.enum(['CASH', 'BANK', 'EWALLET', 'SAVINGS']),
   initialBalance: z.number().int(),
+  targetAmount: z.number().int().nullable(),
   balance: z.number().int(),
   icon: z.string(),
   color: z.string(),

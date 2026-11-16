@@ -16,6 +16,7 @@ import '../../memories/presentation/memory_card.dart';
 import '../../recurring/data/recurring_models.dart';
 import '../../recurring/presentation/widgets/record_sheet.dart';
 import '../../recurring/providers/recurring_providers.dart';
+import '../../savings/presentation/savings_sheet.dart';
 import '../../settings/providers/settings_providers.dart';
 import '../../transaction/presentation/wallet_transactions_screen.dart';
 import '../../transaction/presentation/widgets/add_sheet.dart';
@@ -552,6 +553,7 @@ class _BalanceCardState extends State<_BalanceCard> {
     return FrameCard(
       padding: const EdgeInsets.all(Spacing.lg),
       color: theme.colorScheme.primaryContainer,
+      onTap: () => showSavingsSheet(context, hidden: _hidden),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -209,11 +209,14 @@ Map<String, Object?> walletJson(
   String name, {
   int balance = 0,
   bool isArchived = false,
+  String type = 'CASH',
+  int? targetAmount,
 }) => {
   'id': id,
   'name': name,
-  'type': 'CASH',
+  'type': type,
   'initialBalance': 0,
+  'targetAmount': targetAmount,
   'balance': balance,
   'icon': 'account_balance_wallet_rounded',
   'color': '#14B8A6',
@@ -239,13 +242,21 @@ Map<String, Object?> categoryJson(
 
 Map<String, Object?> dashboardJson({
   int totalBalance = 0,
+  int? availableBalance,
   List<Map<String, Object?>> wallets = const [],
+  List<Map<String, Object?>> savings = const [],
+  int receivableRemaining = 0,
+  int payableRemaining = 0,
   bool hasEntry = false,
   int streak = 0,
   int todayExpense = 0,
 }) => {
   'totalBalance': totalBalance,
+  'availableBalance': availableBalance ?? totalBalance,
   'wallets': wallets,
+  'savings': savings,
+  'receivableRemaining': receivableRemaining,
+  'payableRemaining': payableRemaining,
   'month': {'income': 100000, 'expense': 25000, 'net': 75000},
   'today': {
     'date': '2026-11-04',

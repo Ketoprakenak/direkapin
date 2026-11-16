@@ -9,14 +9,17 @@ function nameTaken() {
   return new AppError('NAME_TAKEN', 409, 'Nama sudah dipakai');
 }
 
+/** Tabungan hanya diubah/dihapus lewat /savings (FIN-18), jadi di sini dianggap tidak ada. */
 async function findOwned(prisma: PrismaClient, userId: string, id: string) {
-  const wallet = await prisma.wallet.findFirst({ where: { id, userId } });
+  const wallet = await prisma.wallet.findFirst({
+    where: { id, userId, type: { not: 'SAVINGS' } },
+  });
   if (!wallet) throw new AppError('NOT_FOUND', 404, 'Data tidak ditemukan');
   return wallet;
 }
 
 /** Pergerakan saldo per dompet: pemasukan − pengeluaran ± transfer. */
-async function movements(prisma: PrismaClient, userId: string) {
+export async function movements(prisma: PrismaClient, userId: string) {
   const [transactions, sent, received] = await Promise.all([
     prisma.transaction.groupBy({
       by: ['walletId', 'type'],
@@ -48,12 +51,13 @@ async function movements(prisma: PrismaClient, userId: string) {
   return result;
 }
 
-function toResponse(wallet: Wallet, balance: bigint) {
+export function toResponse(wallet: Wallet, balance: bigint) {
   return {
     id: wallet.id,
     name: wallet.name,
     type: wallet.type,
     initialBalance: toNumber(wallet.initialBalance),
+    targetAmount: wallet.targetAmount === null ? null : toNumber(wallet.targetAmount),
     balance: toNumber(balance),
     icon: wallet.icon,
     color: wallet.color,
@@ -71,10 +75,16 @@ export async function listWallets(
   prisma: PrismaClient,
   userId: string,
   includeArchived: boolean,
+  includeSavings = false,
 ) {
   const [wallets, moved] = await Promise.all([
     prisma.wallet.findMany({
-      where: { userId, ...(includeArchived ? {} : { isArchived: false }) },
+      where: {
+        userId,
+        ...(includeArchived ? {} : { isArchived: false }),
+        // APK ≤1.3.0 gagal membaca tipe SAVINGS, jadi tabungan hanya muncul kalau diminta.
+        ...(includeSavings ? {} : { type: { not: 'SAVINGS' as const } }),
+      },
       orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
     }),
     movements(prisma, userId),
@@ -152,5 +162,20 @@ export async function assertActiveWallet(
   const wallet = await prisma.wallet.findFirst({ where: { id, userId, isArchived: false } });
   if (!wallet) {
     throw new AppError('VALIDATION_ERROR', 400, 'Data belum valid', { [field]: 'Pilih dompet' });
+  }
+}
+
+/** Tabungan tidak bisa ditarik ke dompet lain (FIN-18). */
+export async function assertNotSavings(
+  prisma: PrismaClient,
+  userId: string,
+  id: string,
+  field: string,
+) {
+  const wallet = await prisma.wallet.findFirst({ where: { id, userId, type: 'SAVINGS' } });
+  if (wallet) {
+    throw new AppError('VALIDATION_ERROR', 400, 'Data belum valid', {
+      [field]: 'Tabungan tidak bisa ditarik',
+    });
   }
 }

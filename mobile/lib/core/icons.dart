@@ -21,6 +21,7 @@ const _icons = <String, IconData>{
   'pets_rounded': Icons.pets_rounded,
   'card_giftcard_rounded': Icons.card_giftcard_rounded,
   'savings_rounded': Icons.savings_rounded,
+  'handshake_rounded': Icons.handshake_rounded,
 };
 
 IconData iconFor(String name) => _icons[name] ?? Icons.more_horiz_rounded;

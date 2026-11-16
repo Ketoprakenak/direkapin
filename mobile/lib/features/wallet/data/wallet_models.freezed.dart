@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Wallet {
 
- String get id; String get name; WalletType get type; int get initialBalance; int get balance; String get icon; String get color; bool get isArchived; int get sortOrder;
+ String get id; String get name; WalletType get type; int get initialBalance; int? get targetAmount; int get balance; String get icon; String get color; bool get isArchived; int get sortOrder;
 /// Create a copy of Wallet
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +30,20 @@ $WalletCopyWith<Wallet> get copyWith => _$WalletCopyWithImpl<Wallet>(this as Wal
 @override
 bool operator ==(Object other) {
   final _this = this as Wallet;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Wallet&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.type, _this.type) || other.type == _this.type)&&(identical(other.initialBalance, _this.initialBalance) || other.initialBalance == _this.initialBalance)&&(identical(other.balance, _this.balance) || other.balance == _this.balance)&&(identical(other.icon, _this.icon) || other.icon == _this.icon)&&(identical(other.color, _this.color) || other.color == _this.color)&&(identical(other.isArchived, _this.isArchived) || other.isArchived == _this.isArchived)&&(identical(other.sortOrder, _this.sortOrder) || other.sortOrder == _this.sortOrder));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Wallet&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.type, _this.type) || other.type == _this.type)&&(identical(other.initialBalance, _this.initialBalance) || other.initialBalance == _this.initialBalance)&&(identical(other.targetAmount, _this.targetAmount) || other.targetAmount == _this.targetAmount)&&(identical(other.balance, _this.balance) || other.balance == _this.balance)&&(identical(other.icon, _this.icon) || other.icon == _this.icon)&&(identical(other.color, _this.color) || other.color == _this.color)&&(identical(other.isArchived, _this.isArchived) || other.isArchived == _this.isArchived)&&(identical(other.sortOrder, _this.sortOrder) || other.sortOrder == _this.sortOrder));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Wallet;
-  return Object.hash(runtimeType,_this.id,_this.name,_this.type,_this.initialBalance,_this.balance,_this.icon,_this.color,_this.isArchived,_this.sortOrder);
+  return Object.hash(runtimeType,_this.id,_this.name,_this.type,_this.initialBalance,_this.targetAmount,_this.balance,_this.icon,_this.color,_this.isArchived,_this.sortOrder);
 }
 
 @override
 String toString() {
   final _this = this as Wallet;
-  return 'Wallet(id: ${_this.id}, name: ${_this.name}, type: ${_this.type}, initialBalance: ${_this.initialBalance}, balance: ${_this.balance}, icon: ${_this.icon}, color: ${_this.color}, isArchived: ${_this.isArchived}, sortOrder: ${_this.sortOrder})';
+  return 'Wallet(id: ${_this.id}, name: ${_this.name}, type: ${_this.type}, initialBalance: ${_this.initialBalance}, targetAmount: ${_this.targetAmount}, balance: ${_this.balance}, icon: ${_this.icon}, color: ${_this.color}, isArchived: ${_this.isArchived}, sortOrder: ${_this.sortOrder})';
 }
 
 
@@ -54,7 +54,7 @@ abstract mixin class $WalletCopyWith<$Res>  {
   factory $WalletCopyWith(Wallet value, $Res Function(Wallet) _then) = _$WalletCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, WalletType type, int initialBalance, int balance, String icon, String color, bool isArchived, int sortOrder
+ String id, String name, WalletType type, int initialBalance, int? targetAmount, int balance, String icon, String color, bool isArchived, int sortOrder
 });
 
 
@@ -71,13 +71,14 @@ class _$WalletCopyWithImpl<$Res>
 
 /// Create a copy of Wallet
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? type = null,Object? initialBalance = null,Object? balance = null,Object? icon = null,Object? color = null,Object? isArchived = null,Object? sortOrder = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? type = null,Object? initialBalance = null,Object? targetAmount = freezed,Object? balance = null,Object? icon = null,Object? color = null,Object? isArchived = null,Object? sortOrder = null,}) {
   return _then(Wallet(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as WalletType,initialBalance: null == initialBalance ? _self.initialBalance : initialBalance // ignore: cast_nullable_to_non_nullable
-as int,balance: null == balance ? _self.balance : balance // ignore: cast_nullable_to_non_nullable
+as int,targetAmount: freezed == targetAmount ? _self.targetAmount : targetAmount // ignore: cast_nullable_to_non_nullable
+as int?,balance: null == balance ? _self.balance : balance // ignore: cast_nullable_to_non_nullable
 as int,icon: null == icon ? _self.icon : icon // ignore: cast_nullable_to_non_nullable
 as String,color: null == color ? _self.color : color // ignore: cast_nullable_to_non_nullable
 as String,isArchived: null == isArchived ? _self.isArchived : isArchived // ignore: cast_nullable_to_non_nullable
@@ -167,10 +168,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  WalletType type,  int initialBalance,  int balance,  String icon,  String color,  bool isArchived,  int sortOrder)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  WalletType type,  int initialBalance,  int? targetAmount,  int balance,  String icon,  String color,  bool isArchived,  int sortOrder)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Wallet() when $default != null:
-return $default(_that.id,_that.name,_that.type,_that.initialBalance,_that.balance,_that.icon,_that.color,_that.isArchived,_that.sortOrder);case _:
+return $default(_that.id,_that.name,_that.type,_that.initialBalance,_that.targetAmount,_that.balance,_that.icon,_that.color,_that.isArchived,_that.sortOrder);case _:
   return orElse();
 
 }
@@ -188,10 +189,10 @@ return $default(_that.id,_that.name,_that.type,_that.initialBalance,_that.balanc
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  WalletType type,  int initialBalance,  int balance,  String icon,  String color,  bool isArchived,  int sortOrder)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  WalletType type,  int initialBalance,  int? targetAmount,  int balance,  String icon,  String color,  bool isArchived,  int sortOrder)  $default,) {final _that = this;
 switch (_that) {
 case _Wallet():
-return $default(_that.id,_that.name,_that.type,_that.initialBalance,_that.balance,_that.icon,_that.color,_that.isArchived,_that.sortOrder);case _:
+return $default(_that.id,_that.name,_that.type,_that.initialBalance,_that.targetAmount,_that.balance,_that.icon,_that.color,_that.isArchived,_that.sortOrder);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -208,10 +209,10 @@ return $default(_that.id,_that.name,_that.type,_that.initialBalance,_that.balanc
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  WalletType type,  int initialBalance,  int balance,  String icon,  String color,  bool isArchived,  int sortOrder)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  WalletType type,  int initialBalance,  int? targetAmount,  int balance,  String icon,  String color,  bool isArchived,  int sortOrder)?  $default,) {final _that = this;
 switch (_that) {
 case _Wallet() when $default != null:
-return $default(_that.id,_that.name,_that.type,_that.initialBalance,_that.balance,_that.icon,_that.color,_that.isArchived,_that.sortOrder);case _:
+return $default(_that.id,_that.name,_that.type,_that.initialBalance,_that.targetAmount,_that.balance,_that.icon,_that.color,_that.isArchived,_that.sortOrder);case _:
   return null;
 
 }
@@ -223,13 +224,14 @@ return $default(_that.id,_that.name,_that.type,_that.initialBalance,_that.balanc
 @JsonSerializable()
 
 class _Wallet implements Wallet {
-  const _Wallet({required this.id, required this.name, required this.type, required this.initialBalance, required this.balance, required this.icon, required this.color, required this.isArchived, required this.sortOrder});
+  const _Wallet({required this.id, required this.name, required this.type, required this.initialBalance, this.targetAmount, required this.balance, required this.icon, required this.color, required this.isArchived, required this.sortOrder});
   factory _Wallet.fromJson(Map<String, dynamic> json) => _$WalletFromJson(json);
 
 @override final  String id;
 @override final  String name;
 @override final  WalletType type;
 @override final  int initialBalance;
+@override final  int? targetAmount;
 @override final  int balance;
 @override final  String icon;
 @override final  String color;
@@ -249,18 +251,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Wallet&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.type, type) || other.type == type)&&(identical(other.initialBalance, initialBalance) || other.initialBalance == initialBalance)&&(identical(other.balance, balance) || other.balance == balance)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.color, color) || other.color == color)&&(identical(other.isArchived, isArchived) || other.isArchived == isArchived)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Wallet&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.type, type) || other.type == type)&&(identical(other.initialBalance, initialBalance) || other.initialBalance == initialBalance)&&(identical(other.targetAmount, targetAmount) || other.targetAmount == targetAmount)&&(identical(other.balance, balance) || other.balance == balance)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.color, color) || other.color == color)&&(identical(other.isArchived, isArchived) || other.isArchived == isArchived)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,type,initialBalance,balance,icon,color,isArchived,sortOrder);
+    return Object.hash(runtimeType,id,name,type,initialBalance,targetAmount,balance,icon,color,isArchived,sortOrder);
 }
 
 @override
 String toString() {
-    return 'Wallet(id: $id, name: $name, type: $type, initialBalance: $initialBalance, balance: $balance, icon: $icon, color: $color, isArchived: $isArchived, sortOrder: $sortOrder)';
+    return 'Wallet(id: $id, name: $name, type: $type, initialBalance: $initialBalance, targetAmount: $targetAmount, balance: $balance, icon: $icon, color: $color, isArchived: $isArchived, sortOrder: $sortOrder)';
 }
 
 
@@ -271,7 +273,7 @@ abstract mixin class _$WalletCopyWith<$Res> implements $WalletCopyWith<$Res> {
   factory _$WalletCopyWith(_Wallet value, $Res Function(_Wallet) _then) = __$WalletCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, WalletType type, int initialBalance, int balance, String icon, String color, bool isArchived, int sortOrder
+ String id, String name, WalletType type, int initialBalance, int? targetAmount, int balance, String icon, String color, bool isArchived, int sortOrder
 });
 
 
@@ -288,13 +290,14 @@ class __$WalletCopyWithImpl<$Res>
 
 /// Create a copy of Wallet
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? type = null,Object? initialBalance = null,Object? balance = null,Object? icon = null,Object? color = null,Object? isArchived = null,Object? sortOrder = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? type = null,Object? initialBalance = null,Object? targetAmount = freezed,Object? balance = null,Object? icon = null,Object? color = null,Object? isArchived = null,Object? sortOrder = null,}) {
   return _then(_Wallet(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as WalletType,initialBalance: null == initialBalance ? _self.initialBalance : initialBalance // ignore: cast_nullable_to_non_nullable
-as int,balance: null == balance ? _self.balance : balance // ignore: cast_nullable_to_non_nullable
+as int,targetAmount: freezed == targetAmount ? _self.targetAmount : targetAmount // ignore: cast_nullable_to_non_nullable
+as int?,balance: null == balance ? _self.balance : balance // ignore: cast_nullable_to_non_nullable
 as int,icon: null == icon ? _self.icon : icon // ignore: cast_nullable_to_non_nullable
 as String,color: null == color ? _self.color : color // ignore: cast_nullable_to_non_nullable
 as String,isArchived: null == isArchived ? _self.isArchived : isArchived // ignore: cast_nullable_to_non_nullable

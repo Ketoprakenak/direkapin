@@ -11,6 +11,7 @@ _Wallet _$WalletFromJson(Map<String, dynamic> json) => _Wallet(
   name: json['name'] as String,
   type: $enumDecode(_$WalletTypeEnumMap, json['type']),
   initialBalance: (json['initialBalance'] as num).toInt(),
+  targetAmount: (json['targetAmount'] as num?)?.toInt(),
   balance: (json['balance'] as num).toInt(),
   icon: json['icon'] as String,
   color: json['color'] as String,
@@ -23,6 +24,7 @@ Map<String, dynamic> _$WalletToJson(_Wallet instance) => <String, dynamic>{
   'name': instance.name,
   'type': _$WalletTypeEnumMap[instance.type]!,
   'initialBalance': instance.initialBalance,
+  'targetAmount': instance.targetAmount,
   'balance': instance.balance,
   'icon': instance.icon,
   'color': instance.color,
@@ -34,6 +36,7 @@ const _$WalletTypeEnumMap = {
   WalletType.cash: 'CASH',
   WalletType.bank: 'BANK',
   WalletType.ewallet: 'EWALLET',
+  WalletType.savings: 'SAVINGS',
 };
 
 _WalletRef _$WalletRefFromJson(Map<String, dynamic> json) => _WalletRef(

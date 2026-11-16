@@ -5,8 +5,10 @@ import '../../../core/api/api_client.dart';
 import '../../../core/api/api_error.dart';
 import '../../budget/providers/budget_providers.dart';
 import '../../calendar/providers/calendar_providers.dart';
+import '../../receivable/providers/receivable_providers.dart';
 import '../../recurring/providers/recurring_providers.dart';
 import '../../report/providers/report_providers.dart';
+import '../../savings/providers/savings_providers.dart';
 import '../../transaction/providers/transaction_providers.dart';
 import '../../wallet/providers/wallet_providers.dart';
 import '../data/dashboard_models.dart';
@@ -38,4 +40,6 @@ void refreshMoney(WidgetRef ref) {
   ref.invalidate(budgetsProvider);
   ref.invalidate(recurringDueProvider);
   ref.invalidate(recurringListProvider);
+  ref.invalidate(savingsHistoryProvider);
+  ref.invalidate(receivablesProvider);
 }

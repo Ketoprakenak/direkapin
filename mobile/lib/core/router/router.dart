@@ -17,12 +17,17 @@ import '../../features/settings/presentation/theme_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/day/presentation/day_screen.dart';
 import '../../features/memories/presentation/memories_screen.dart';
+import '../../features/receivable/data/receivable_models.dart';
+import '../../features/receivable/presentation/receivable_detail_screen.dart';
+import '../../features/receivable/presentation/receivable_form_screen.dart';
+import '../../features/receivable/presentation/receivables_screen.dart';
 import '../../features/recurring/data/recurring_models.dart';
 import '../../features/recurring/presentation/recurring_form_screen.dart';
 import '../../features/recurring/presentation/recurring_list_screen.dart';
 import '../../features/report/presentation/category_transactions_screen.dart';
 import '../../features/report/presentation/report_screen.dart';
 import '../../features/report/presentation/wrapped_screen.dart';
+import '../../features/savings/presentation/savings_history_screen.dart';
 import '../../features/settings/presentation/profile_screen.dart';
 import '../../features/shell/presentation/animated_branch_container.dart';
 import '../../features/shell/presentation/app_shell.dart';
@@ -56,6 +61,10 @@ abstract final class Routes {
   static const day = 'day';
   static const transactionDetail = 'transactionDetail';
   static const transferDetail = 'transferDetail';
+  static const savingsHistory = 'savingsHistory';
+  static const receivables = 'receivables';
+  static const receivableForm = 'receivableForm';
+  static const receivableDetail = 'receivableDetail';
   static const photoViewer = 'photoViewer';
   static const activityForm = 'activityForm';
   static const activityDetail = 'activityDetail';
@@ -252,6 +261,51 @@ GoRouter appRouter(Ref ref) {
             ),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/piutang',
+        name: Routes.receivables,
+        pageBuilder: (context, state) => _page(
+          state,
+          ReceivablesScreen(
+            initial: state.uri.queryParameters['tab'] == 'utang'
+                ? ReceivableDirection.payable
+                : ReceivableDirection.receivable,
+          ),
+        ),
+        routes: [
+          GoRoute(
+            path: 'baru',
+            name: Routes.receivableForm,
+            pageBuilder: (context, state) => _page(
+              state,
+              // extra: Receivable = ubah; ReceivableDirection = catat baru.
+              switch (state.extra) {
+                final Receivable r => ReceivableFormScreen(receivable: r),
+                final ReceivableDirection d => ReceivableFormScreen(
+                  direction: d,
+                ),
+                _ => const ReceivableFormScreen(),
+              },
+            ),
+          ),
+          GoRoute(
+            path: ':id',
+            name: Routes.receivableDetail,
+            pageBuilder: (context, state) => _page(
+              state,
+              ReceivableDetailScreen(receivableId: state.pathParameters['id']!),
+            ),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/tabungan/:id',
+        name: Routes.savingsHistory,
+        pageBuilder: (context, state) => _page(
+          state,
+          SavingsHistoryScreen(savingsId: state.pathParameters['id']!),
+        ),
       ),
       GoRoute(
         path: '/transfer',

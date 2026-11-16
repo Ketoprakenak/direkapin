@@ -50,6 +50,12 @@ class ProfileScreen extends ConsumerWidget {
                   onTap: () => context.pushNamed(Routes.categories),
                 ),
                 ListTile(
+                  leading: const Icon(Icons.handshake_rounded),
+                  title: const Text('Utang & Piutang'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.pushNamed(Routes.receivables),
+                ),
+                ListTile(
                   leading: const Icon(Icons.event_repeat_rounded),
                   title: const Text('Transaksi berulang'),
                   trailing: const Icon(Icons.chevron_right_rounded),

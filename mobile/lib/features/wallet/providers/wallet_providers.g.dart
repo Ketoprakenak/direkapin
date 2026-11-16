@@ -63,7 +63,7 @@ final class WalletsProvider
     with $FutureModifier<List<Wallet>>, $FutureProvider<List<Wallet>> {
   WalletsProvider._({
     required WalletsFamily super.from,
-    required bool super.argument,
+    required ({bool includeArchived, bool includeSavings}) super.argument,
   }) : super(
          retry: null,
          name: r'walletsProvider',
@@ -79,7 +79,7 @@ final class WalletsProvider
   String toString() {
     return r'walletsProvider'
         ''
-        '($argument)';
+        '$argument';
   }
 
   @$internal
@@ -90,8 +90,13 @@ final class WalletsProvider
 
   @override
   FutureOr<List<Wallet>> create(Ref ref) {
-    final argument = this.argument as bool;
-    return wallets(ref, includeArchived: argument);
+    final argument =
+        this.argument as ({bool includeArchived, bool includeSavings});
+    return wallets(
+      ref,
+      includeArchived: argument.includeArchived,
+      includeSavings: argument.includeSavings,
+    );
   }
 
   @override
@@ -105,10 +110,14 @@ final class WalletsProvider
   }
 }
 
-String _$walletsHash() => r'0cf49d3dc02fe61c4f4001af2a694217e579fbd7';
+String _$walletsHash() => r'858eef972e9e094964b11f102af33f50767d9247';
 
 final class WalletsFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<List<Wallet>>, bool> {
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<List<Wallet>>,
+          ({bool includeArchived, bool includeSavings})
+        > {
   WalletsFamily._()
     : super(
         retry: null,
@@ -118,8 +127,16 @@ final class WalletsFamily extends $Family
         isAutoDispose: true,
       );
 
-  WalletsProvider call({bool includeArchived = false}) =>
-      WalletsProvider._(argument: includeArchived, from: this);
+  WalletsProvider call({
+    bool includeArchived = false,
+    bool includeSavings = false,
+  }) => WalletsProvider._(
+    argument: (
+      includeArchived: includeArchived,
+      includeSavings: includeSavings,
+    ),
+    from: this,
+  );
 
   @override
   String toString() => r'walletsProvider';

@@ -19,6 +19,7 @@ enum WalletType {
   CASH
   BANK
   EWALLET
+  SAVINGS // tabungan (FIN-18): tidak tampil di menu Dompet
 }
 
 enum TxType {
@@ -66,6 +67,7 @@ model User {
   dailyNotes    DailyNote[]
   budgets       Budget[]
   recurring     RecurringTransaction[]
+  receivables   Receivable[]
   invitesMade   InviteCode[]   @relation("InviteCreatedBy")
   inviteUsed    InviteCode?    @relation("InviteUsedBy")
 
@@ -124,6 +126,7 @@ model Wallet {
   name           String     @db.VarChar(30)
   type           WalletType
   initialBalance BigInt     @default(0)
+  targetAmount   BigInt? // hanya tabungan; null = tanpa target
   icon           String     @db.VarChar(40)
   color          String     @db.VarChar(9) // #RRGGBB
   isArchived     Boolean    @default(false)
@@ -182,6 +185,8 @@ model Transaction {
   category    Category     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   attachments Attachment[]
   feeOf       Transfer?    @relation("TransferFee")
+  receivablePayment ReceivablePayment?
+  receivableLoan    Receivable?        @relation("ReceivableLoan")
 
   @@unique([userId, clientId])
   @@index([userId, occurredAt])
@@ -239,6 +244,62 @@ model BudgetCategory {
 
   @@id([budgetId, categoryId])
   @@map("budget_categories")
+}
+
+// ---------- Piutang talangan (FIN-19) ----------
+
+enum ReceivableDirection {
+  RECEIVABLE
+  PAYABLE
+}
+
+// PAYABLE = utang owner (FIN-20): tepat 1 orang; loanTransaction = pemasukan pinjam tunai (D-78)
+model Receivable {
+  id                String              @id @default(uuid()) @db.Uuid
+  userId            String              @db.Uuid
+  direction         ReceivableDirection @default(RECEIVABLE)
+  loanTransactionId String?             @unique @db.Uuid
+  clientId          String?             @db.Uuid // anti dobel saat kirim ulang (D-58)
+  title             String              @db.VarChar(60)
+  date              DateTime            @db.Date
+  note              String?             @db.VarChar(1000)
+  createdAt         DateTime            @default(now()) @db.Timestamptz
+  updatedAt         DateTime            @updatedAt @db.Timestamptz
+
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  debtors         ReceivableDebtor[]
+  loanTransaction Transaction?       @relation("ReceivableLoan", fields: [loanTransactionId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, clientId])
+  @@index([userId, date])
+  @@map("receivables")
+}
+
+model ReceivableDebtor {
+  id           String @id @default(uuid()) @db.Uuid
+  receivableId String @db.Uuid
+  name         String @db.VarChar(30)
+  amount       BigInt // Rupiah, > 0
+  sortOrder    Int    @default(0)
+
+  receivable Receivable          @relation(fields: [receivableId], references: [id], onDelete: Cascade)
+  payments   ReceivablePayment[]
+
+  @@index([receivableId])
+  @@map("receivable_debtors")
+}
+
+// Pembayaran = transaksi INCOME biasa "Piutang dibayar"; hapus transaksinya = hapus pembayaran (D-77)
+model ReceivablePayment {
+  id            String @id @default(uuid()) @db.Uuid
+  debtorId      String @db.Uuid
+  transactionId String @unique @db.Uuid
+
+  debtor      ReceivableDebtor @relation(fields: [debtorId], references: [id], onDelete: Cascade)
+  transaction Transaction      @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@index([debtorId])
+  @@map("receivable_payments")
 }
 
 // ---------- Kegiatan ----------

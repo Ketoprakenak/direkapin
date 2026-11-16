@@ -63,9 +63,15 @@ Map<String, dynamic> _$StreakToJson(_Streak instance) => <String, dynamic>{
 
 _Dashboard _$DashboardFromJson(Map<String, dynamic> json) => _Dashboard(
   totalBalance: (json['totalBalance'] as num).toInt(),
+  availableBalance: (json['availableBalance'] as num).toInt(),
   wallets: (json['wallets'] as List<dynamic>)
       .map((e) => Wallet.fromJson(e as Map<String, dynamic>))
       .toList(),
+  savings: (json['savings'] as List<dynamic>)
+      .map((e) => Wallet.fromJson(e as Map<String, dynamic>))
+      .toList(),
+  receivableRemaining: (json['receivableRemaining'] as num?)?.toInt() ?? 0,
+  payableRemaining: (json['payableRemaining'] as num?)?.toInt() ?? 0,
   month: MonthSummary.fromJson(json['month'] as Map<String, dynamic>),
   today: TodaySummary.fromJson(json['today'] as Map<String, dynamic>),
   last7Days: (json['last7Days'] as List<dynamic>)
@@ -77,7 +83,11 @@ _Dashboard _$DashboardFromJson(Map<String, dynamic> json) => _Dashboard(
 Map<String, dynamic> _$DashboardToJson(_Dashboard instance) =>
     <String, dynamic>{
       'totalBalance': instance.totalBalance,
+      'availableBalance': instance.availableBalance,
       'wallets': instance.wallets,
+      'savings': instance.savings,
+      'receivableRemaining': instance.receivableRemaining,
+      'payableRemaining': instance.payableRemaining,
       'month': instance.month,
       'today': instance.today,
       'last7Days': instance.last7Days,
