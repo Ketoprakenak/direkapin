@@ -5,6 +5,17 @@
  */
 export const releaseNotes: { version: string; items: string[] }[] = [
   {
+    version: '1.5.0',
+    items: [
+      'Widget "Hari ini" di layar utama: pengeluaran dan pemasukan hari ini, tombol + langsung Catat',
+      'Latar widget pakai maskot tema atau fotomu sendiri, posisinya bisa diatur',
+      'Owner bisa bikin kode undangan langsung dari aplikasi',
+      'Talangan yang belum lunas ikut memotong saldo Bisa digunakan',
+      'Tombol lihat password di layar Masuk dan Daftar',
+      'Mood dihapus; kalender selalu menampilkan warna pengeluaran',
+    ],
+  },
+  {
     version: '1.4.0',
     items: [
       'Tabungan: sisihkan saldo dengan target, tap Total saldo di Beranda',
