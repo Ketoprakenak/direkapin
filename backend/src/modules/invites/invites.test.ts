@@ -34,6 +34,17 @@ describe('invites (AUTH-07)', () => {
     expect(isOwner('b@x.test', 'a@x.test')).toBe(false);
   });
 
+  it('POST tanpa Content-Type lewat tunnel (body chunked kosong) tetap 201, bukan 415', async () => {
+    const { accessToken } = await createUser(app, 'owner@example.test');
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/v1/invites',
+      headers: { ...authHeader(accessToken), 'transfer-encoding': 'chunked' },
+      payload: '',
+    });
+    expect(res.statusCode).toBe(201);
+  });
+
   it('owner: isOwner, buat kode 7 hari, daftar', async () => {
     const owner = await as('owner@example.test');
     expect((await owner.call('GET', '/me')).json().isOwner).toBe(true);

@@ -16,7 +16,7 @@ const envSchema = z.object({
   LATEST_APK_VERSION: z.string().min(1),
   LATEST_APK_URL: z.url(),
   // Akun yang boleh membuat kode undangan dari aplikasi (AUTH-07). Kosong = tidak ada.
-  OWNER_EMAIL: z.email().optional(),
+  OWNER_EMAIL: z.preprocess((v) => (v === '' ? undefined : v), z.email().optional()),
   // Email reset password (AUTH-06). Wajib di production; kosong di dev = kode ditulis ke log.
   SMTP_HOST: z.string().min(1).optional(),
   SMTP_PORT: z.coerce.number().int().positive().default(465),

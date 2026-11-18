@@ -12,6 +12,11 @@ describe('loadConfig', () => {
     expect(() => loadConfig(env)).not.toThrow(/rahasia-pendek/);
   });
 
+  it('OWNER_EMAIL kosong = fitur undangan mati, api tetap start (AUTH-07)', () => {
+    expect(loadConfig({ ...process.env, OWNER_EMAIL: '' }).OWNER_EMAIL).toBeUndefined();
+    expect(() => loadConfig({ ...process.env, OWNER_EMAIL: 'bukan-email' })).toThrow(/OWNER_EMAIL/);
+  });
+
   it('production wajib SMTP untuk email reset password (D-75)', () => {
     const env = { ...process.env, NODE_ENV: 'production', SMTP_HOST: undefined };
     expect(() => loadConfig(env)).toThrow(/SMTP_HOST/);
