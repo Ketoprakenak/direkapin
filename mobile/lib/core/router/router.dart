@@ -17,6 +17,7 @@ import '../../features/settings/presentation/theme_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/day/presentation/day_screen.dart';
 import '../../features/memories/presentation/memories_screen.dart';
+import '../../features/invite/presentation/invites_screen.dart';
 import '../../features/receivable/data/receivable_models.dart';
 import '../../features/receivable/presentation/receivable_detail_screen.dart';
 import '../../features/receivable/presentation/receivable_form_screen.dart';
@@ -63,6 +64,7 @@ abstract final class Routes {
   static const transferDetail = 'transferDetail';
   static const savingsHistory = 'savingsHistory';
   static const receivables = 'receivables';
+  static const invites = 'invites';
   static const receivableForm = 'receivableForm';
   static const receivableDetail = 'receivableDetail';
   static const photoViewer = 'photoViewer';
@@ -261,6 +263,11 @@ GoRouter appRouter(Ref ref) {
             ),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/undangan',
+        name: Routes.invites,
+        pageBuilder: (context, state) => _page(state, const InvitesScreen()),
       ),
       GoRoute(
         path: '/piutang',

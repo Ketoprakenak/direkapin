@@ -20,6 +20,7 @@ import { reportRoutes } from './modules/reports/reports.routes.js';
 import { systemRoutes } from './modules/system/system.routes.js';
 import { transactionRoutes } from './modules/transactions/transactions.routes.js';
 import { transferRoutes } from './modules/transfers/transfers.routes.js';
+import { inviteRoutes } from './modules/invites/invites.routes.js';
 import { receivableRoutes } from './modules/receivables/receivables.routes.js';
 import { savingsRoutes } from './modules/savings/savings.routes.js';
 import { walletRoutes } from './modules/wallets/wallets.routes.js';
@@ -60,6 +61,7 @@ export function buildApp(config: Config, deps: { sendMail?: SendMail } = {}) {
       walletRoutes(api);
       savingsRoutes(api);
       receivableRoutes(api);
+      inviteRoutes(api, config);
       transferRoutes(api);
       categoryRoutes(api);
       transactionRoutes(api, config);

@@ -72,6 +72,8 @@ _Dashboard _$DashboardFromJson(Map<String, dynamic> json) => _Dashboard(
       .toList(),
   receivableRemaining: (json['receivableRemaining'] as num?)?.toInt() ?? 0,
   payableRemaining: (json['payableRemaining'] as num?)?.toInt() ?? 0,
+  frontedPayableRemaining:
+      (json['frontedPayableRemaining'] as num?)?.toInt() ?? 0,
   month: MonthSummary.fromJson(json['month'] as Map<String, dynamic>),
   today: TodaySummary.fromJson(json['today'] as Map<String, dynamic>),
   last7Days: (json['last7Days'] as List<dynamic>)
@@ -88,6 +90,7 @@ Map<String, dynamic> _$DashboardToJson(_Dashboard instance) =>
       'savings': instance.savings,
       'receivableRemaining': instance.receivableRemaining,
       'payableRemaining': instance.payableRemaining,
+      'frontedPayableRemaining': instance.frontedPayableRemaining,
       'month': instance.month,
       'today': instance.today,
       'last7Days': instance.last7Days,

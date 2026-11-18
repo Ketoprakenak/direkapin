@@ -263,7 +263,13 @@ paths:
           description: OK
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/User' }
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/User' }
+                  - type: object
+                    required: [isOwner]
+                    properties:
+                      isOwner: { type: boolean, description: 'Email sama dengan OWNER_EMAIL server (AUTH-07); hanya di GET /me' }
         '401': { $ref: '#/components/responses/Unauthorized' }
     patch:
       tags: [me]
@@ -491,6 +497,36 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
 
   # ---------------- Receivables (FIN-19) ----------------
+  /invites:
+    get:
+      tags: [invites]
+      summary: Kode undangan buatan owner, terbaru dulu, maks. 20 (AUTH-07)
+      description: Selain owner (OWNER_EMAIL) = 404.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Invite' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [invites]
+      summary: Buat kode undangan, berlaku 7 hari (AUTH-07)
+      description: Kode 16 karakter hex huruf besar. Selain owner = 404.
+      responses:
+        '201':
+          description: Dibuat
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Invite' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
   /receivables:
     get:
       tags: [receivables]
@@ -1052,7 +1088,7 @@ paths:
           schema: { $ref: '#/components/schemas/Month' }
       responses:
         '200':
-          description: OK. Hanya tanggal yang punya transaksi, kegiatan, atau mood.
+          description: OK. Hanya tanggal yang punya transaksi atau kegiatan.
           content:
             application/json:
               schema:
@@ -1064,16 +1100,13 @@ paths:
                     type: array
                     items:
                       type: object
-                      required: [date, income, expense, activityCount, hasImportant, mood]
+                      required: [date, income, expense, activityCount, hasImportant]
                       properties:
                         date: { $ref: '#/components/schemas/Date' }
                         income: { $ref: '#/components/schemas/Money' }
                         expense: { $ref: '#/components/schemas/Money' }
                         activityCount: { type: integer }
                         hasImportant: { type: boolean }
-                        mood:
-                          type: ['string', 'null']
-                          description: Emoji mood hari itu (ACT-05); tanggal yang hanya punya mood ikut muncul (D-61)
 
   /days/{date}:
     get:
@@ -1114,8 +1147,8 @@ paths:
   /days/{date}/note:
     put:
       tags: [calendar]
-      summary: Simpan mood dan catatan harian (ACT-05)
-      description: Field yang tidak dikirim tetap. Jika mood dan note sama-sama kosong, catatan hari itu dihapus.
+      summary: Simpan catatan harian
+      description: note tidak dikirim = tetap; kosong = catatan dihapus. Field `mood` dari app lama diabaikan (mood dihapus, D-84).
       parameters:
         - name: date
           in: path
@@ -1128,7 +1161,6 @@ paths:
             schema:
               type: object
               properties:
-                mood: { type: [string, 'null'], maxLength: 16, description: Satu emoji }
                 note: { type: [string, 'null'], maxLength: 1000 }
       responses:
         '200':
@@ -1487,14 +1519,14 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [totalBalance, availableBalance, wallets, savings, receivableRemaining, payableRemaining, month, today, last7Days, streak]
+                required: [totalBalance, availableBalance, wallets, savings, receivableRemaining, payableRemaining, frontedPayableRemaining, month, today, last7Days, streak]
                 properties:
                   totalBalance:
                     type: integer
                     description: 'Saldo total = availableBalance + saldo semua tabungan aktif; boleh negatif'
                   availableBalance:
                     type: integer
-                    description: Saldo bisa digunakan = total dompet aktif bukan tabungan (FIN-18)
+                    description: 'Saldo bisa digunakan = total dompet aktif bukan tabungan − frontedPayableRemaining (FIN-18, D-81); boleh negatif'
                   wallets:
                     type: array
                     description: Dompet aktif, tanpa tabungan
@@ -1509,6 +1541,9 @@ paths:
                   payableRemaining:
                     type: integer
                     description: Sisa semua utang (FIN-20); hanya info, tidak termasuk di totalBalance
+                  frontedPayableRemaining:
+                    type: integer
+                    description: Sisa utang ditalangin (PAYABLE tanpa transaksi pinjaman), sudah dipotong dari availableBalance (D-81)
                   month:
                     type: object
                     required: [income, expense, net]
@@ -1765,6 +1800,15 @@ components:
         icon: { type: string }
         color: { $ref: '#/components/schemas/HexColor' }
         sortOrder: { type: integer }
+    Invite:
+      type: object
+      required: [code, createdAt, expiresAt, usedAt, usedByName]
+      properties:
+        code: { type: string }
+        createdAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+        usedAt: { type: [string, 'null'], format: date-time }
+        usedByName: { type: [string, 'null'] }
     Receivable:
       type: object
       required: [id, direction, title, date, note, total, remaining, loan, source, debtors]
@@ -2126,10 +2170,9 @@ components:
 
     DailyNote:
       type: object
-      required: [date, mood, note]
+      required: [date, note]
       properties:
         date: { $ref: '#/components/schemas/Date' }
-        mood: { type: [string, 'null'] }
         note: { type: [string, 'null'] }
 
     SeriesPoint:

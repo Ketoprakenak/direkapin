@@ -15,6 +15,7 @@ export const dashboardResponse = z.object({
   savings: z.array(walletResponse),
   receivableRemaining: z.number().int(),
   payableRemaining: z.number().int(),
+  frontedPayableRemaining: z.number().int(),
   month: z.object({
     income: z.number().int(),
     expense: z.number().int(),

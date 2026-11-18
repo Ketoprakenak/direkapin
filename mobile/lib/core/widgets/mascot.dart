@@ -6,7 +6,8 @@ import '../theme/tokens.dart';
 enum MascotExpression { happy, neutral }
 
 /// `peek` = kepala + dua tangan di tepi bawah, seolah melongok dari atas.
-enum MascotPose { full, peek }
+/// `wave` = badan miring dan satu tangan melambai (latar widget layar utama).
+enum MascotPose { full, peek, wave }
 
 String animalName(Animal a) => switch (a) {
   Animal.turtle => 'Penyu',
@@ -40,22 +41,11 @@ class Mascot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final colors = AppColors.of(context);
     final painter = _MascotPainter(
       animal ?? AppStyle.of(context).animal,
       expression,
       pose,
-      (
-        body: scheme.primary,
-        belly: scheme.primaryContainer,
-        // onSurface, bukan ink tema: kontras aman juga di tema gelap.
-        ink: scheme.onSurface,
-        shadow: scheme.shadow,
-        blush: colors.expense.withValues(alpha: 0.3),
-        accent: colors.important,
-        water: colors.activity,
-      ),
+      _palette(Theme.of(context).colorScheme, AppColors.of(context)),
     );
     final paint = CustomPaint(size: Size.square(size), painter: painter);
     final label = semanticLabel;
@@ -64,6 +54,29 @@ class Mascot extends StatelessWidget {
         : Semantics(label: label, image: true, child: paint);
   }
 }
+
+/// Maskot [theme] tanpa `BuildContext`, untuk digambar ke file (widget layar utama).
+CustomPainter mascotPainter(
+  AppThemeData theme, {
+  MascotExpression expression = MascotExpression.neutral,
+  MascotPose pose = MascotPose.full,
+}) => _MascotPainter(
+  theme.style.animal,
+  expression,
+  pose,
+  _palette(theme.scheme, theme.colors),
+);
+
+_Palette _palette(ColorScheme scheme, AppColors colors) => (
+  body: scheme.primary,
+  belly: scheme.primaryContainer,
+  // onSurface, bukan ink tema: kontras aman juga di tema gelap.
+  ink: scheme.onSurface,
+  shadow: scheme.shadow,
+  blush: colors.expense.withValues(alpha: 0.3),
+  accent: colors.important,
+  water: colors.activity,
+);
 
 typedef _Palette = ({
   Color body,
@@ -138,6 +151,13 @@ class _MascotPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     canvas.scale(size.width / 100, size.height / 100);
+    if (_wave) {
+      // Condong ke kiri, berporos di kaki, supaya tidak berdiri kaku.
+      canvas
+        ..translate(50, 92)
+        ..rotate(-0.16)
+        ..translate(-50, -92);
+    }
     if (_peek) {
       // Badan turun melewati tepi bawah; yang tampak kepala + tangan.
       canvas
@@ -162,9 +182,47 @@ class _MascotPainter extends CustomPainter {
     _parts(canvas, front: true);
     _drawFace(canvas);
     if (_peek) _drawPaws(canvas);
+    if (_wave) _drawWave(canvas);
   }
 
   bool get _peek => pose == MascotPose.peek;
+
+  bool get _wave => pose == MascotPose.wave;
+
+  /// Tangan kanan terangkat melambai + dua garis gerak.
+  void _drawWave(Canvas canvas) {
+    canvas
+      ..save()
+      ..translate(88, 36)
+      ..rotate(0.6);
+    _shape(
+      canvas,
+      _oval(0, 0, 13, 26),
+      animal == Animal.owl ? _shade : colors.body,
+    );
+    canvas.restore();
+    final motion = _stroke(colors.ink.withValues(alpha: 0.5), 2);
+    canvas
+      ..drawArc(
+        Rect.fromCenter(center: const Offset(90, 30), width: 26, height: 26),
+        -1.3,
+        0.8,
+        false,
+        motion,
+      )
+      ..drawArc(
+        Rect.fromCenter(center: const Offset(90, 30), width: 36, height: 36),
+        -1.3,
+        0.7,
+        false,
+        motion,
+      );
+  }
+
+  /// Seperti [_mirrored], tapi pose `wave` hanya menggambar tangan kiri;
+  /// tangan kanan digambar terangkat oleh [_drawWave].
+  void _arms(Canvas canvas, void Function() draw) =>
+      _wave ? draw() : _mirrored(canvas, draw);
 
   /// Dua tangan bertumpu di tepi bawah kanvas.
   void _drawPaws(Canvas canvas) {
@@ -182,10 +240,8 @@ class _MascotPainter extends CustomPainter {
     switch ((animal, front)) {
       case (Animal.turtle, false):
         if (_peek) break;
-        _mirrored(canvas, () {
-          _shape(canvas, _oval(22, 84, 22, 13), c.body);
-          _shape(canvas, _oval(15, 56, 16, 22), c.body);
-        });
+        _mirrored(canvas, () => _shape(canvas, _oval(22, 84, 22, 13), c.body));
+        _arms(canvas, () => _shape(canvas, _oval(15, 56, 16, 22), c.body));
       case (Animal.turtle, true):
         final plate = _fill(c.belly.withValues(alpha: 0.7));
         canvas.drawPath(_oval(50, 66, 24, 18), plate);
@@ -213,7 +269,7 @@ class _MascotPainter extends CustomPainter {
         });
       case (Animal.chick, true):
         if (_peek) break;
-        _mirrored(canvas, () => _shape(canvas, _oval(15, 64, 14, 24), c.body));
+        _arms(canvas, () => _shape(canvas, _oval(15, 64, 14, 24), c.body));
       case (Animal.whale, false):
         final tail = Path()
           ..moveTo(74, 48)
@@ -237,7 +293,7 @@ class _MascotPainter extends CustomPainter {
           ..drawPath(_oval(58, 18, 6, 6), water);
       case (Animal.whale, true):
         if (_peek) break;
-        _mirrored(canvas, () => _shape(canvas, _oval(17, 74, 16, 10), c.body));
+        _arms(canvas, () => _shape(canvas, _oval(17, 74, 16, 10), c.body));
       case (Animal.cat, false):
         _mirrored(canvas, () {
           _shape(canvas, _poly([(17, 46), (22, 14), (44, 32)]), c.body);
@@ -278,10 +334,10 @@ class _MascotPainter extends CustomPainter {
           () => _shape(canvas, _poly([(20, 42), (17, 16), (39, 32)]), c.body),
         );
       case (Animal.owl, true):
-        _mirrored(canvas, () {
-          if (!_peek) _shape(canvas, _oval(14, 66, 14, 28), _shade);
-          _shape(canvas, _oval(37, 52, 24, 24), c.belly);
-        });
+        if (!_peek) {
+          _arms(canvas, () => _shape(canvas, _oval(14, 66, 14, 28), _shade));
+        }
+        _mirrored(canvas, () => _shape(canvas, _oval(37, 52, 24, 24), c.belly));
     }
   }
 

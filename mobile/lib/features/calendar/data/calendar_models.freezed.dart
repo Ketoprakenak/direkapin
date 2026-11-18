@@ -16,8 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CalendarDay {
 
- String get date; int get income; int get expense; int get activityCount; bool get hasImportant;/// Emoji mood hari itu (ACT-05, D-61).
- String? get mood;
+ String get date; int get income; int get expense; int get activityCount; bool get hasImportant;
 /// Create a copy of CalendarDay
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -31,20 +30,20 @@ $CalendarDayCopyWith<CalendarDay> get copyWith => _$CalendarDayCopyWithImpl<Cale
 @override
 bool operator ==(Object other) {
   final _this = this as CalendarDay;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CalendarDay&&(identical(other.date, _this.date) || other.date == _this.date)&&(identical(other.income, _this.income) || other.income == _this.income)&&(identical(other.expense, _this.expense) || other.expense == _this.expense)&&(identical(other.activityCount, _this.activityCount) || other.activityCount == _this.activityCount)&&(identical(other.hasImportant, _this.hasImportant) || other.hasImportant == _this.hasImportant)&&(identical(other.mood, _this.mood) || other.mood == _this.mood));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CalendarDay&&(identical(other.date, _this.date) || other.date == _this.date)&&(identical(other.income, _this.income) || other.income == _this.income)&&(identical(other.expense, _this.expense) || other.expense == _this.expense)&&(identical(other.activityCount, _this.activityCount) || other.activityCount == _this.activityCount)&&(identical(other.hasImportant, _this.hasImportant) || other.hasImportant == _this.hasImportant));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as CalendarDay;
-  return Object.hash(runtimeType,_this.date,_this.income,_this.expense,_this.activityCount,_this.hasImportant,_this.mood);
+  return Object.hash(runtimeType,_this.date,_this.income,_this.expense,_this.activityCount,_this.hasImportant);
 }
 
 @override
 String toString() {
   final _this = this as CalendarDay;
-  return 'CalendarDay(date: ${_this.date}, income: ${_this.income}, expense: ${_this.expense}, activityCount: ${_this.activityCount}, hasImportant: ${_this.hasImportant}, mood: ${_this.mood})';
+  return 'CalendarDay(date: ${_this.date}, income: ${_this.income}, expense: ${_this.expense}, activityCount: ${_this.activityCount}, hasImportant: ${_this.hasImportant})';
 }
 
 
@@ -55,7 +54,7 @@ abstract mixin class $CalendarDayCopyWith<$Res>  {
   factory $CalendarDayCopyWith(CalendarDay value, $Res Function(CalendarDay) _then) = _$CalendarDayCopyWithImpl;
 @useResult
 $Res call({
- String date, int income, int expense, int activityCount, bool hasImportant, String? mood
+ String date, int income, int expense, int activityCount, bool hasImportant
 });
 
 
@@ -72,15 +71,14 @@ class _$CalendarDayCopyWithImpl<$Res>
 
 /// Create a copy of CalendarDay
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? date = null,Object? income = null,Object? expense = null,Object? activityCount = null,Object? hasImportant = null,Object? mood = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? date = null,Object? income = null,Object? expense = null,Object? activityCount = null,Object? hasImportant = null,}) {
   return _then(CalendarDay(
 date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
 as String,income: null == income ? _self.income : income // ignore: cast_nullable_to_non_nullable
 as int,expense: null == expense ? _self.expense : expense // ignore: cast_nullable_to_non_nullable
 as int,activityCount: null == activityCount ? _self.activityCount : activityCount // ignore: cast_nullable_to_non_nullable
 as int,hasImportant: null == hasImportant ? _self.hasImportant : hasImportant // ignore: cast_nullable_to_non_nullable
-as bool,mood: freezed == mood ? _self.mood : mood // ignore: cast_nullable_to_non_nullable
-as String?,
+as bool,
   ));
 }
 
@@ -165,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String date,  int income,  int expense,  int activityCount,  bool hasImportant,  String? mood)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String date,  int income,  int expense,  int activityCount,  bool hasImportant)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CalendarDay() when $default != null:
-return $default(_that.date,_that.income,_that.expense,_that.activityCount,_that.hasImportant,_that.mood);case _:
+return $default(_that.date,_that.income,_that.expense,_that.activityCount,_that.hasImportant);case _:
   return orElse();
 
 }
@@ -186,10 +184,10 @@ return $default(_that.date,_that.income,_that.expense,_that.activityCount,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String date,  int income,  int expense,  int activityCount,  bool hasImportant,  String? mood)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String date,  int income,  int expense,  int activityCount,  bool hasImportant)  $default,) {final _that = this;
 switch (_that) {
 case _CalendarDay():
-return $default(_that.date,_that.income,_that.expense,_that.activityCount,_that.hasImportant,_that.mood);case _:
+return $default(_that.date,_that.income,_that.expense,_that.activityCount,_that.hasImportant);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -206,10 +204,10 @@ return $default(_that.date,_that.income,_that.expense,_that.activityCount,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String date,  int income,  int expense,  int activityCount,  bool hasImportant,  String? mood)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String date,  int income,  int expense,  int activityCount,  bool hasImportant)?  $default,) {final _that = this;
 switch (_that) {
 case _CalendarDay() when $default != null:
-return $default(_that.date,_that.income,_that.expense,_that.activityCount,_that.hasImportant,_that.mood);case _:
+return $default(_that.date,_that.income,_that.expense,_that.activityCount,_that.hasImportant);case _:
   return null;
 
 }
@@ -221,7 +219,7 @@ return $default(_that.date,_that.income,_that.expense,_that.activityCount,_that.
 @JsonSerializable()
 
 class _CalendarDay implements CalendarDay {
-  const _CalendarDay({required this.date, required this.income, required this.expense, required this.activityCount, required this.hasImportant, this.mood});
+  const _CalendarDay({required this.date, required this.income, required this.expense, required this.activityCount, required this.hasImportant});
   factory _CalendarDay.fromJson(Map<String, dynamic> json) => _$CalendarDayFromJson(json);
 
 @override final  String date;
@@ -229,8 +227,6 @@ class _CalendarDay implements CalendarDay {
 @override final  int expense;
 @override final  int activityCount;
 @override final  bool hasImportant;
-/// Emoji mood hari itu (ACT-05, D-61).
-@override final  String? mood;
 
 /// Create a copy of CalendarDay
 /// with the given fields replaced by the non-null parameter values.
@@ -245,18 +241,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CalendarDay&&(identical(other.date, date) || other.date == date)&&(identical(other.income, income) || other.income == income)&&(identical(other.expense, expense) || other.expense == expense)&&(identical(other.activityCount, activityCount) || other.activityCount == activityCount)&&(identical(other.hasImportant, hasImportant) || other.hasImportant == hasImportant)&&(identical(other.mood, mood) || other.mood == mood));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CalendarDay&&(identical(other.date, date) || other.date == date)&&(identical(other.income, income) || other.income == income)&&(identical(other.expense, expense) || other.expense == expense)&&(identical(other.activityCount, activityCount) || other.activityCount == activityCount)&&(identical(other.hasImportant, hasImportant) || other.hasImportant == hasImportant));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,date,income,expense,activityCount,hasImportant,mood);
+    return Object.hash(runtimeType,date,income,expense,activityCount,hasImportant);
 }
 
 @override
 String toString() {
-    return 'CalendarDay(date: $date, income: $income, expense: $expense, activityCount: $activityCount, hasImportant: $hasImportant, mood: $mood)';
+    return 'CalendarDay(date: $date, income: $income, expense: $expense, activityCount: $activityCount, hasImportant: $hasImportant)';
 }
 
 
@@ -267,7 +263,7 @@ abstract mixin class _$CalendarDayCopyWith<$Res> implements $CalendarDayCopyWith
   factory _$CalendarDayCopyWith(_CalendarDay value, $Res Function(_CalendarDay) _then) = __$CalendarDayCopyWithImpl;
 @override @useResult
 $Res call({
- String date, int income, int expense, int activityCount, bool hasImportant, String? mood
+ String date, int income, int expense, int activityCount, bool hasImportant
 });
 
 
@@ -284,15 +280,14 @@ class __$CalendarDayCopyWithImpl<$Res>
 
 /// Create a copy of CalendarDay
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? date = null,Object? income = null,Object? expense = null,Object? activityCount = null,Object? hasImportant = null,Object? mood = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? date = null,Object? income = null,Object? expense = null,Object? activityCount = null,Object? hasImportant = null,}) {
   return _then(_CalendarDay(
 date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
 as String,income: null == income ? _self.income : income // ignore: cast_nullable_to_non_nullable
 as int,expense: null == expense ? _self.expense : expense // ignore: cast_nullable_to_non_nullable
 as int,activityCount: null == activityCount ? _self.activityCount : activityCount // ignore: cast_nullable_to_non_nullable
 as int,hasImportant: null == hasImportant ? _self.hasImportant : hasImportant // ignore: cast_nullable_to_non_nullable
-as bool,mood: freezed == mood ? _self.mood : mood // ignore: cast_nullable_to_non_nullable
-as String?,
+as bool,
   ));
 }
 
@@ -303,7 +298,7 @@ as String?,
 /// @nodoc
 mixin _$DailyNote {
 
- String get date; String? get mood; String? get note;
+ String get date; String? get note;
 /// Create a copy of DailyNote
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -317,20 +312,20 @@ $DailyNoteCopyWith<DailyNote> get copyWith => _$DailyNoteCopyWithImpl<DailyNote>
 @override
 bool operator ==(Object other) {
   final _this = this as DailyNote;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DailyNote&&(identical(other.date, _this.date) || other.date == _this.date)&&(identical(other.mood, _this.mood) || other.mood == _this.mood)&&(identical(other.note, _this.note) || other.note == _this.note));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DailyNote&&(identical(other.date, _this.date) || other.date == _this.date)&&(identical(other.note, _this.note) || other.note == _this.note));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as DailyNote;
-  return Object.hash(runtimeType,_this.date,_this.mood,_this.note);
+  return Object.hash(runtimeType,_this.date,_this.note);
 }
 
 @override
 String toString() {
   final _this = this as DailyNote;
-  return 'DailyNote(date: ${_this.date}, mood: ${_this.mood}, note: ${_this.note})';
+  return 'DailyNote(date: ${_this.date}, note: ${_this.note})';
 }
 
 
@@ -341,7 +336,7 @@ abstract mixin class $DailyNoteCopyWith<$Res>  {
   factory $DailyNoteCopyWith(DailyNote value, $Res Function(DailyNote) _then) = _$DailyNoteCopyWithImpl;
 @useResult
 $Res call({
- String date, String? mood, String? note
+ String date, String? note
 });
 
 
@@ -358,11 +353,10 @@ class _$DailyNoteCopyWithImpl<$Res>
 
 /// Create a copy of DailyNote
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? date = null,Object? mood = freezed,Object? note = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? date = null,Object? note = freezed,}) {
   return _then(DailyNote(
 date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
-as String,mood: freezed == mood ? _self.mood : mood // ignore: cast_nullable_to_non_nullable
-as String?,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
+as String,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -448,10 +442,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String date,  String? mood,  String? note)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String date,  String? note)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DailyNote() when $default != null:
-return $default(_that.date,_that.mood,_that.note);case _:
+return $default(_that.date,_that.note);case _:
   return orElse();
 
 }
@@ -469,10 +463,10 @@ return $default(_that.date,_that.mood,_that.note);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String date,  String? mood,  String? note)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String date,  String? note)  $default,) {final _that = this;
 switch (_that) {
 case _DailyNote():
-return $default(_that.date,_that.mood,_that.note);case _:
+return $default(_that.date,_that.note);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -489,10 +483,10 @@ return $default(_that.date,_that.mood,_that.note);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String date,  String? mood,  String? note)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String date,  String? note)?  $default,) {final _that = this;
 switch (_that) {
 case _DailyNote() when $default != null:
-return $default(_that.date,_that.mood,_that.note);case _:
+return $default(_that.date,_that.note);case _:
   return null;
 
 }
@@ -504,11 +498,10 @@ return $default(_that.date,_that.mood,_that.note);case _:
 @JsonSerializable()
 
 class _DailyNote implements DailyNote {
-  const _DailyNote({required this.date, this.mood, this.note});
+  const _DailyNote({required this.date, this.note});
   factory _DailyNote.fromJson(Map<String, dynamic> json) => _$DailyNoteFromJson(json);
 
 @override final  String date;
-@override final  String? mood;
 @override final  String? note;
 
 /// Create a copy of DailyNote
@@ -524,18 +517,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _DailyNote&&(identical(other.date, date) || other.date == date)&&(identical(other.mood, mood) || other.mood == mood)&&(identical(other.note, note) || other.note == note));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _DailyNote&&(identical(other.date, date) || other.date == date)&&(identical(other.note, note) || other.note == note));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,date,mood,note);
+    return Object.hash(runtimeType,date,note);
 }
 
 @override
 String toString() {
-    return 'DailyNote(date: $date, mood: $mood, note: $note)';
+    return 'DailyNote(date: $date, note: $note)';
 }
 
 
@@ -546,7 +539,7 @@ abstract mixin class _$DailyNoteCopyWith<$Res> implements $DailyNoteCopyWith<$Re
   factory _$DailyNoteCopyWith(_DailyNote value, $Res Function(_DailyNote) _then) = __$DailyNoteCopyWithImpl;
 @override @useResult
 $Res call({
- String date, String? mood, String? note
+ String date, String? note
 });
 
 
@@ -563,11 +556,10 @@ class __$DailyNoteCopyWithImpl<$Res>
 
 /// Create a copy of DailyNote
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? date = null,Object? mood = freezed,Object? note = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? date = null,Object? note = freezed,}) {
   return _then(_DailyNote(
 date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
-as String,mood: freezed == mood ? _self.mood : mood // ignore: cast_nullable_to_non_nullable
-as String?,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
+as String,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

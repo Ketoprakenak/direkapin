@@ -65,14 +65,6 @@ class AppThemeData {
   Color get ink => colors.ink;
 }
 
-const _pastelMoods = {
-  '😄': Color(0xFF7BC79A),
-  '🙂': Color(0xFF6FC1B5),
-  '😐': Color(0xFFBDB7AE),
-  '😕': Color(0xFFE8B96A),
-  '😢': Color(0xFF8DB0E0),
-};
-
 ColorScheme _pastelScheme({
   required Color surface,
   required Color text,
@@ -143,7 +135,6 @@ final appThemes = <AppThemeData>[
         Color(0xFFEDB47A),
         Color(0xFFDD8F6E),
       ],
-      moodTints: _pastelMoods,
     ),
     style: const AppStyle(
       cardRadius: 22,
@@ -182,7 +173,6 @@ final appThemes = <AppThemeData>[
         Color(0xFF93B7E0),
         Color(0xFF6D97CF),
       ],
-      moodTints: _pastelMoods,
     ),
     style: const AppStyle(
       cardRadius: 12,
@@ -221,7 +211,6 @@ final appThemes = <AppThemeData>[
         Color(0xFFC3ADE3),
         Color(0xFFA98CD5),
       ],
-      moodTints: _pastelMoods,
     ),
     style: const AppStyle(
       cardRadius: 20,
@@ -260,7 +249,6 @@ final appThemes = <AppThemeData>[
         Color(0xFFF4B39D),
         Color(0xFFEB907A),
       ],
-      moodTints: _pastelMoods,
     ),
     style: const AppStyle(
       cardRadius: 24,
@@ -299,7 +287,6 @@ final appThemes = <AppThemeData>[
         Color(0xFF96D3BE),
         Color(0xFF6FBFA5),
       ],
-      moodTints: _pastelMoods,
     ),
     style: const AppStyle(
       cardRadius: 14,

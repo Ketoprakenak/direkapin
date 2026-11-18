@@ -46,3 +46,6 @@ export const userResponse = z.object({
   heatmap: heatmapSchema,
   createdAt: z.string(),
 });
+
+/** Hanya `GET /me`: apakah user ini owner (AUTH-07). */
+export const meResponse = userResponse.extend({ isOwner: z.boolean() });

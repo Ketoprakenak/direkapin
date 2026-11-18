@@ -6,7 +6,12 @@ import '../theme/tokens.dart';
 
 /// Nominal: negatif selalu merah. Dengan [signed], positif jadi `+` hijau.
 class AmountText extends StatelessWidget {
-  const AmountText(this.amount, {super.key, this.signed = false, this.large = false});
+  const AmountText(
+    this.amount, {
+    super.key,
+    this.signed = false,
+    this.large = false,
+  });
 
   final int amount;
   final bool signed;
@@ -19,7 +24,9 @@ class AmountText extends StatelessWidget {
     final color = amount < 0
         ? colors.expense
         : (signed && amount > 0 ? colors.income : theme.colorScheme.onSurface);
-    final style = large ? theme.textTheme.displayMedium : theme.textTheme.titleSmall;
+    final style = large
+        ? theme.textTheme.displayMedium
+        : theme.textTheme.titleSmall;
     return Text(
       formatRupiah(amount, showPlus: signed),
       style: style?.copyWith(color: color),
@@ -52,7 +59,11 @@ class IconCircle extends StatelessWidget {
 
 /// Pilihan warna dari palet kategori/dompet.
 class ColorPicker extends StatelessWidget {
-  const ColorPicker({super.key, required this.selected, required this.onChanged});
+  const ColorPicker({
+    super.key,
+    required this.selected,
+    required this.onChanged,
+  });
 
   final String selected;
   final ValueChanged<String> onChanged;

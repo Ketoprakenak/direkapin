@@ -22,7 +22,10 @@ class Session extends _$Session {
       // Di latar belakang: sesi yang sudah kedaluwarsa dibereskan AuthInterceptor,
       // lalu markLoggedOut mengarahkan user ke layar login.
       unawaited(
-        ref.read(apiClientProvider).get<void>('/me').then((_) {}, onError: (_) {}),
+        ref
+            .read(apiClientProvider)
+            .get<void>('/me')
+            .then((_) {}, onError: (_) {}),
       );
     }
     return loggedIn;

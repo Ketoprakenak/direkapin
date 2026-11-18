@@ -79,6 +79,7 @@ Prioritas: **P0** wajib di MVP, **P1** setelah MVP stabil, **P2** nice-to-have.
 | AUTH-04 | Registrasi dibatasi pakai kode undangan (supaya server tidak dipakai orang asing) | P0 |
 | AUTH-05 | Edit profil: nama, foto (D-65: foto dipotong 512x512 di server, tampil di Profil saja) | P1 |
 | AUTH-06 | Lupa password via email: kode 6 angka (15 menit) lewat Gmail SMTP, lalu password baru (D-75) | P2 |
+| AUTH-07 | Owner membuat kode undangan dari aplikasi (Profil > Kode undangan): kode berlaku 7 hari, bisa disalin, daftar menunjukkan berlaku/dipakai siapa/kedaluwarsa. Owner = email `OWNER_EMAIL` di server; selain owner menu tidak tampil dan endpoint 404 (D-80) | P1 |
 
 ### 4.2 Dashboard
 
@@ -96,7 +97,7 @@ Prioritas: **P0** wajib di MVP, **P1** setelah MVP stabil, **P2** nice-to-have.
 | ID | Kebutuhan | Prioritas |
 | --- | --- | --- |
 | CAL-01 | Tampilan bulan; tiap tanggal menampilkan titik warna: hijau (pemasukan), merah (pengeluaran), biru (kegiatan) | P0 |
-| CAL-02 | ~~Tampilan minggu dan agenda (list)~~ dibatalkan owner setelah dicoba; diganti: mood mewarnai tanggal di kalender (D-61) | P1 |
+| CAL-02 | ~~Tampilan minggu dan agenda (list)~~ dibatalkan owner setelah dicoba; diganti: mood mewarnai tanggal di kalender (D-61), lalu mood ikut dihapus (D-84) | P1 |
 | CAL-03 | Tap tanggal membuka Halaman Hari: daftar transaksi + kegiatan + total hari itu | P0 |
 | CAL-04 | Tambah / edit / hapus transaksi dan kegiatan langsung dari Halaman Hari | P0 |
 | CAL-05 | Pindah tanggal transaksi atau kegiatan (edit tanggal) | P0 |
@@ -125,7 +126,7 @@ Prioritas: **P0** wajib di MVP, **P1** setelah MVP stabil, **P2** nice-to-have.
 | FIN-17 | Biaya admin transfer (opsional, nominal bebas) dipotong dari dompet asal atau tujuan; dicatat sebagai pengeluaran kategori "Biaya Admin" (D-56). Mis. BCA → GoPay Rp15.000, biaya Rp1.000 dari tujuan: GoPay bertambah Rp14.000 | P1 |
 | FIN-18 | Tabungan: Saldo total = Saldo bisa digunakan + saldo tiap tabungan. Buat/setor = pindah dari dompet (saldo dompet di app berkurang), bisa setor berkali-kali, tidak bisa ditarik. Pengeluaran bisa langsung dari tabungan dan masuk laporan/budget. Target nominal opsional + progress. Hapus = sisa saldo kembali ke dompet pilihan, riwayat tetap. Tampil di bottom sheet saat kartu Total saldo di Beranda di-tap, tidak di menu Dompet (D-76) | P1 |
 | FIN-19 | Piutang talangan: catat talangan (judul, tanggal, catatan) berisi beberapa orang dengan nominal manual (nama diketik); pengeluaran asli tetap dicatat terpisah. Teman bisa mencicil; tiap pembayaran masuk ke dompet pilihan sebagai pemasukan "Piutang dibayar". Sisa semua piutang tampil sebagai minus di sheet Saldo total (D-77) | P1 |
-| FIN-20 | Utang: catat utang ke 1 orang, jenis ditalangin (tidak ada uang masuk) atau pinjam tunai (uang masuk ke dompet pilihan sebagai pemasukan "Pinjaman diterima"). Owner bisa mencicil; tiap cicilan = pengeluaran dari dompet pilihan dengan kategori pilihan. Menu digabung dengan piutang ("Utang & Piutang"); sisa utang tampil di sheet Saldo total sebagai info (D-78) | P1 |
+| FIN-20 | Utang: catat utang ke 1 orang, jenis ditalangin (tidak ada uang masuk) atau pinjam tunai (uang masuk ke dompet pilihan sebagai pemasukan "Pinjaman diterima"). Owner bisa mencicil; tiap cicilan = pengeluaran dari dompet pilihan dengan kategori pilihan. Menu digabung dengan piutang ("Utang & Piutang"); sisa utang tampil di sheet Saldo total sebagai info (D-78). Sisa utang ditalangin langsung mengurangi "Bisa digunakan", Saldo total baru turun saat dibayar (D-81) | P1 |
 | FIN-21 | Bagi pengeluaran ke teman: dari form pengeluaran baru (switch "Bagi ke teman") atau detail pengeluaran yang belum dibagi, langsung jadi piutang (judul = kategori, tanggal = tanggal pengeluaran) dengan nominal manual atau "Bagi rata" (termasuk owner, sisa pembulatan milik owner). Total teman <= nominal pengeluaran. Piutang menyimpan info asal; pengeluaran dihapus = piutang tetap (D-79) | P1 |
 
 ### 4.5 Modul kegiatan
@@ -136,7 +137,7 @@ Prioritas: **P0** wajib di MVP, **P1** setelah MVP stabil, **P2** nice-to-have.
 | ACT-02 | Tandai kegiatan "penting" (bintang) agar menonjol di kalender | P0 |
 | ACT-03 | Lampirkan foto kegiatan, galeri boleh pilih beberapa sekaligus (maks. 5 foto), dikompres otomatis seperti FIN-13 | P0 |
 | ACT-04 | Edit dan hapus kegiatan | P0 |
-| ACT-05 | Mood harian (emoji) di Halaman Hari | P1 |
+| ACT-05 | ~~Mood harian (emoji) di Halaman Hari~~ dihapus owner karena tidak terpakai; kolom `daily_notes.mood` dibiarkan tanpa dipakai (D-84) | P1 |
 | ACT-06 | Galeri "Kenangan": semua foto kegiatan per bulan, dari Profil dan kartu Kenangan di Beranda saat pergantian bulan (D-73) | P2 |
 
 ### 4.6 Engagement (biar rajin mencatat)
@@ -147,6 +148,7 @@ Prioritas: **P0** wajib di MVP, **P1** setelah MVP stabil, **P2** nice-to-have.
 | ENG-02 | Streak + badge sederhana (7, 30, 100 hari) | P1 |
 | ENG-03 | Tema penuh 7 pilihan + maskot + transisi (D-63) | P1 |
 | ENG-04 | Rekap bulanan ala "wrapped": total pengeluaran, kategori terboros, hari paling boros, foto kegiatan terbanyak; dibuka dari Laporan Bulanan (D-72) | P2 |
+| ENG-05 | Widget layar utama "Hari ini": Keluar/Masuk hari ini, tombol + langsung ke form Catat; ukuran tetap 2×2 (D-85); ikut tema app; latar maskot tema (luwes, dipudarkan) atau foto dari galeri yang diatur di bingkai persegi dan hanya disimpan di HP. Saldo tidak ditampilkan (D-82, D-83, D-85) | P2 |
 
 ### 4.7 Arsip foto bulanan
 
@@ -290,7 +292,7 @@ Kontrak detail (request, response, error) ada di `docs/openapi.yaml`. Semua endp
 | GET | `/attachments/{id}?size=thumb\|full` | Ambil thumbnail atau foto asli |
 | DELETE | `/attachments/{id}` | Hapus foto |
 | GET | `/calendar?month=2026-11` | Penanda per tanggal: total masuk, keluar, jumlah kegiatan |
-| GET | `/days/{date}` | Isi Halaman Hari: transaksi, transfer, kegiatan, foto, mood |
+| GET | `/days/{date}` | Isi Halaman Hari: transaksi, transfer, kegiatan, foto |
 | GET | `/reports/daily?date=&wallet=` | Laporan harian |
 | GET | `/reports/weekly?start=&wallet=` | Laporan mingguan (per hari + per kategori) |
 | GET | `/reports/monthly?month=&wallet=` | Laporan bulanan (per hari, per kategori, vs bulan lalu) |
@@ -437,7 +439,7 @@ Navigasi utama pakai bottom navigation 4 tab: **Beranda · Kalender · Laporan �
 | S-03 | Daftar | Nama, email, password, kode undangan | Berhasil → S-04 |
 | S-04 | Beranda (Dashboard) | Kartu total saldo + saldo per dompet (scroll horizontal), masuk/keluar bulan ini, streak, grafik 7 hari, kegiatan hari ini | FAB → S-08 / S-09; tap dompet → S-12 |
 | S-05 | Kalender | Grid bulan, titik hijau/merah/biru, bintang untuk kegiatan penting, total keluar per tanggal (kecil) | Geser bulan; tap tanggal → S-06 |
-| S-06 | Halaman Hari | Tanggal, mood (P1), ringkasan masuk/keluar, daftar kegiatan (penting di atas), daftar transaksi dengan thumbnail | + Transaksi → S-08; + Kegiatan → S-09; tap item → S-07 |
+| S-06 | Halaman Hari | Tanggal, ringkasan masuk/keluar, daftar kegiatan (penting di atas), daftar transaksi dengan thumbnail | + Transaksi → S-08; + Kegiatan → S-09; tap item → S-07 |
 | S-07 | Detail item | Semua field + galeri foto penuh | Edit → S-08 / S-09; Hapus (konfirmasi) |
 | S-08 | Form transaksi | Toggle Keluar/Masuk/Transfer, nominal (keyboard angka), dompet, kategori (grid ikon), tanggal & jam, catatan, foto (kamera/galeri) | Simpan → kembali ke layar asal + snackbar |
 | S-09 | Form kegiatan | Judul, tanggal, jam (opsional), lokasi, deskripsi, toggle penting, foto | Simpan → kembali ke layar asal |

@@ -17,19 +17,23 @@ class TransfersScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(title: const Text('Riwayat transfer')),
-      body: ref.watch(transfersProvider).when(
-        loading: () => const ListSkeleton(),
-        error: (error, _) => ErrorState(
-          error: error,
-          onRetry: () => ref.invalidate(transfersProvider),
-        ),
-        data: (items) => items.isEmpty
-            ? const Center(child: EmptyState(message: 'Belum ada transfer.'))
-            : ListView.builder(
-                itemCount: items.length,
-                itemBuilder: (context, index) => TransferTile(items[index]),
-              ),
-      ),
+      body: ref
+          .watch(transfersProvider)
+          .when(
+            loading: () => const ListSkeleton(),
+            error: (error, _) => ErrorState(
+              error: error,
+              onRetry: () => ref.invalidate(transfersProvider),
+            ),
+            data: (items) => items.isEmpty
+                ? const Center(
+                    child: EmptyState(message: 'Belum ada transfer.'),
+                  )
+                : ListView.builder(
+                    itemCount: items.length,
+                    itemBuilder: (context, index) => TransferTile(items[index]),
+                  ),
+          ),
     );
   }
 }

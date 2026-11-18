@@ -77,9 +77,17 @@ class _SavingsSheet extends ConsumerWidget {
               const Icon(Icons.account_balance_wallet_rounded),
               const SizedBox(width: Spacing.md),
               Expanded(
-                child: Text(
-                  'Bisa digunakan',
-                  style: theme.textTheme.titleMedium,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Bisa digunakan', style: theme.textTheme.titleMedium),
+                    if (!hidden && data.frontedPayableRemaining > 0)
+                      Text(
+                        'Sudah dipotong utang ditalangin '
+                        '${formatRupiah(data.frontedPayableRemaining)}',
+                        style: theme.textTheme.labelSmall,
+                      ),
+                  ],
                 ),
               ),
               hidden

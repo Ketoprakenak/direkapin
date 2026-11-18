@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:direkapin/core/api/api_client.dart';
 import 'package:direkapin/core/api/api_error.dart';
 import 'package:direkapin/core/auth/session_provider.dart';
+import 'package:direkapin/core/home_widget/today_widget.dart';
 import 'package:direkapin/core/notifications/reminder_service.dart';
 import 'package:direkapin/core/router/router.dart';
 import 'package:direkapin/features/auth/data/auth_repository.dart';
@@ -97,6 +98,9 @@ void main() {
           ),
           authRepositoryProvider.overrideWithValue(auth),
           reminderServiceProvider.overrideWithValue(FakeReminderService()),
+          todayWidgetServiceProvider.overrideWithValue(
+            FakeTodayWidgetService(),
+          ),
         ],
         child: Consumer(
           builder: (context, ref, _) => MaterialApp.router(
@@ -519,6 +523,27 @@ void main() {
       expect(find.text('Email tidak valid'), findsOneWidget);
       expect(find.text('Password wajib diisi'), findsOneWidget);
       expect(auth.loginEmail, isNull);
+    });
+
+    testWidgets('tombol mata menampilkan dan menyembunyikan password', (
+      tester,
+    ) async {
+      await pumpApp(tester, {});
+      bool obscured() => tester
+          .widget<EditableText>(
+            find.descendant(
+              of: field('Password'),
+              matching: find.byType(EditableText),
+            ),
+          )
+          .obscureText;
+      expect(obscured(), isTrue);
+      await tester.tap(find.byTooltip('Tampilkan password'));
+      await tester.pump();
+      expect(obscured(), isFalse);
+      await tester.tap(find.byTooltip('Sembunyikan password'));
+      await tester.pump();
+      expect(obscured(), isTrue);
     });
 
     testWidgets('berhasil masuk ke Beranda', (tester) async {

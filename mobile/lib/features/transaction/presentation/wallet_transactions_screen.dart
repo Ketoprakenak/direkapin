@@ -27,21 +27,26 @@ class WalletTransactionsScreen extends ConsumerWidget {
     final provider = walletTransactionsProvider(walletId);
     return Scaffold(
       appBar: AppBar(title: Text(walletName)),
-      body: ref.watch(provider).when(
-        loading: () => const ListSkeleton(),
-        error: (error, _) => ErrorState(
-          error: error,
-          onRetry: () => ref.invalidate(provider),
-        ),
-        data: (items) => items.isEmpty
-            ? const Center(
-                child: EmptyState(message: 'Belum ada transaksi di dompet ini.'),
-              )
-            : ListView.builder(
-                itemCount: items.length,
-                itemBuilder: (context, index) => TransactionTile(items[index]),
-              ),
-      ),
+      body: ref
+          .watch(provider)
+          .when(
+            loading: () => const ListSkeleton(),
+            error: (error, _) => ErrorState(
+              error: error,
+              onRetry: () => ref.invalidate(provider),
+            ),
+            data: (items) => items.isEmpty
+                ? const Center(
+                    child: EmptyState(
+                      message: 'Belum ada transaksi di dompet ini.',
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: items.length,
+                    itemBuilder: (context, index) =>
+                        TransactionTile(items[index]),
+                  ),
+          ),
     );
   }
 }
@@ -77,7 +82,8 @@ class TransactionTile extends StatelessWidget {
             ListThumbnail(transaction.attachments),
         ],
       ),
-      onTap: () => context.pushNamed(Routes.transactionDetail, extra: transaction),
+      onTap: () =>
+          context.pushNamed(Routes.transactionDetail, extra: transaction),
     );
   }
 }

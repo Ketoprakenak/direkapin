@@ -28,7 +28,10 @@ class _FakeServer implements HttpClientAdapter {
           reason: 'offline',
         );
       }
-      return _json({'accessToken': 'baru', 'refreshToken': 'r2'}, refreshStatus!);
+      return _json({
+        'accessToken': 'baru',
+        'refreshToken': 'r2',
+      }, refreshStatus!);
     }
     await requestStream?.drain<void>();
     final authorization = options.headers['Authorization'] as String?;

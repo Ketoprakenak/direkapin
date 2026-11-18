@@ -32,12 +32,15 @@ void main() {
     }
   });
 
-  testWidgets('pose peek tergambar untuk semua hewan tanpa error', (
+  testWidgets('pose peek dan wave tergambar untuk semua hewan tanpa error', (
     tester,
   ) async {
-    for (final animal in Animal.values) {
+    for (final (animal, pose) in [
+      for (final animal in Animal.values)
+        for (final pose in [MascotPose.peek, MascotPose.wave]) (animal, pose),
+    ]) {
       await tester.pumpWidget(
-        _host(Mascot(animal: animal, pose: MascotPose.peek, size: 64)),
+        _host(Mascot(animal: animal, pose: pose, size: 64)),
       );
       final paint = tester.widget<CustomPaint>(
         find.descendant(
@@ -45,7 +48,7 @@ void main() {
           matching: find.byType(CustomPaint),
         ),
       );
-      expect((paint.painter! as dynamic).pose, MascotPose.peek);
+      expect((paint.painter! as dynamic).pose, pose);
       expect(tester.takeException(), isNull);
     }
   });

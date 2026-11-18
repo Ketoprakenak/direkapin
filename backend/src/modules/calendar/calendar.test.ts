@@ -65,7 +65,6 @@ describe('GET /calendar', () => {
           expense: 300,
           activityCount: 0,
           hasImportant: false,
-          mood: null,
         },
         {
           date: '2026-11-10',
@@ -73,7 +72,6 @@ describe('GET /calendar', () => {
           expense: 3000,
           activityCount: 2,
           hasImportant: true,
-          mood: null,
         },
         {
           date: '2026-11-15',
@@ -81,7 +79,6 @@ describe('GET /calendar', () => {
           expense: 0,
           activityCount: 1,
           hasImportant: false,
-          mood: null,
         },
       ],
     });
@@ -102,7 +99,6 @@ describe('GET /calendar', () => {
         expense: 1,
         activityCount: 0,
         hasImportant: false,
-        mood: null,
       },
     ]);
     const oct = (await ctx.get('/calendar?month=2026-10')).json();
@@ -119,32 +115,23 @@ describe('GET /calendar', () => {
     expect(days.map((d: { date: string }) => d.date)).toEqual(['2026-11-30']);
   });
 
-  it('mood ikut per tanggal; tanggal yang hanya berisi mood tetap muncul (D-61)', async () => {
+  it('mood lama di database tidak dikirim; tanggal yang hanya berisi mood tidak muncul (D-84)', async () => {
     const ctx = await setup();
     await ctx.addTx(1000, '2026-11-10T03:00:00Z');
-    const put = (date: string, payload: object) =>
-      app.inject({
-        method: 'PUT',
-        url: `/api/v1/days/${date}/note`,
-        headers: ctx.headers,
-        payload,
+    for (const date of ['2026-11-10', '2026-11-12']) {
+      await app.prisma.dailyNote.create({
+        data: { userId: ctx.userId, date: new Date(`${date}T00:00:00Z`), mood: '😄' },
       });
-    await put('2026-11-10', { mood: '😄' });
-    await put('2026-11-12', { mood: '😢' });
-    // Catatan tanpa mood dan mood di bulan lain tidak ikut.
-    await put('2026-11-13', { note: 'cuma catatan' });
-    await put('2026-12-01', { mood: '🙂' });
+    }
 
     const days = (await ctx.get('/calendar?month=2026-11')).json().days;
     expect(days).toEqual([
-      expect.objectContaining({ date: '2026-11-10', expense: 1000, mood: '😄' }),
       {
-        date: '2026-11-12',
+        date: '2026-11-10',
         income: 0,
-        expense: 0,
+        expense: 1000,
         activityCount: 0,
         hasImportant: false,
-        mood: '😢',
       },
     ]);
   });
@@ -255,16 +242,24 @@ describe('GET /days/:date', () => {
     expect((await ctx.get('/calendar?month=2026-12')).json().days).toHaveLength(1);
   });
 
-  it('catatan harian ikut terkirim', async () => {
+  it('catatan harian ikut terkirim tanpa mood; baris yang hanya berisi mood = tanpa catatan', async () => {
     const ctx = await setup();
     await app.prisma.dailyNote.create({
-      data: { userId: ctx.userId, date: new Date('2026-11-10T00:00:00Z'), mood: 'senang' },
+      data: {
+        userId: ctx.userId,
+        date: new Date('2026-11-10T00:00:00Z'),
+        mood: 'senang',
+        note: 'capek',
+      },
+    });
+    await app.prisma.dailyNote.create({
+      data: { userId: ctx.userId, date: new Date('2026-11-11T00:00:00Z'), mood: 'senang' },
     });
     expect((await ctx.get('/days/2026-11-10')).json().note).toEqual({
       date: '2026-11-10',
-      mood: 'senang',
-      note: null,
+      note: 'capek',
     });
+    expect((await ctx.get('/days/2026-11-11')).json().note).toBeNull();
   });
 
   it('tanggal tidak valid 400', async () => {
@@ -298,7 +293,7 @@ describe('GET /days/:date', () => {
   });
 });
 
-describe('PUT /days/:date/note (ACT-05)', () => {
+describe('PUT /days/:date/note', () => {
   const put = (accessToken: string, date: string, payload: object) =>
     app.inject({
       method: 'PUT',
@@ -307,41 +302,51 @@ describe('PUT /days/:date/note (ACT-05)', () => {
       payload,
     });
 
-  it('simpan mood, field lain tetap, kosong keduanya menghapus', async () => {
+  it('simpan catatan, kosong menghapus; mood dari app lama diabaikan', async () => {
     const { accessToken } = await createUser(app, 'a@example.test');
     const day = () =>
       app.inject({ url: '/api/v1/days/2026-11-10', headers: authHeader(accessToken) });
 
-    const saved = await put(accessToken, '2026-11-10', { mood: '😊' });
+    const saved = await put(accessToken, '2026-11-10', { note: 'capek tapi senang' });
     expect(saved.statusCode).toBe(200);
-    expect(saved.json()).toEqual({ date: '2026-11-10', mood: '😊', note: null });
+    expect(saved.json()).toEqual({ date: '2026-11-10', note: 'capek tapi senang' });
 
-    await put(accessToken, '2026-11-10', { note: 'capek tapi senang' });
-    expect((await day()).json().note).toEqual({
-      date: '2026-11-10',
-      mood: '😊',
-      note: 'capek tapi senang',
+    // App 1.4.0 masih mengirim mood: 200, tidak mengubah apa pun.
+    const legacy = await put(accessToken, '2026-11-10', { mood: '😊' });
+    expect(legacy.statusCode).toBe(200);
+    expect(legacy.json()).toEqual({ date: '2026-11-10', note: 'capek tapi senang' });
+
+    const cleared = await put(accessToken, '2026-11-10', { note: '  ' });
+    expect(cleared.json()).toEqual({ date: '2026-11-10', note: null });
+    expect((await day()).json().note).toBeNull();
+  });
+
+  it('kosongkan catatan tidak menghapus mood lama di database', async () => {
+    const { accessToken, user } = await createUser(app, 'a@example.test');
+    await app.prisma.dailyNote.create({
+      data: { userId: user.id, date: new Date('2026-11-10T00:00:00Z'), mood: '😊', note: 'x' },
     });
 
-    const cleared = await put(accessToken, '2026-11-10', { mood: null, note: '  ' });
-    expect(cleared.json()).toEqual({ date: '2026-11-10', mood: null, note: null });
-    expect((await day()).json().note).toBeNull();
+    await put(accessToken, '2026-11-10', { note: null });
+
+    const row = await app.prisma.dailyNote.findFirst({ where: { userId: user.id } });
+    expect(row).toMatchObject({ mood: '😊', note: null });
   });
 
   it('validasi 400, dan catatan user lain tidak tersentuh', async () => {
     const a = await createUser(app, 'a@example.test');
     const b = await createUser(app, 'b@example.test');
-    const bad = await put(a.accessToken, '2026-11-10', { mood: 'x'.repeat(17) });
+    const bad = await put(a.accessToken, '2026-11-10', { note: 'x'.repeat(1001) });
     expect(bad.statusCode).toBe(400);
-    expect(bad.json().error.details.mood).toBe('Mood tidak valid');
-    expect((await put(a.accessToken, '2026-13-01', { mood: '😊' })).statusCode).toBe(400);
+    expect(bad.json().error.details.note).toBe('Catatan terlalu panjang');
+    expect((await put(a.accessToken, '2026-13-01', { note: 'a' })).statusCode).toBe(400);
 
-    await put(a.accessToken, '2026-11-10', { mood: '😊' });
-    await put(b.accessToken, '2026-11-10', { mood: null });
+    await put(a.accessToken, '2026-11-10', { note: 'punya A' });
+    await put(b.accessToken, '2026-11-10', { note: null });
     const dayA = await app.inject({
       url: '/api/v1/days/2026-11-10',
       headers: authHeader(a.accessToken),
     });
-    expect(dayA.json().note.mood).toBe('😊');
+    expect(dayA.json().note.note).toBe('punya A');
   });
 });

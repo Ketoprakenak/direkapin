@@ -14,6 +14,9 @@ abstract class User with _$User {
     required bool hasAvatar,
     @Default(HeatmapSetting()) HeatmapSetting heatmap,
     required DateTime createdAt,
+
+    /// Hanya dikirim `GET /me`: boleh membuat kode undangan (AUTH-07).
+    @Default(false) bool isOwner,
   }) = _User;
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);

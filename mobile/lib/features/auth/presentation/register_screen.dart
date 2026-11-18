@@ -7,6 +7,7 @@ import '../../../core/router/router.dart';
 import '../providers/auth_providers.dart';
 import 'validators.dart';
 import 'widgets/auth_form.dart';
+import 'widgets/password_field.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -65,10 +66,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           textInputAction: TextInputAction.next,
           validator: validateEmail,
         ),
-        TextFormField(
+        PasswordField(
           controller: _password,
-          decoration: const InputDecoration(labelText: 'Password'),
-          obscureText: true,
+          label: 'Password',
           autofillHints: const [AutofillHints.newPassword],
           textInputAction: TextInputAction.next,
           validator: validateNewPassword,

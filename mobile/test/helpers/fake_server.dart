@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:dio/dio.dart';
 import 'package:direkapin/core/api/api_client.dart';
+import 'package:direkapin/core/home_widget/today_widget.dart';
 import 'package:direkapin/core/media/photo_service.dart';
 import 'package:direkapin/core/notifications/reminder_service.dart';
 import 'package:direkapin/core/router/router.dart';
@@ -156,6 +159,59 @@ class FakeReminderService implements ReminderService {
   Future<void> cancel() async => cancelled++;
 }
 
+/// Pengganti plugin widget layar utama, yang tidak ada di test.
+class FakeTodayWidgetService implements TodayWidgetService {
+  final saves = <Map<String, String?>>[];
+  var clears = 0;
+  Object? failure;
+  final mascots = <({String theme, bool happy})>[];
+  String? photo;
+  final pickedPhotos = <String>[];
+  final crops = <Rect>[];
+
+  /// Foto yang "dibaca" dari galeri; buat lewat `tester.runAsync`.
+  ui.Image? loadedPhoto;
+  Uri? launchUri;
+  final clickController = StreamController<Uri?>.broadcast();
+
+  @override
+  Future<void> save(Map<String, String?> data) async {
+    if (failure case final e?) throw e;
+    saves.add(data);
+  }
+
+  @override
+  Future<void> clear() async => clears++;
+
+  @override
+  Future<String> writeMascot(AppThemeData theme, {required bool happy}) async {
+    mascots.add((theme: theme.id, happy: happy));
+    return '/widget/mascot.png';
+  }
+
+  @override
+  Future<String?> savedPhoto() async => photo;
+
+  @override
+  Future<ui.Image> loadPhoto(String pickedPath) async => loadedPhoto!;
+
+  @override
+  Future<void> savePhoto(String pickedPath, Rect crop) async {
+    pickedPhotos.add(pickedPath);
+    crops.add(crop);
+    photo = '/widget/photo.png';
+  }
+
+  @override
+  Future<void> deletePhoto() async => photo = null;
+
+  @override
+  Future<Uri?> initialLaunch() async => launchUri;
+
+  @override
+  Stream<Uri?> get clicks => clickController.stream;
+}
+
 /// Tema polos: google_fonts butuh jaringan, yang tidak ada di test.
 final testTheme = buildTheme(appThemes.first);
 
@@ -168,6 +224,7 @@ Future<void> pumpRoutedApp(
   Object? extra,
   PhotoService photoService = const PhotoService(),
   FakeReminderService? reminders,
+  FakeTodayWidgetService? todayWidget,
   List<Object> overrides = const [],
 }) async {
   FlutterSecureStorage.setMockInitialValues({'refreshToken': 'r'});
@@ -179,6 +236,9 @@ Future<void> pumpRoutedApp(
         photoServiceProvider.overrideWithValue(photoService),
         reminderServiceProvider.overrideWithValue(
           reminders ?? FakeReminderService(),
+        ),
+        todayWidgetServiceProvider.overrideWithValue(
+          todayWidget ?? FakeTodayWidgetService(),
         ),
         apiClientProvider.overrideWithValue(
           Dio(BaseOptions(baseUrl: 'https://example.test'))
@@ -247,6 +307,7 @@ Map<String, Object?> dashboardJson({
   List<Map<String, Object?>> savings = const [],
   int receivableRemaining = 0,
   int payableRemaining = 0,
+  int frontedPayableRemaining = 0,
   bool hasEntry = false,
   int streak = 0,
   int todayExpense = 0,
@@ -257,6 +318,7 @@ Map<String, Object?> dashboardJson({
   'savings': savings,
   'receivableRemaining': receivableRemaining,
   'payableRemaining': payableRemaining,
+  'frontedPayableRemaining': frontedPayableRemaining,
   'month': {'income': 100000, 'expense': 25000, 'net': 75000},
   'today': {
     'date': '2026-11-04',

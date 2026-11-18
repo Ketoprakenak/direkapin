@@ -8,7 +8,8 @@ String? validateName(String? value) {
 }
 
 String? validateEmail(String? value) {
-  final valid = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch((value ?? '').trim());
+  final valid = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
+      .hasMatch((value ?? '').trim());
   return valid ? null : 'Email tidak valid';
 }
 

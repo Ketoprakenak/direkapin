@@ -10,7 +10,6 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.background,
     required this.textSecondary,
     required this.ink,
-    required this.moodTints,
     required this.incomeTint,
     required this.expenseTint,
     required this.importantTint,
@@ -26,9 +25,6 @@ class AppColors extends ThemeExtension<AppColors> {
 
   /// Aksen untuk teks/penanda di atas latar; = primary di Teal/Gelap, versi tua di pastel.
   final Color ink;
-
-  /// Warna latar tanggal di kalender per mood (D-61); dipakai transparan.
-  final Map<String, Color> moodTints;
 
   /// Latar pastel kotak ringkasan Pemasukan/Pengeluaran/Selisih di laporan;
   /// teks di atasnya = onSurface.
@@ -48,13 +44,6 @@ class AppColors extends ThemeExtension<AppColors> {
     background: Color(0xFFFAFAF9),
     textSecondary: Color(0xFF78716C),
     ink: Color(0xFF0F766E),
-    moodTints: {
-      '😄': Color(0xFF22C55E),
-      '🙂': Color(0xFF14B8A6),
-      '😐': Color(0xFFA8A29E),
-      '😕': Color(0xFFF59E0B),
-      '😢': Color(0xFF3B82F6),
-    },
     incomeTint: Color(0xFFCDEBD7),
     expenseTint: Color(0xFFF6D3CC),
     importantTint: Color(0xFFF7E3A8),
@@ -74,13 +63,6 @@ class AppColors extends ThemeExtension<AppColors> {
     background: Color(0xFF0C0A09),
     textSecondary: Color(0xFFA8A29E),
     ink: Color(0xFF2DD4BF),
-    moodTints: {
-      '😄': Color(0xFF22C55E),
-      '🙂': Color(0xFF14B8A6),
-      '😐': Color(0xFFA8A29E),
-      '😕': Color(0xFFF59E0B),
-      '😢': Color(0xFF3B82F6),
-    },
     incomeTint: Color(0xFF14301F),
     expenseTint: Color(0xFF3B1A18),
     importantTint: Color(0xFF3A2E0C),

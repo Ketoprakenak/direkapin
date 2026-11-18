@@ -12,7 +12,6 @@ _CalendarDay _$CalendarDayFromJson(Map<String, dynamic> json) => _CalendarDay(
   expense: (json['expense'] as num).toInt(),
   activityCount: (json['activityCount'] as num).toInt(),
   hasImportant: json['hasImportant'] as bool,
-  mood: json['mood'] as String?,
 );
 
 Map<String, dynamic> _$CalendarDayToJson(_CalendarDay instance) =>
@@ -22,21 +21,13 @@ Map<String, dynamic> _$CalendarDayToJson(_CalendarDay instance) =>
       'expense': instance.expense,
       'activityCount': instance.activityCount,
       'hasImportant': instance.hasImportant,
-      'mood': instance.mood,
     };
 
-_DailyNote _$DailyNoteFromJson(Map<String, dynamic> json) => _DailyNote(
-  date: json['date'] as String,
-  mood: json['mood'] as String?,
-  note: json['note'] as String?,
-);
+_DailyNote _$DailyNoteFromJson(Map<String, dynamic> json) =>
+    _DailyNote(date: json['date'] as String, note: json['note'] as String?);
 
 Map<String, dynamic> _$DailyNoteToJson(_DailyNote instance) =>
-    <String, dynamic>{
-      'date': instance.date,
-      'mood': instance.mood,
-      'note': instance.note,
-    };
+    <String, dynamic>{'date': instance.date, 'note': instance.note};
 
 _DayDetail _$DayDetailFromJson(Map<String, dynamic> json) => _DayDetail(
   date: json['date'] as String,

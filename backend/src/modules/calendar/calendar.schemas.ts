@@ -17,7 +17,6 @@ export const calendarResponse = z.object({
       expense: z.number().int(),
       activityCount: z.number().int(),
       hasImportant: z.boolean(),
-      mood: z.string().nullable(),
     }),
   ),
 });
@@ -26,13 +25,11 @@ export const dayParams = z.object({ date: dateString });
 
 export const dailyNoteResponse = z.object({
   date: z.string(),
-  mood: z.string().nullable(),
   note: z.string().nullable(),
 });
 
-/** Mood = satu emoji (ACT-05). Kosongkan keduanya untuk menghapus catatan hari itu. */
+/** Kosongkan untuk menghapus catatan hari itu. `mood` dari app lama dibuang (D-84). */
 export const dailyNoteBody = z.object({
-  mood: z.string().trim().min(1, 'Mood tidak valid').max(16, 'Mood tidak valid').nullable().optional(),
   note: z.string().max(1000, 'Catatan terlalu panjang').nullable().optional(),
 });
 

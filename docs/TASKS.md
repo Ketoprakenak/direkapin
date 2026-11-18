@@ -196,6 +196,42 @@ Ref: FIN-21, D-79. Spec `docs/superpowers/specs/2026-11-16-bagi-pengeluaran-desi
 - [x] Mobile: form Bagi ke teman (Bagi rata), switch di form pengeluaran, tombol di detail, info asal di detail piutang
 - [x] Uji di HP asli lewat build debug, lalu commit
 
+## Slice 22 — Kode undangan dari aplikasi (AUTH-07) · Status: Selesai
+Ref: AUTH-07, D-80. Spec `docs/superpowers/specs/2026-11-17-kode-undangan-design.md`, plan `docs/superpowers/plans/2026-11-17-kode-undangan.md`
+- [x] Backend: `OWNER_EMAIL`, `GET /me` `isOwner`, `GET/POST /invites`, test
+- [x] openapi, PRD, DECISIONS
+- [x] Mobile: baris Profil (owner saja), layar Kode undangan
+- [x] Uji di HP asli lewat build debug, lalu commit
+
+## Slice 23 — Talangan memotong Bisa digunakan (FIN-20, D-81) · Status: Selesai
+Ref: D-81. Spec `docs/superpowers/specs/2026-11-17-talangan-potong-saldo-design.md`, plan `docs/superpowers/plans/2026-11-17-talangan-potong-saldo.md`
+- [x] Backend: `frontedPayableRemaining`, `availableBalance` dipotong talangan, test
+- [x] openapi, PRD, DECISIONS
+- [x] Mobile: keterangan di baris Bisa digunakan
+- [x] Uji di HP asli lewat build debug, lalu commit
+
+## Slice 24 — Widget layar utama "Hari ini" (ENG-05) · Status: Selesai
+Ref: ENG-05, D-82, D-83. Spec `docs/superpowers/specs/2026-11-17-widget-hari-ini-design.md` + `2026-11-17-widget-tema-design.md`, plan `docs/superpowers/plans/2026-11-17-widget-hari-ini.md` + `2026-11-17-widget-tema.md`
+- [x] Dart: data widget, sinkron dari AppShell, kosongkan saat keluar, buka form dari tombol +
+- [x] Maskot pose `wave`, latar maskot/foto dipudarkan, Profil > Gambar widget
+- [x] Android: `TodayWidgetProvider`, layout, drawable, manifest
+- [x] PRD, DECISIONS, DESIGN
+- [x] Uji di HP asli lewat build debug (7 tema, maskot vs foto, ukuran 2×1/4×1/4×2, tombol +, keluar akun), lalu commit
+
+## Slice 25 — Hapus fitur mood (ACT-05, D-84) · Status: Selesai
+Ref: D-84. Kolom `daily_notes.mood` dibiarkan (keputusan owner 2026-11-18), tanpa migrasi.
+- [x] Backend: `GET /calendar` dan `GET /days/{date}` tanpa mood, `PUT /days/{date}/note` hanya `note`, test
+- [x] Mobile: tab Pengeluaran/Mood, pemilih mood, `moodTints` dihapus; Kalender selalu heatmap
+- [x] openapi, PRD, DECISIONS, DESIGN
+- [x] Uji di HP asli lewat build debug, lalu commit
+
+## Slice 26 — Widget 2×2 tetap + editor bingkai foto (ENG-05, D-85) · Status: Selesai
+Ref: D-85.
+- [x] Dart: `widgetCrop`/`maxWidgetZoom`, foto dipotong persegi 360, layar "Atur foto widget", test
+- [x] Android: `resizeMode="none"` 2×2, layout Keluar/Masuk, Kotlin tanpa cabang ukuran
+- [x] PRD, DECISIONS, DESIGN
+- [x] Uji di HP asli (hapus lalu pasang ulang widget), lalu commit
+
 ---
 
 ## Log

@@ -32,8 +32,7 @@ class ArchiveScreen extends ConsumerWidget {
                   children: const [
                     SizedBox(height: Spacing.xxl * 2),
                     EmptyState(
-                      message:
-                          'Belum ada arsip. Foto diarsipkan otomatis setelah dua bulan.',
+                      message: 'Belum ada arsip. Foto diarsipkan otomatis setelah dua bulan.',
                     ),
                   ],
                 )

@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import type { Config } from '../../config.js';
 import { AppError } from '../../lib/app-error.js';
-import { updateMeBody, userResponse } from './me.schemas.js';
+import { meResponse, updateMeBody, userResponse } from './me.schemas.js';
 import { deleteAvatar, getMe, readAvatar, setAvatar, updateMe } from './me.service.js';
 
 export function meRoutes(app: FastifyInstance, config: Config) {
@@ -10,8 +10,8 @@ export function meRoutes(app: FastifyInstance, config: Config) {
 
   routes.get(
     '/me',
-    { onRequest: [app.authenticate], schema: { response: { 200: userResponse } } },
-    (request) => getMe(app.prisma, request.userId),
+    { onRequest: [app.authenticate], schema: { response: { 200: meResponse } } },
+    (request) => getMe(app.prisma, request.userId, config.OWNER_EMAIL),
   );
 
   routes.patch(

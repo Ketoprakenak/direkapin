@@ -59,6 +59,9 @@ abstract class Dashboard with _$Dashboard {
     required List<Wallet> savings,
     @Default(0) int receivableRemaining,
     @Default(0) int payableRemaining,
+
+    /// Sisa utang ditalangin, sudah dipotong dari [availableBalance] (D-81).
+    @Default(0) int frontedPayableRemaining,
     required MonthSummary month,
     required TodaySummary today,
     required List<SeriesPoint> last7Days,

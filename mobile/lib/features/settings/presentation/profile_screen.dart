@@ -6,6 +6,7 @@ import '../../../core/api/api_error.dart';
 import '../../../core/auth/session_provider.dart';
 import '../../../core/format/dates.dart';
 import '../../../core/format/money.dart';
+import '../../../core/home_widget/today_widget.dart';
 import '../../../core/media/photo_service.dart';
 import '../../../core/notifications/reminder_service.dart';
 import '../../../core/router/router.dart';
@@ -17,6 +18,7 @@ import '../../auth/data/auth_models.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../providers/settings_providers.dart';
 import 'heatmap_sheet.dart';
+import 'widget_photo_editor.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -55,6 +57,13 @@ class ProfileScreen extends ConsumerWidget {
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () => context.pushNamed(Routes.receivables),
                 ),
+                if (ref.watch(meProvider).value?.isOwner ?? false)
+                  ListTile(
+                    leading: const Icon(Icons.key_rounded),
+                    title: const Text('Kode undangan'),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => context.pushNamed(Routes.invites),
+                  ),
                 ListTile(
                   leading: const Icon(Icons.event_repeat_rounded),
                   title: const Text('Transaksi berulang'),
@@ -62,6 +71,7 @@ class ProfileScreen extends ConsumerWidget {
                   onTap: () => context.pushNamed(Routes.recurring),
                 ),
                 const _ThemeTile(),
+                const _WidgetImageTile(),
                 const _HeatmapTile(),
                 ListTile(
                   leading: const Icon(Icons.photo_library_rounded),
@@ -346,6 +356,76 @@ class _ThemeTile extends ConsumerWidget {
       subtitle: Text(active.name),
       trailing: const Icon(Icons.chevron_right_rounded),
       onTap: () => context.pushNamed(Routes.themes),
+    );
+  }
+}
+
+/// Latar widget layar utama: maskot tema atau foto sendiri (hanya di HP, D-83).
+class _WidgetImageTile extends ConsumerWidget {
+  const _WidgetImageTile();
+
+  Future<void> _choose(
+    BuildContext context,
+    WidgetRef ref, {
+    required bool hasPhoto,
+  }) async {
+    final usePhoto = await showModalBottomSheet<bool>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Mascot(size: Spacing.xl),
+              title: const Text('Maskot tema'),
+              trailing: hasPhoto ? null : const Icon(Icons.check_rounded),
+              onTap: () => Navigator.pop(context, false),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_rounded),
+              title: const Text('Foto dari galeri'),
+              trailing: hasPhoto ? const Icon(Icons.check_rounded) : null,
+              onTap: () => Navigator.pop(context, true),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (usePhoto == null || !context.mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final service = ref.read(todayWidgetServiceProvider);
+    try {
+      if (usePhoto) {
+        final picked = await ref
+            .read(photoServiceProvider)
+            .pick(ImageSource.gallery, limit: 1);
+        if (picked.paths.isEmpty) return;
+        final path = picked.paths.first;
+        final image = await service.loadPhoto(path);
+        if (!context.mounted) return image.dispose();
+        final crop = await showWidgetPhotoEditor(context, image);
+        if (crop == null) return;
+        await service.savePhoto(path, crop);
+      } else {
+        await service.deletePhoto();
+      }
+      ref.invalidate(widgetPhotoProvider);
+    } on Exception {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Foto gagal diambil')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hasPhoto = ref.watch(widgetPhotoProvider).value != null;
+    return ListTile(
+      leading: const Icon(Icons.wallpaper_rounded),
+      title: const Text('Gambar widget'),
+      subtitle: Text(hasPhoto ? 'Foto dari galeri' : 'Maskot tema'),
+      trailing: const Icon(Icons.chevron_right_rounded),
+      onTap: () => _choose(context, ref, hasPhoto: hasPhoto),
     );
   }
 }

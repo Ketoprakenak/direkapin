@@ -20,7 +20,11 @@ class EmptyState extends StatelessWidget {
         children: [
           const Mascot(size: Spacing.xxl * 2),
           const SizedBox(height: Spacing.md),
-          Text(message, textAlign: TextAlign.center, style: theme.textTheme.bodyLarge),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyLarge,
+          ),
         ],
       ),
     );
@@ -46,9 +50,17 @@ class ErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_off_rounded, size: Spacing.xxl * 2, color: theme.colorScheme.outline),
+            Icon(
+              Icons.cloud_off_rounded,
+              size: Spacing.xxl * 2,
+              color: theme.colorScheme.outline,
+            ),
             const SizedBox(height: Spacing.md),
-            Text(message, textAlign: TextAlign.center, style: theme.textTheme.bodyLarge),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyLarge,
+            ),
             const SizedBox(height: Spacing.lg),
             TextButton(onPressed: onRetry, child: const Text('Coba lagi')),
           ],
@@ -69,7 +81,8 @@ class Skeleton extends StatefulWidget {
   State<Skeleton> createState() => _SkeletonState();
 }
 
-class _SkeletonState extends State<Skeleton> with SingleTickerProviderStateMixin {
+class _SkeletonState extends State<Skeleton>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: Motion.duration * 4,

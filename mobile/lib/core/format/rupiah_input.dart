@@ -34,7 +34,8 @@ class RupiahInputFormatter extends TextInputFormatter {
       return negative ? _at('-') : _at('');
     }
     if (digits.length > 9) return oldValue;
-    final text = '${negative ? '-' : ''}${_thousands.format(int.parse(digits))}';
+    final text =
+        '${negative ? '-' : ''}${_thousands.format(int.parse(digits))}';
     return _at(text);
   }
 

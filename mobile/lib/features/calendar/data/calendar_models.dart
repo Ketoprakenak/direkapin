@@ -15,20 +15,16 @@ abstract class CalendarDay with _$CalendarDay {
     required int expense,
     required int activityCount,
     required bool hasImportant,
-
-    /// Emoji mood hari itu (ACT-05, D-61).
-    String? mood,
   }) = _CalendarDay;
 
   factory CalendarDay.fromJson(Map<String, dynamic> json) =>
       _$CalendarDayFromJson(json);
 }
 
-/// Mood dan catatan harian (ACT-05).
+/// Catatan harian (mood dihapus, D-84).
 @freezed
 abstract class DailyNote with _$DailyNote {
-  const factory DailyNote({required String date, String? mood, String? note}) =
-      _DailyNote;
+  const factory DailyNote({required String date, String? note}) = _DailyNote;
 
   factory DailyNote.fromJson(Map<String, dynamic> json) =>
       _$DailyNoteFromJson(json);

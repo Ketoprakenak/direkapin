@@ -69,10 +69,7 @@ void main() {
     });
 
     test('jam sudah lewat: mulai besok', () {
-      expect(
-        dates(22).first,
-        tz.TZDateTime(jakarta, 2026, 11, 5, 21, 30),
-      );
+      expect(dates(22).first, tz.TZDateTime(jakarta, 2026, 11, 5, 21, 30));
     });
 
     test('hasEntry dari tanggal lama tidak melewati hari ini', () {
@@ -137,10 +134,22 @@ void main() {
 
   test('notesBetween: lebih baru dari terpasang, tidak lewat latest', () {
     final raw = [
-      {'version': '1.4.0', 'items': ['d']},
-      {'version': '1.3.0', 'items': ['c']},
-      {'version': '1.2.0', 'items': ['b', 7]},
-      {'version': '1.1.0', 'items': ['a']},
+      {
+        'version': '1.4.0',
+        'items': ['d'],
+      },
+      {
+        'version': '1.3.0',
+        'items': ['c'],
+      },
+      {
+        'version': '1.2.0',
+        'items': ['b', 7],
+      },
+      {
+        'version': '1.1.0',
+        'items': ['a'],
+      },
       {'version': 'rusak'},
     ];
     final notes = notesBetween(raw, '1.1.0', '1.3.0');
@@ -183,9 +192,8 @@ void main() {
       expect(reminders.syncs.last.hasEntry, isFalse);
 
       server.responses['/dashboard'] = dashboardJson(hasEntry: true);
-      ProviderScope.containerOf(
-        tester.element(find.byType(Scaffold).first),
-      ).invalidate(dashboardProvider);
+      ProviderScope.containerOf(tester.element(find.byType(Scaffold).first))
+          .invalidate(dashboardProvider);
       await tester.pumpAndSettle();
 
       expect(reminders.syncs.last.hasEntry, isTrue);
@@ -212,9 +220,9 @@ void main() {
         reminders: reminders,
       );
 
-      ProviderScope.containerOf(
-        tester.element(find.byType(Scaffold).first),
-      ).read(sessionProvider.notifier).markLoggedOut();
+      ProviderScope.containerOf(tester.element(find.byType(Scaffold).first))
+          .read(sessionProvider.notifier)
+          .markLoggedOut();
       await tester.pumpAndSettle();
 
       expect(reminders.cancelled, 1);
@@ -325,7 +333,9 @@ void main() {
       ),
     );
 
-    testWidgets('versi lebih baru: muncul, Update membuka link', (tester) async {
+    testWidgets('versi lebih baru: muncul, Update membuka link', (
+      tester,
+    ) async {
       final opened = <Object?>[];
       tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
         const MethodChannel('direkapin/links'),
@@ -400,7 +410,9 @@ void main() {
       expect(find.text('Versi baru 1.0.0 sudah ada.'), findsNothing);
     });
 
-    testWidgets('link bukan http: pesan, tidak membuka apa pun', (tester) async {
+    testWidgets('link bukan http: pesan, tidak membuka apa pun', (
+      tester,
+    ) async {
       await pumpRoutedApp(
         tester,
         _server(

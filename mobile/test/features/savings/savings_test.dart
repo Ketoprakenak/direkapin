@@ -39,10 +39,15 @@ void main() {
     'note': null,
   };
 
-  FakeServer server({List<Map<String, Object?>>? savings}) => FakeServer({
+  FakeServer server({
+    List<Map<String, Object?>>? savings,
+    int availableBalance = 900000,
+    int fronted = 0,
+  }) => FakeServer({
     '/dashboard': dashboardJson(
       totalBalance: 4200000,
-      availableBalance: 900000,
+      availableBalance: availableBalance,
+      frontedPayableRemaining: fronted,
       wallets: [bca],
       savings: savings ?? [liburan, darurat, hp],
       receivableRemaining: 150000,
@@ -276,6 +281,29 @@ void main() {
     await tester.tap(find.text('Piutang'));
     await tester.pumpAndSettle();
     expect(find.text('Total belum dibayar'), findsOneWidget);
+  });
+
+  testWidgets('Bisa digunakan: keterangan potongan talangan (D-81)', (
+    tester,
+  ) async {
+    await openSheet(tester, server(fronted: 50000));
+    expect(
+      find.text('Sudah dipotong utang ditalangin Rp50.000'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('tanpa talangan: tanpa keterangan; negatif tampil minus', (
+    tester,
+  ) async {
+    await openSheet(tester, server(availableBalance: -20000));
+    expect(find.textContaining('Sudah dipotong'), findsNothing);
+    expect(find.text('−Rp20.000'), findsOneWidget);
+  });
+
+  testWidgets('keterangan talangan ikut tersembunyi', (tester) async {
+    await openSheet(tester, server(fronted: 50000), reveal: false);
+    expect(find.textContaining('Sudah dipotong'), findsNothing);
   });
 
   testWidgets('baris Piutang ikut tersembunyi', (tester) async {

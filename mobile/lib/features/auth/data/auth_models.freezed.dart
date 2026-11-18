@@ -16,7 +16,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$User {
 
- String get id; String get name; String get email; String get timezone; String get reminderTime; bool get hasAvatar; HeatmapSetting get heatmap; DateTime get createdAt;
+ String get id; String get name; String get email; String get timezone; String get reminderTime; bool get hasAvatar; HeatmapSetting get heatmap; DateTime get createdAt;/// Hanya dikirim `GET /me`: boleh membuat kode undangan (AUTH-07).
+ bool get isOwner;
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +31,20 @@ $UserCopyWith<User> get copyWith => _$UserCopyWithImpl<User>(this as User, _$ide
 @override
 bool operator ==(Object other) {
   final _this = this as User;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is User&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.timezone, _this.timezone) || other.timezone == _this.timezone)&&(identical(other.reminderTime, _this.reminderTime) || other.reminderTime == _this.reminderTime)&&(identical(other.hasAvatar, _this.hasAvatar) || other.hasAvatar == _this.hasAvatar)&&(identical(other.heatmap, _this.heatmap) || other.heatmap == _this.heatmap)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is User&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.timezone, _this.timezone) || other.timezone == _this.timezone)&&(identical(other.reminderTime, _this.reminderTime) || other.reminderTime == _this.reminderTime)&&(identical(other.hasAvatar, _this.hasAvatar) || other.hasAvatar == _this.hasAvatar)&&(identical(other.heatmap, _this.heatmap) || other.heatmap == _this.heatmap)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt)&&(identical(other.isOwner, _this.isOwner) || other.isOwner == _this.isOwner));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as User;
-  return Object.hash(runtimeType,_this.id,_this.name,_this.email,_this.timezone,_this.reminderTime,_this.hasAvatar,_this.heatmap,_this.createdAt);
+  return Object.hash(runtimeType,_this.id,_this.name,_this.email,_this.timezone,_this.reminderTime,_this.hasAvatar,_this.heatmap,_this.createdAt,_this.isOwner);
 }
 
 @override
 String toString() {
   final _this = this as User;
-  return 'User(id: ${_this.id}, name: ${_this.name}, email: ${_this.email}, timezone: ${_this.timezone}, reminderTime: ${_this.reminderTime}, hasAvatar: ${_this.hasAvatar}, heatmap: ${_this.heatmap}, createdAt: ${_this.createdAt})';
+  return 'User(id: ${_this.id}, name: ${_this.name}, email: ${_this.email}, timezone: ${_this.timezone}, reminderTime: ${_this.reminderTime}, hasAvatar: ${_this.hasAvatar}, heatmap: ${_this.heatmap}, createdAt: ${_this.createdAt}, isOwner: ${_this.isOwner})';
 }
 
 
@@ -54,7 +55,7 @@ abstract mixin class $UserCopyWith<$Res>  {
   factory $UserCopyWith(User value, $Res Function(User) _then) = _$UserCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String email, String timezone, String reminderTime, bool hasAvatar, HeatmapSetting heatmap, DateTime createdAt
+ String id, String name, String email, String timezone, String reminderTime, bool hasAvatar, HeatmapSetting heatmap, DateTime createdAt, bool isOwner
 });
 
 
@@ -71,7 +72,7 @@ class _$UserCopyWithImpl<$Res>
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? email = null,Object? timezone = null,Object? reminderTime = null,Object? hasAvatar = null,Object? heatmap = null,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? email = null,Object? timezone = null,Object? reminderTime = null,Object? hasAvatar = null,Object? heatmap = null,Object? createdAt = null,Object? isOwner = null,}) {
   return _then(User(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -81,7 +82,8 @@ as String,reminderTime: null == reminderTime ? _self.reminderTime : reminderTime
 as String,hasAvatar: null == hasAvatar ? _self.hasAvatar : hasAvatar // ignore: cast_nullable_to_non_nullable
 as bool,heatmap: null == heatmap ? _self.heatmap : heatmap // ignore: cast_nullable_to_non_nullable
 as HeatmapSetting,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,isOwner: null == isOwner ? _self.isOwner : isOwner // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 /// Create a copy of User
@@ -175,10 +177,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String email,  String timezone,  String reminderTime,  bool hasAvatar,  HeatmapSetting heatmap,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String email,  String timezone,  String reminderTime,  bool hasAvatar,  HeatmapSetting heatmap,  DateTime createdAt,  bool isOwner)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
-return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTime,_that.hasAvatar,_that.heatmap,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTime,_that.hasAvatar,_that.heatmap,_that.createdAt,_that.isOwner);case _:
   return orElse();
 
 }
@@ -196,10 +198,10 @@ return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTim
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String email,  String timezone,  String reminderTime,  bool hasAvatar,  HeatmapSetting heatmap,  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String email,  String timezone,  String reminderTime,  bool hasAvatar,  HeatmapSetting heatmap,  DateTime createdAt,  bool isOwner)  $default,) {final _that = this;
 switch (_that) {
 case _User():
-return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTime,_that.hasAvatar,_that.heatmap,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTime,_that.hasAvatar,_that.heatmap,_that.createdAt,_that.isOwner);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -216,10 +218,10 @@ return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTim
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String email,  String timezone,  String reminderTime,  bool hasAvatar,  HeatmapSetting heatmap,  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String email,  String timezone,  String reminderTime,  bool hasAvatar,  HeatmapSetting heatmap,  DateTime createdAt,  bool isOwner)?  $default,) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
-return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTime,_that.hasAvatar,_that.heatmap,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTime,_that.hasAvatar,_that.heatmap,_that.createdAt,_that.isOwner);case _:
   return null;
 
 }
@@ -231,7 +233,7 @@ return $default(_that.id,_that.name,_that.email,_that.timezone,_that.reminderTim
 @JsonSerializable()
 
 class _User implements User {
-  const _User({required this.id, required this.name, required this.email, required this.timezone, required this.reminderTime, required this.hasAvatar, this.heatmap = const HeatmapSetting(), required this.createdAt});
+  const _User({required this.id, required this.name, required this.email, required this.timezone, required this.reminderTime, required this.hasAvatar, this.heatmap = const HeatmapSetting(), required this.createdAt, this.isOwner = false});
   factory _User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
 @override final  String id;
@@ -242,6 +244,8 @@ class _User implements User {
 @override final  bool hasAvatar;
 @override@JsonKey() final  HeatmapSetting heatmap;
 @override final  DateTime createdAt;
+/// Hanya dikirim `GET /me`: boleh membuat kode undangan (AUTH-07).
+@override@JsonKey() final  bool isOwner;
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
@@ -256,18 +260,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _User&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.timezone, timezone) || other.timezone == timezone)&&(identical(other.reminderTime, reminderTime) || other.reminderTime == reminderTime)&&(identical(other.hasAvatar, hasAvatar) || other.hasAvatar == hasAvatar)&&(identical(other.heatmap, heatmap) || other.heatmap == heatmap)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _User&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.timezone, timezone) || other.timezone == timezone)&&(identical(other.reminderTime, reminderTime) || other.reminderTime == reminderTime)&&(identical(other.hasAvatar, hasAvatar) || other.hasAvatar == hasAvatar)&&(identical(other.heatmap, heatmap) || other.heatmap == heatmap)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.isOwner, isOwner) || other.isOwner == isOwner));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,email,timezone,reminderTime,hasAvatar,heatmap,createdAt);
+    return Object.hash(runtimeType,id,name,email,timezone,reminderTime,hasAvatar,heatmap,createdAt,isOwner);
 }
 
 @override
 String toString() {
-    return 'User(id: $id, name: $name, email: $email, timezone: $timezone, reminderTime: $reminderTime, hasAvatar: $hasAvatar, heatmap: $heatmap, createdAt: $createdAt)';
+    return 'User(id: $id, name: $name, email: $email, timezone: $timezone, reminderTime: $reminderTime, hasAvatar: $hasAvatar, heatmap: $heatmap, createdAt: $createdAt, isOwner: $isOwner)';
 }
 
 
@@ -278,7 +282,7 @@ abstract mixin class _$UserCopyWith<$Res> implements $UserCopyWith<$Res> {
   factory _$UserCopyWith(_User value, $Res Function(_User) _then) = __$UserCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String email, String timezone, String reminderTime, bool hasAvatar, HeatmapSetting heatmap, DateTime createdAt
+ String id, String name, String email, String timezone, String reminderTime, bool hasAvatar, HeatmapSetting heatmap, DateTime createdAt, bool isOwner
 });
 
 
@@ -295,7 +299,7 @@ class __$UserCopyWithImpl<$Res>
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? email = null,Object? timezone = null,Object? reminderTime = null,Object? hasAvatar = null,Object? heatmap = null,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? email = null,Object? timezone = null,Object? reminderTime = null,Object? hasAvatar = null,Object? heatmap = null,Object? createdAt = null,Object? isOwner = null,}) {
   return _then(_User(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -305,7 +309,8 @@ as String,reminderTime: null == reminderTime ? _self.reminderTime : reminderTime
 as String,hasAvatar: null == hasAvatar ? _self.hasAvatar : hasAvatar // ignore: cast_nullable_to_non_nullable
 as bool,heatmap: null == heatmap ? _self.heatmap : heatmap // ignore: cast_nullable_to_non_nullable
 as HeatmapSetting,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,isOwner: null == isOwner ? _self.isOwner : isOwner // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

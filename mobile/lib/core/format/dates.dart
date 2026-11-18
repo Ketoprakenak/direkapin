@@ -9,8 +9,7 @@ String formatShortDate(DateTime date) =>
     DateFormat('d MMM', 'id_ID').format(date);
 
 /// `November 2026`
-String formatMonth(DateTime date) =>
-    DateFormat('MMMM y', 'id_ID').format(date);
+String formatMonth(DateTime date) => DateFormat('MMMM y', 'id_ID').format(date);
 
 /// `Rab`
 String formatWeekday(DateTime date) => DateFormat('E', 'id_ID').format(date);

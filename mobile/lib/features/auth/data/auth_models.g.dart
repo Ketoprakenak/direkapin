@@ -17,6 +17,7 @@ _User _$UserFromJson(Map<String, dynamic> json) => _User(
       ? const HeatmapSetting()
       : HeatmapSetting.fromJson(json['heatmap'] as Map<String, dynamic>),
   createdAt: DateTime.parse(json['createdAt'] as String),
+  isOwner: json['isOwner'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$UserToJson(_User instance) => <String, dynamic>{
@@ -28,6 +29,7 @@ Map<String, dynamic> _$UserToJson(_User instance) => <String, dynamic>{
   'hasAvatar': instance.hasAvatar,
   'heatmap': instance.heatmap,
   'createdAt': instance.createdAt.toIso8601String(),
+  'isOwner': instance.isOwner,
 };
 
 _HeatmapSetting _$HeatmapSettingFromJson(Map<String, dynamic> json) =>

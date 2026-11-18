@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/api/api_client.dart';
-import '../../../core/api/api_error.dart';
 import '../../../core/format/dates.dart';
 import '../../../core/router/router.dart';
 import '../../../core/theme/tokens.dart';
@@ -100,7 +98,6 @@ class _DayBody extends StatelessWidget {
                   Expanded(child: _Total('Keluar', -day.expense)),
                 ],
               ),
-              _MoodPicker(date: day.date, mood: day.note?.mood),
             ],
           ),
         ),
@@ -123,83 +120,6 @@ class _DayBody extends StatelessWidget {
             for (final transfer in day.transfers) TransferTile(transfer),
           ]),
       ],
-    );
-  }
-}
-
-/// Mood harian (ACT-05). Tap mood yang sama untuk menghapusnya.
-class _MoodPicker extends ConsumerStatefulWidget {
-  const _MoodPicker({required this.date, required this.mood});
-
-  static const moods = ['😄', '🙂', '😐', '😕', '😢'];
-
-  final String date;
-  final String? mood;
-
-  @override
-  ConsumerState<_MoodPicker> createState() => _MoodPickerState();
-}
-
-class _MoodPickerState extends ConsumerState<_MoodPicker> {
-  late String? _mood = widget.mood;
-  bool _saving = false;
-
-  @override
-  void didUpdateWidget(_MoodPicker old) {
-    super.didUpdateWidget(old);
-    if (old.mood != widget.mood) _mood = widget.mood;
-  }
-
-  Future<void> _select(String mood) async {
-    final previous = _mood;
-    final next = mood == previous ? null : mood;
-    setState(() {
-      _mood = next;
-      _saving = true;
-    });
-    try {
-      await saveMood(ref.read(apiClientProvider), widget.date, next);
-      ref.invalidate(dayDetailProvider(widget.date));
-      ref.invalidate(calendarMonthProvider);
-    } on ApiException catch (e) {
-      if (!mounted) return;
-      setState(() => _mood = previous);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.message)));
-    } finally {
-      if (mounted) setState(() => _saving = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(top: Spacing.md),
-      // Label di atas, 5 chip dibagi rata satu baris: label + chip sebaris
-      // melebihi lebar HP kecil dan chip terakhir turun ke bawah.
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Mood', style: theme.textTheme.titleMedium),
-          const SizedBox(height: Spacing.sm),
-          Row(
-            children: [
-              for (final mood in _MoodPicker.moods)
-                Expanded(
-                  child: Center(
-                    child: ChoiceChip(
-                      label: Text(mood),
-                      selected: _mood == mood,
-                      showCheckmark: false,
-                      onSelected: _saving ? null : (_) => _select(mood),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }

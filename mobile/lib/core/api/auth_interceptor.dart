@@ -56,7 +56,8 @@ class AuthInterceptor extends QueuedInterceptor {
   Future<String?> _validAccessToken(RequestOptions failed) async {
     final current = await _tokens.readAccessToken();
     // Request lain di antrean sudah me-refresh saat request ini menunggu.
-    if (current != null && failed.headers['Authorization'] != 'Bearer $current') {
+    if (current != null &&
+        failed.headers['Authorization'] != 'Bearer $current') {
       return current;
     }
 

@@ -7,6 +7,7 @@ import '../../../core/router/router.dart';
 import '../providers/auth_providers.dart';
 import 'validators.dart';
 import 'widgets/auth_form.dart';
+import 'widgets/password_field.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -48,10 +49,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           textInputAction: TextInputAction.next,
           validator: validateEmail,
         ),
-        TextFormField(
+        PasswordField(
           controller: _password,
-          decoration: const InputDecoration(labelText: 'Password'),
-          obscureText: true,
+          label: 'Password',
           autofillHints: const [AutofillHints.password],
           validator: validateLoginPassword,
         ),

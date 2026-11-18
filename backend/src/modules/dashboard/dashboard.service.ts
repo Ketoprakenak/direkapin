@@ -71,12 +71,13 @@ export async function getDashboard(prisma: PrismaClient, userId: string, now = n
   const timezone = await getTimezone(prisma, userId);
   const today = localDate(now, timezone);
 
-  const [wallets, savings, piutang, utang, monthTotals, last7Days, days, activities] =
+  const [wallets, savings, piutang, utang, talangan, monthTotals, last7Days, days, activities] =
     await Promise.all([
       listWallets(prisma, userId, false),
       listSavings(prisma, userId),
       receivableRemaining(prisma, userId, 'RECEIVABLE'),
       receivableRemaining(prisma, userId, 'PAYABLE'),
+      receivableRemaining(prisma, userId, 'PAYABLE', true),
       prisma.transaction.groupBy({
         by: ['type'],
         where: { userId, occurredAt: monthRange(today, timezone) },
@@ -97,13 +98,15 @@ export async function getDashboard(prisma: PrismaClient, userId: string, now = n
   const expense = monthTotal('EXPENSE');
 
   return {
-    // Saldo total = bisa digunakan + semua tabungan (FIN-18).
+    // Saldo total = isi dompet + semua tabungan (FIN-18); talangan baru mengurangi saat dibayar.
     totalBalance: savings.reduce((sum, s) => sum + s.balance, wallets.totalBalance),
-    availableBalance: wallets.totalBalance,
+    // Bisa digunakan = isi dompet − sisa utang ditalangin (D-81); boleh negatif.
+    availableBalance: wallets.totalBalance - talangan,
     wallets: wallets.items,
     savings,
     receivableRemaining: piutang,
     payableRemaining: utang,
+    frontedPayableRemaining: talangan,
     month: { income, expense, net: income - expense },
     today: {
       date: today,

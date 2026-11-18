@@ -148,19 +148,24 @@ export async function listReceivables(
   };
 }
 
-/** Sisa semua piutang/utang untuk dashboard (D-77, D-78): Σ nominal orang − Σ pembayaran. */
+/**
+ * Sisa semua piutang/utang untuk dashboard (D-77, D-78): Σ nominal orang − Σ pembayaran.
+ * [frontedOnly]: hanya utang ditalangin (tanpa transaksi pinjaman), D-81.
+ */
 export async function receivableRemaining(
   prisma: PrismaClient,
   userId: string,
   direction: Direction,
+  frontedOnly = false,
 ) {
+  const receivable = { direction, ...(frontedOnly && { loanTransactionId: null }) };
   const [owed, paid] = await Promise.all([
     prisma.receivableDebtor.aggregate({
-      where: { receivable: { userId, direction } },
+      where: { receivable: { userId, ...receivable } },
       _sum: { amount: true },
     }),
     prisma.transaction.aggregate({
-      where: { userId, receivablePayment: { debtor: { receivable: { direction } } } },
+      where: { userId, receivablePayment: { debtor: { receivable } } },
       _sum: { amount: true },
     }),
   ]);

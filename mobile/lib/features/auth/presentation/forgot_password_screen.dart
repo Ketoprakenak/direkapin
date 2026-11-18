@@ -6,6 +6,7 @@ import '../../../core/router/router.dart';
 import '../providers/auth_providers.dart';
 import 'validators.dart';
 import 'widgets/auth_form.dart';
+import 'widgets/password_field.dart';
 
 /// Lupa password (AUTH-06, D-75): email → kode 6 angka + password baru.
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
@@ -96,16 +97,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               ? null
               : 'Kode harus 6 angka',
         ),
-        TextFormField(
+        PasswordField(
           controller: _password,
-          decoration: const InputDecoration(labelText: 'Password baru'),
-          obscureText: true,
+          label: 'Password baru',
           autofillHints: const [AutofillHints.newPassword],
           validator: validateNewPassword,
         ),
-        TextFormField(
-          decoration: const InputDecoration(labelText: 'Ulangi password baru'),
-          obscureText: true,
+        PasswordField(
+          label: 'Ulangi password baru',
           validator: (value) =>
               value == _password.text ? null : 'Password tidak sama',
         ),

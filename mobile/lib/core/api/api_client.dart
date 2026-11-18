@@ -21,7 +21,8 @@ Dio apiClient(Ref ref) {
       AuthInterceptor(
         ref.watch(tokenStorageProvider),
         refreshClient: Dio(options),
-        onSessionExpired: () => ref.read(sessionProvider.notifier).markLoggedOut(),
+        onSessionExpired: () =>
+            ref.read(sessionProvider.notifier).markLoggedOut(),
       ),
     );
 }

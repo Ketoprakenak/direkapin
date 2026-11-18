@@ -96,19 +96,12 @@ void main() {
       CalendarDay? data, {
       bool isToday = false,
       String themeId = 'teal',
-      bool showMood = true,
       int? heat,
     }) => tester.pumpWidget(
       MaterialApp(
         theme: buildTheme(themeById(themeId)),
         home: Scaffold(
-          body: CalendarCell(
-            day: 10,
-            isToday: isToday,
-            data: data,
-            showMood: showMood,
-            heat: heat,
-          ),
+          body: CalendarCell(day: 10, isToday: isToday, data: data, heat: heat),
         ),
       ),
     );
@@ -149,7 +142,7 @@ void main() {
       expect(heatLevel(1000, 1000), 3);
     });
 
-    testWidgets('mode Pengeluaran: sel berwarna heatmap, mood disembunyikan', (
+    testWidgets('heatmap mewarnai seluruh sel, tanggal tanpa warna mood', (
       tester,
     ) async {
       await pumpCell(
@@ -160,9 +153,7 @@ void main() {
           expense: 25000,
           activityCount: 0,
           hasImportant: false,
-          mood: '😢',
         ),
-        showMood: false,
         heat: 3,
       );
       final colors = themeById('teal').colors;
@@ -212,37 +203,6 @@ void main() {
       );
       expect(icons(), findsOneWidget);
       expect(find.byIcon(Icons.star_rounded), findsNothing);
-    });
-
-    testWidgets('mood mewarnai latar tanggal, tanpa emoji (D-61)', (
-      tester,
-    ) async {
-      await pumpCell(
-        tester,
-        const CalendarDay(
-          date: '2026-11-10',
-          income: 0,
-          expense: 0,
-          activityCount: 0,
-          hasImportant: false,
-          mood: '😢',
-        ),
-      );
-      expect(find.text('😢'), findsNothing);
-      expect(icons(), findsNothing);
-      expect(
-        dateTint(),
-        themeById('teal').colors.moodTints['😢']!.withValues(alpha: 0.35),
-      );
-      final box = tester.widget<Container>(
-        find
-            .ancestor(of: find.text('10'), matching: find.byType(Container))
-            .first,
-      );
-      expect(
-        (box.decoration! as BoxDecoration).borderRadius,
-        BorderRadius.circular(themeById('teal').style.dateRadius),
-      );
     });
 
     const both = CalendarDay(
@@ -337,7 +297,7 @@ void main() {
       expect(find.text(formatLongDate(now)), findsOneWidget);
     });
 
-    testWidgets('toggle Pengeluaran/Mood mengganti warna sel (CAL-06)', (
+    testWidgets('kalender selalu heatmap, tanpa tab Mood (CAL-06, D-84)', (
       tester,
     ) async {
       final now = DateTime.now();
@@ -351,7 +311,6 @@ void main() {
               'expense': 25000,
               'activityCount': 0,
               'hasImportant': false,
-              'mood': '😄',
             },
           ],
         },
@@ -366,23 +325,11 @@ void main() {
             (w.decoration! as BoxDecoration).color == c,
       );
 
-      // Bawaan Pengeluaran: hari satu-satunya = paling boros; legenda Hemat-Boros.
+      // Hari satu-satunya = paling boros; legenda Hemat-Boros.
       expect(find.text('Boros'), findsOneWidget);
       expect(colored(colors.heatmap[3]), findsNWidgets(2));
-      expect(
-        colored(colors.moodTints['😄']!.withValues(alpha: 0.35)),
-        findsNothing,
-      );
-
-      await tester.tap(find.text('Mood'));
-      await tester.pumpAndSettle();
-      expect(find.text('Boros'), findsNothing);
-      expect(colored(colors.heatmap[3]), findsNothing);
-      // Bulatan tanggal + kotak legenda.
-      expect(
-        colored(colors.moodTints['😄']!.withValues(alpha: 0.35)),
-        findsNWidgets(2),
-      );
+      expect(find.text('Mood'), findsNothing);
+      expect(find.text('Pengeluaran'), findsNothing);
     });
 
     testWidgets('bulan kosong menampilkan ajakan', (tester) async {
@@ -421,21 +368,11 @@ void main() {
           pathParameters: {'date': '2026-11-04'},
         );
 
-    testWidgets('mood: pilih tersimpan, tap lagi menghapus (ACT-05)', (
-      tester,
-    ) async {
-      final server = FakeServer(commonResponses(dayJson()));
-      await pumpDay(tester, server);
-
-      await tester.tap(find.text('😄'));
-      await tester.pumpAndSettle();
-      expect(server.writes.last.method, 'PUT');
-      expect(server.writes.last.path, '/days/2026-11-04/note');
-      expect(server.writes.last.body, {'mood': '😄'});
-
-      await tester.tap(find.text('😄'));
-      await tester.pumpAndSettle();
-      expect(server.writes.last.body, {'mood': null});
+    testWidgets('tanpa pilihan mood (D-84)', (tester) async {
+      await pumpDay(tester, FakeServer(commonResponses(dayJson())));
+      expect(find.text('Mood'), findsNothing);
+      expect(find.text('😄'), findsNothing);
+      expect(find.byType(ChoiceChip), findsNothing);
     });
 
     testWidgets('kosong menampilkan ajakan', (tester) async {

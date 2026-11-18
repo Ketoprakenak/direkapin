@@ -6,6 +6,7 @@ import type { z } from 'zod';
 import { AppError } from '../../lib/app-error.js';
 import { toNumber } from '../../lib/money.js';
 import { readUpload, removeUploads, writeUpload } from '../../lib/storage.js';
+import { isOwner } from '../invites/invites.service.js';
 import type { updateMeBody, userResponse } from './me.schemas.js';
 
 const AVATAR_PX = 512;
@@ -25,10 +26,10 @@ export function toUserResponse(user: User): z.infer<typeof userResponse> {
   };
 }
 
-export async function getMe(prisma: PrismaClient, userId: string) {
+export async function getMe(prisma: PrismaClient, userId: string, ownerEmail?: string) {
   const user = await prisma.user.findFirst({ where: { id: userId } });
   if (!user) throw new AppError('NOT_FOUND', 404, 'Data tidak ditemukan');
-  return toUserResponse(user);
+  return { ...toUserResponse(user), isOwner: isOwner(user.email, ownerEmail) };
 }
 
 export async function getTimezone(prisma: PrismaClient, userId: string) {

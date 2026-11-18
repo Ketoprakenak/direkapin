@@ -40,7 +40,10 @@ void main() {
       DioException(requestOptions: RequestOptions(path: '/x')),
     );
     expect(error.code, ApiException.networkError);
-    expect(error.message, 'Server lagi nggak bisa dihubungi. Coba lagi sebentar.');
+    expect(
+      error.message,
+      'Server lagi nggak bisa dihubungi. Coba lagi sebentar.',
+    );
   });
 
   test('respons di luar kontrak tidak menampilkan isinya', () {

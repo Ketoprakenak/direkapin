@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ukuran tetap 2×2 (D-85): satu tata letak, foto dipotong persegi di app.
+     updatePeriodMillis 30 menit: Kotlin memeriksa ulang tanggal supaya angka kemarin tidak tampil sebagai hari ini. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="110dp"
+    android:minHeight="110dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:resizeMode="none"
+    android:widgetCategory="home_screen"
+    android:initialLayout="@layout/today_widget"
+    android:previewLayout="@layout/today_widget"
+    android:description="@string/today_widget_description"
+    android:updatePeriodMillis="1800000" />

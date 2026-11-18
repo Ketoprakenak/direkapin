@@ -19,23 +19,20 @@ int? heatLevel(int expense, int max) {
   return (expense / max * 4).ceil().clamp(1, 4) - 1;
 }
 
-/// Sel kalender: angka tanggal berlatar warna mood, ikon masuk/keluar/kegiatan,
-/// dan total keluar ringkas (D-61). Mode Pengeluaran: [heat] mewarnai seluruh sel
-/// dan mood disembunyikan ([showMood] false), supaya warna tidak bertabrakan.
+/// Sel kalender: angka tanggal, ikon masuk/keluar/kegiatan, dan total keluar
+/// ringkas (D-61). [heat] mewarnai seluruh sel (heatmap pengeluaran, CAL-06).
 class CalendarCell extends StatelessWidget {
   const CalendarCell({
     super.key,
     required this.day,
     required this.isToday,
     this.data,
-    this.showMood = true,
     this.heat,
   });
 
   final int day;
   final bool isToday;
   final CalendarDay? data;
-  final bool showMood;
   final int? heat;
 
   @override
@@ -45,7 +42,6 @@ class CalendarCell extends StatelessWidget {
     final style = AppStyle.of(context);
     final data = this.data;
     final labelSmall = theme.textTheme.labelSmall;
-    final tint = showMood ? colors.moodTints[data?.mood] : null;
     final heat = this.heat;
     Widget icon(IconData icon, Color color) =>
         Icon(icon, size: Spacing.md, color: color);
@@ -80,15 +76,12 @@ class CalendarCell extends StatelessWidget {
             width: Spacing.xl,
             height: Spacing.xl,
             alignment: Alignment.center,
-            decoration: tint == null && !isToday
-                ? null
-                : BoxDecoration(
+            decoration: isToday
+                ? BoxDecoration(
                     borderRadius: BorderRadius.circular(style.dateRadius),
-                    color: tint?.withValues(alpha: 0.35),
-                    border: isToday
-                        ? Border.all(color: AppColors.of(context).ink)
-                        : null,
-                  ),
+                    border: Border.all(color: AppColors.of(context).ink),
+                  )
+                : null,
             child: Text('$day', style: labelSmall),
           ),
           const SizedBox(height: Spacing.xs),

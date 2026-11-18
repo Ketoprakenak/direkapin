@@ -374,6 +374,31 @@ describe('payables (utang, FIN-20)', () => {
     expect(dashboard.receivableRemaining).toBe(130_000);
     expect(dashboard.payableRemaining).toBe(50_000);
     expect(dashboard.totalBalance).toBe(120_000);
+    // Talangan 50.000 langsung memotong Bisa digunakan (D-81).
+    expect(dashboard.availableBalance).toBe(70_000);
+  });
+
+  it('talangan memotong Bisa digunakan; Saldo total baru turun saat bayar (D-81)', async () => {
+    const ctx = await setup();
+    const dash = async () => {
+      const d = (await ctx.call('GET', '/dashboard')).json();
+      return [d.totalBalance, d.availableBalance, d.frontedPayableRemaining];
+    };
+    const rina = (await utang(ctx)).json().debtors[0].id as string;
+    expect(await dash()).toEqual([100_000, 50_000, 50_000]);
+
+    await ctx.pay(rina, 20_000, { categoryId: await categoryId(ctx, 'EXPENSE') });
+    expect(await dash()).toEqual([80_000, 50_000, 30_000]);
+
+    const loan = (await utang(ctx, { loanWalletId: ctx.bca }, 1_000_000)).json();
+    expect(await dash()).toEqual([1_080_000, 1_050_000, 30_000]);
+
+    await utang(ctx, {}, 2_000_000);
+    expect(await dash()).toEqual([1_080_000, -950_000, 2_030_000]);
+
+    // Transaksi pinjaman dihapus: uangnya tidak ada lagi, jadi dihitung seperti talangan.
+    await ctx.call('DELETE', `/transactions/${loan.loan.transactionId}`);
+    expect(await dash()).toEqual([80_000, -2_950_000, 3_030_000]);
   });
 });
 

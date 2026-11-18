@@ -7,7 +7,7 @@ Dilarang menulis warna hex, ukuran font, atau spacing langsung di widget.
 
 **Hangat, rapi, dan cepat.** Seperti buku catatan pribadi yang enak dibuka setiap malam, bukan aplikasi bank.
 - Angka uang adalah pusat perhatian: besar, tegas, mudah dipindai.
-- Kalender terasa hidup: ikon, bintang, dan warna mood membuat bulan yang rajin dicatat terlihat "penuh".
+- Kalender terasa hidup: ikon, bintang, dan heatmap pengeluaran membuat bulan yang rajin dicatat terlihat "penuh".
 - Sedikit dekorasi, banyak ruang. Tidak ada gradient, glassmorphism, atau bayangan tebal.
 
 ## Warna
@@ -43,7 +43,7 @@ Dilarang menulis warna hex, ukuran font, atau spacing langsung di widget.
 
 Heatmap pengeluaran kalender (CAL-06, D-68), 4 tingkat hemat ke boros, teks `onSurface`: Teal `#D5F5EE` `#FCE7A8` `#F9B98A` `#EF8A7E` · Kuning `#FBF0C4` `#F5D98A` `#EDB47A` `#DD8F6E` · Biru langit `#E3EEF8` `#BCD5EE` `#93B7E0` `#6D97CF` · Lavender `#EEE8F7` `#D9CBEE` `#C3ADE3` `#A98CD5` · Peach `#FDECE6` `#F9D2C2` `#F4B39D` `#EB907A` · Mint `#E3F3EE` `#BFE5D7` `#96D3BE` `#6FBFA5` · Gelap `#1F2B2A` `#3A2A1A` `#552A22` `#7A2E2A`.
 
-Tint mood sama di semua tema pastel: 😄 `#7BC79A` · 🙂 `#6FC1B5` · 😐 `#BDB7AE` · 😕 `#E8B96A` · 😢 `#8DB0E0`. Radius tanggal 12 = bulat. Warna kategori dan dompet tidak ikut tema.
+Radius tanggal 12 = bulat. Warna kategori dan dompet tidak ikut tema.
 
 Aturan:
 - Warna masuk/keluar tema **hanya** untuk arah uang (masuk/keluar). Jangan dipakai untuk status lain.
@@ -124,7 +124,7 @@ Nilai `icon` di database = nama ikon tanpa `Icons.` (contoh `restaurant_rounded`
 | Kartu dompet | Lebar 140, scroll horizontal, ikon dalam lingkaran warna dompet 15% opacity, nama + saldo |
 | List item transaksi | Tinggi 64; kiri ikon kategori (lingkaran 40, warna kategori 15%), tengah nama kategori + catatan/dompet (`bodyMedium` secondary), kanan nominal `amount` (+hijau / −merah) dan thumbnail 32 jika ada foto |
 | List item kegiatan | Garis kiri 3 px warna `activity`; judul, jam (atau "Seharian"); bintang `important` jika penting |
-| Sel kalender | Angka tanggal `labelSmall`; latar lingkaran tanggal diwarnai sesuai mood (`moodTints`, transparan 35%) (D-61); di bawahnya ikon 12 px: ↙ `income` (pemasukan), ↗ `expense` (pengeluaran), kalender `activity` (kegiatan) atau bintang `important` jika ada kegiatan penting; total keluar ringkas di bawahnya; hari ini = lingkaran outline `ink`. Tab **Pengeluaran** (bawaan): seluruh sel berlatar `heatmap` sesuai tingkat, tint mood disembunyikan, total keluar memakai `onSurface`; tab **Mood**: tint mood seperti di atas. Tingkat heatmap mengikuti Profil > Skala heatmap (D-71): Otomatis relatif ke hari paling boros bulan itu, Nominal tetap dari 3 batas user. Ikon info `InfoBubble` (`info_outline_rounded`, `textSecondary`) membuka balon `inverseSurface` maks. 1–2 kalimat yang hilang saat tap di luar. Legenda di bawah grid (Hemat ▢▢▢▢ Boros, atau 5 mood). Penanda masuk/keluar mengikuti gaya tema: ikon (Teal, Peach, Gelap), titik kecil (Kuning, Lavender), atau batang kecil (Biru langit, Mint); kegiatan tetap ikon |
+| Sel kalender | Angka tanggal `labelSmall`; hari ini diberi garis tinta; di bawahnya ikon 12 px: ↙ `income` (pemasukan), ↗ `expense` (pengeluaran), kalender `activity` (kegiatan) atau bintang `important` jika ada kegiatan penting; total keluar ringkas di bawahnya; hari ini = lingkaran outline `ink`. Tab **Pengeluaran** (bawaan): seluruh sel berlatar `heatmap` sesuai tingkat, tint mood disembunyikan, total keluar memakai `onSurface`; tab **Mood**: tint mood seperti di atas. Tingkat heatmap mengikuti Profil > Skala heatmap (D-71): Otomatis relatif ke hari paling boros bulan itu, Nominal tetap dari 3 batas user. Ikon info `InfoBubble` (`info_outline_rounded`, `textSecondary`) membuka balon `inverseSurface` maks. 1–2 kalimat yang hilang saat tap di luar. Legenda di bawah grid (Hemat ▢▢▢▢ Boros, atau 5 mood). Penanda masuk/keluar mengikuti gaya tema: ikon (Teal, Peach, Gelap), titik kecil (Kuning, Lavender), atau batang kecil (Biru langit, Mint); kegiatan tetap ikon |
 | Input nominal | Rata kanan, `displayAmount`, awalan "Rp", keyboard angka, pemisah ribuan otomatis saat mengetik |
 | Pemilih kategori | Grid 4 kolom ikon + label `labelSmall`, terpilih = border `ink` 2 px |
 | Toggle tipe | Segmented: Keluar · Masuk · Transfer (Keluar default) |
@@ -149,7 +149,7 @@ Nilai `icon` di database = nama ikon tanpa `Icons.` (contoh `restaurant_rounded`
 
 - Bahasa Indonesia santai-sopan, sapa user dengan **"kamu"**.
 - Kalimat pendek dan aktif. Tombol pakai kata kerja: "Simpan", "Tambah transaksi", "Download arsip".
-- Tanpa emoji di teks UI (kecuali pilihan mood).
+- Tanpa emoji di teks UI.
 
 Contoh:
 | Situasi | Teks |
@@ -183,4 +183,5 @@ Contoh:
 - Layar dalam (detail, form, foto) masuk dari kanan. Splash, login, dan Beranda juga bergeser masuk.
 - Reduce-motion di HP mematikan semua animasi geser.
 - Hanya animasikan yang memberi arti: angka saldo berubah, titik kalender muncul, sheet naik.
+- Widget layar utama "Hari ini" (D-83): bingkai 2 dp tinta tema, sudut 16 dp, warna tema aktif. Latar = maskot tema pose `wave` (badan miring, tangan kanan melambai; utuh setinggi widget di kanan bawah, di belakang tombol +) atau foto dari galeri; saturasi 35% + lapisan `surface` 55%, teks dan tombol + warna penuh. Ukuran tetap 2×2 (D-85): "HARI INI" + tombol + di atas, label Keluar/Masuk dengan nominal di bawah; maskot di kanan bawah di bawah baris tombol. Foto diatur di layar "Atur foto widget": bingkai persegi, bawaan foto utuh dengan sisa ruang berisi foto yang sama diblur, zoom in mentok saat potongan tinggal 360 px asli.
 - Maskot ngintip: maskot 32 dp (`Spacing.xxl`, pose `peek`) melongok dari tepi atas tab bawah yang aktif; berpindah mengikuti tab selama 250 ms (`easeOutCubic`). Dekoratif: dibungkus `IgnorePointer` dan `ExcludeSemantics`, jadi tap tembus dan tidak dibaca screen reader. Reduce-motion: pindah instan.

@@ -56,28 +56,29 @@ class _CategoryList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final provider = categoriesProvider(type: type, includeHidden: true);
-    return ref.watch(provider).when(
-      loading: () => const ListSkeleton(),
-      error: (error, _) => ErrorState(
-        error: error,
-        onRetry: () => ref.invalidate(provider),
-      ),
-      data: (items) => ListView.builder(
-        padding: const EdgeInsets.only(bottom: Spacing.xxl * 2),
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          final category = items[index];
-          return ListTile(
-            leading: IconCircle(icon: category.icon, color: category.color),
-            title: Text(category.name),
-            subtitle: category.isHidden
-                ? const Text('Disembunyikan')
-                : (category.isDefault ? const Text('Bawaan') : null),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => showCategorySheet(context, type: type, category: category),
-          );
-        },
-      ),
-    );
+    return ref
+        .watch(provider)
+        .when(
+          loading: () => const ListSkeleton(),
+          error: (error, _) =>
+              ErrorState(error: error, onRetry: () => ref.invalidate(provider)),
+          data: (items) => ListView.builder(
+            padding: const EdgeInsets.only(bottom: Spacing.xxl * 2),
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              final category = items[index];
+              return ListTile(
+                leading: IconCircle(icon: category.icon, color: category.color),
+                title: Text(category.name),
+                subtitle: category.isHidden
+                    ? const Text('Disembunyikan')
+                    : (category.isDefault ? const Text('Bawaan') : null),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () =>
+                    showCategorySheet(context, type: type, category: category),
+              );
+            },
+          ),
+        );
   }
 }
