@@ -5,6 +5,13 @@
  */
 export const releaseNotes: { version: string; items: string[] }[] = [
   {
+    version: '1.5.1',
+    items: [
+      'Catat piutang dari menu = pinjamkan uang: pilih dompet, saldonya langsung berkurang',
+      'Ubah nominal utang/piutang tunai ikut mengubah transaksi pinjamannya',
+    ],
+  },
+  {
     version: '1.5.0',
     items: [
       'Widget "Hari ini" di layar utama: pengeluaran dan pemasukan hari ini, tombol + langsung Catat',
