@@ -153,13 +153,13 @@ describe('receivables', () => {
     expect(ok.json().debtors[0]).toMatchObject({ name: 'Budi S', remaining: 0 });
   });
 
-  it('hapus talangan: pemasukan yang sudah diterima tetap ada', async () => {
+  it('hapus talangan = batal total: pemasukan cicilannya ikut terhapus (D-87)', async () => {
     const ctx = await setup();
     const created = (await ctx.create()).json();
     await ctx.pay(created.debtors[0].id, 20_000);
     expect((await ctx.call('DELETE', `/receivables/${created.id}`)).statusCode).toBe(204);
-    expect(await ctx.balance()).toBe(120_000);
-    expect((await ctx.call('GET', '/transactions')).json().items).toHaveLength(1);
+    expect(await ctx.balance()).toBe(100_000);
+    expect((await ctx.call('GET', '/transactions')).json().items).toHaveLength(0);
     expect((await ctx.call('GET', '/dashboard')).json().receivableRemaining).toBe(0);
   });
 
@@ -277,12 +277,12 @@ describe('payables (utang, FIN-20)', () => {
     expect(await ctx.balance()).toBe(200_000);
   });
 
-  it('hapus utang tunai: pinjaman tetap; hapus transaksi pinjaman: loan null', async () => {
+  it('hapus utang tunai: pinjaman ikut terhapus; hapus transaksi pinjaman: loan null', async () => {
     const ctx = await setup();
     const a = (await utang(ctx, { loanWalletId: ctx.bca })).json();
     expect((await ctx.call('DELETE', `/receivables/${a.id}`)).statusCode).toBe(204);
-    expect(await ctx.balance()).toBe(150_000);
-    expect(await transactions(ctx)).toHaveLength(1);
+    expect(await ctx.balance()).toBe(100_000);
+    expect(await transactions(ctx)).toHaveLength(0);
 
     const b = (await utang(ctx, { loanWalletId: ctx.bca })).json();
     const del = await ctx.call('DELETE', `/transactions/${b.loan.transactionId}`);
@@ -426,6 +426,16 @@ describe('pinjamkan uang (D-86)', () => {
     expect(await ctx.balance()).toBe(80_000);
   });
 
+  it('hapus piutang setelah dicicil: pinjaman + cicilan terhapus, saldo balik (D-87)', async () => {
+    const ctx = await setup();
+    const created = (await lend(ctx)).json();
+    await ctx.pay(created.debtors[0].id, 10_000);
+    expect(await ctx.balance()).toBe(60_000);
+    expect((await ctx.call('DELETE', `/receivables/${created.id}`)).statusCode).toBe(204);
+    expect(await ctx.balance()).toBe(100_000);
+    expect((await ctx.call('GET', '/transactions')).json().items).toHaveLength(0);
+  });
+
   it('transaksi pinjaman jatuh di tanggal catatan (WIB), bukan hari ini', async () => {
     const ctx = await setup();
     await lend(ctx, { date: '2026-11-10' });
@@ -508,6 +518,17 @@ describe('bagi pengeluaran (FIN-21)', () => {
       debtors: amounts.map((amount, i) => ({ name: `T${i}`, amount })),
       ...extra,
     });
+
+  it('hapus bagi: pengeluaran asal tetap, cicilannya terhapus', async () => {
+    const ctx = await setup();
+    const id = await expense(ctx);
+    const created = (await split(ctx, id, [50_000])).json();
+    await ctx.pay(created.debtors[0].id, 20_000);
+    expect((await ctx.call('DELETE', `/receivables/${created.id}`)).statusCode).toBe(204);
+    const items = (await ctx.call('GET', '/transactions')).json().items;
+    expect(items.map((t: { id: string }) => t.id)).toEqual([id]);
+    expect(await ctx.balance()).toBe(-100_000);
+  });
 
   it('bagi: piutang tertaut, transaksi tahu piutangnya', async () => {
     const ctx = await setup();

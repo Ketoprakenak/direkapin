@@ -626,7 +626,7 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
     delete:
       tags: [receivables]
-      summary: Hapus talangan/utang; transaksi pembayaran dan pinjaman tetap ada
+      summary: Hapus talangan/utang = batal total; transaksi pinjaman dan cicilannya ikut terhapus, pengeluaran asal bagi tetap (D-87)
       responses:
         '204': { description: Terhapus }
         '404': { $ref: '#/components/responses/NotFound' }

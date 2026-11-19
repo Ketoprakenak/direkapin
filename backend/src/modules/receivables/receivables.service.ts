@@ -1,9 +1,12 @@
 import type { Prisma, PrismaClient } from '@prisma/client';
+import type { FastifyBaseLogger } from 'fastify';
 import type { z } from 'zod';
 import { AppError } from '../../lib/app-error.js';
 import { localDate, startOfDay, toDbDate } from '../../lib/dates.js';
 import { formatRupiah, toBigInt, toNumber } from '../../lib/money.js';
 import { isUniqueViolation } from '../../lib/schemas.js';
+import { removeUploads } from '../../lib/storage.js';
+import { attachmentFiles } from '../attachments/attachments.service.js';
 import { assertCategory } from '../categories/categories.service.js';
 import { getTimezone } from '../me/me.service.js';
 import { assertActiveWallet } from '../wallets/wallets.service.js';
@@ -303,10 +306,29 @@ export async function updateReceivable(
   return toReceivableResponse(row);
 }
 
-/** Pembayaran (transaksi pemasukan) tetap ada; hanya talangan dan tautannya yang hilang. */
-export async function deleteReceivable(prisma: PrismaClient, userId: string, id: string) {
-  await findOwned(prisma, userId, id);
-  await prisma.receivable.delete({ where: { id } });
+/** Hapus = batal total (D-87): transaksi pinjaman + cicilan ikut terhapus; pengeluaran asal bagi tetap. */
+export async function deleteReceivable(
+  prisma: PrismaClient,
+  userId: string,
+  id: string,
+  uploadDir: string,
+  log: FastifyBaseLogger,
+) {
+  const row = await findOwned(prisma, userId, id);
+  const transactionIds = [
+    ...(row.loanTransaction ? [row.loanTransaction.id] : []),
+    ...row.debtors.flatMap((d) => d.payments.map((p) => p.transactionId)),
+  ];
+  const attachments = await prisma.$transaction(async (tx) => {
+    const files = await tx.attachment.findMany({
+      where: { userId, transactionId: { in: transactionIds } },
+      select: { filePath: true, thumbPath: true },
+    });
+    await tx.receivable.delete({ where: { id } });
+    await tx.transaction.deleteMany({ where: { userId, id: { in: transactionIds } } });
+    return files;
+  });
+  await removeUploads(uploadDir, attachments.flatMap(attachmentFiles), log);
 }
 
 export async function updateDebtor(

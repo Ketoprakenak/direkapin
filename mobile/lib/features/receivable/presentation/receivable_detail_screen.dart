@@ -42,10 +42,10 @@ class ReceivableDetailScreen extends ConsumerWidget {
     final confirmed = await confirmDialog(
       context,
       message: r.direction.isPayable
-          ? 'Hapus utang ${r.title}? Pinjaman dan cicilan yang sudah '
-                'tercatat tetap ada di dompet.'
-          : 'Hapus piutang ${r.title}? Pembayaran yang sudah diterima tetap '
-                'tercatat di dompet.',
+          ? 'Hapus utang ${r.title}? Pinjaman dan cicilannya ikut terhapus '
+                'dari dompet.'
+          : 'Hapus piutang ${r.title}? Pinjaman dan pembayaran yang sudah '
+                'diterima ikut terhapus dari dompet.',
       confirmLabel: 'Hapus',
     );
     if (!confirmed || !context.mounted) return;

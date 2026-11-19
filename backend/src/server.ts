@@ -60,7 +60,7 @@ export function buildApp(config: Config, deps: { sendMail?: SendMail } = {}) {
       meRoutes(api, config);
       walletRoutes(api);
       savingsRoutes(api);
-      receivableRoutes(api);
+      receivableRoutes(api, config);
       inviteRoutes(api, config);
       transferRoutes(api);
       categoryRoutes(api);

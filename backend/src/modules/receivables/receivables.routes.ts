@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
+import type { Config } from '../../config.js';
 import { idParams } from '../../lib/schemas.js';
 import {
   createReceivableBody,
@@ -20,7 +21,7 @@ import {
   updateReceivable,
 } from './receivables.service.js';
 
-export function receivableRoutes(app: FastifyInstance) {
+export function receivableRoutes(app: FastifyInstance, config: Config) {
   const routes = app.withTypeProvider<ZodTypeProvider>();
   const onRequest = [app.authenticate];
 
@@ -63,7 +64,13 @@ export function receivableRoutes(app: FastifyInstance) {
     '/receivables/:id',
     { onRequest, schema: { params: idParams } },
     async (request, reply) => {
-      await deleteReceivable(app.prisma, request.userId, request.params.id);
+      await deleteReceivable(
+        app.prisma,
+        request.userId,
+        request.params.id,
+        config.UPLOAD_DIR,
+        request.log,
+      );
       return reply.status(204).send();
     },
   );
