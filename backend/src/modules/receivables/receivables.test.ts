@@ -426,6 +426,25 @@ describe('pinjamkan uang (D-86)', () => {
     expect(await ctx.balance()).toBe(80_000);
   });
 
+  it('transaksi pinjaman jatuh di tanggal catatan (WIB), bukan hari ini', async () => {
+    const ctx = await setup();
+    await lend(ctx, { date: '2026-11-10' });
+    await ctx.call('POST', '/receivables', {
+      direction: 'PAYABLE',
+      title: 'Pinjam',
+      date: '2026-11-11',
+      debtors: [{ name: 'Rina', amount: 1_000 }],
+      loanWalletId: ctx.bca,
+    });
+    const items = (await ctx.call('GET', '/transactions')).json().items as {
+      occurredAt: string;
+    }[];
+    const days = items.map((t) =>
+      new Date(t.occurredAt).toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }),
+    );
+    expect(days.sort()).toEqual(['2026-11-10', '2026-11-11']);
+  });
+
   it('ubah nominal orang: pengeluaran pinjaman ikut berubah', async () => {
     const ctx = await setup();
     const created = (await lend(ctx)).json();

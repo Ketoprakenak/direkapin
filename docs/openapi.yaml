@@ -561,7 +561,8 @@ paths:
         loanWalletId (dompet aktif) = pinjam tunai untuk PAYABLE: dibuat transaksi INCOME
         berkategori "Pinjaman diterima" (otomatis) sebesar nominal, catatan "Pinjam <nama> · <judul>".
         Untuk RECEIVABLE = pinjamkan uang (D-86): transaksi EXPENSE berkategori "Piutang diberikan"
-        (otomatis) sebesar Σ debtors, catatan "Pinjamkan <nama, nama> · <judul>". Bersama
+        (otomatis) sebesar Σ debtors, catatan "Pinjamkan <nama, nama> · <judul>". Transaksi pinjaman
+        (dua arah) jatuh di tanggal `date` (zona waktu user) dengan jam saat dicatat. Bersama
         sourceTransactionId = 400 loanWalletId "Bagi pengeluaran tidak memakai dompet".
       requestBody:
         required: true

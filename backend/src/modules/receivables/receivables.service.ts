@@ -1,10 +1,11 @@
 import type { Prisma, PrismaClient } from '@prisma/client';
 import type { z } from 'zod';
 import { AppError } from '../../lib/app-error.js';
-import { toDbDate } from '../../lib/dates.js';
+import { localDate, startOfDay, toDbDate } from '../../lib/dates.js';
 import { formatRupiah, toBigInt, toNumber } from '../../lib/money.js';
 import { isUniqueViolation } from '../../lib/schemas.js';
 import { assertCategory } from '../categories/categories.service.js';
+import { getTimezone } from '../me/me.service.js';
 import { assertActiveWallet } from '../wallets/wallets.service.js';
 import type {
   createReceivableBody,
@@ -219,12 +220,21 @@ export async function createReceivable(
     }
   }
 
+  // Transaksi pinjaman jatuh di tanggal catatan, jam sekarang (zona waktu user).
+  const timezone = loanWalletId ? await getTimezone(prisma, userId) : undefined;
+  const loanAt = (now: Date, tz: string) =>
+    new Date(
+      now.getTime() +
+        startOfDay(input.date, tz).getTime() -
+        startOfDay(localDate(now, tz), tz).getTime(),
+    );
+
   const create = () =>
     prisma.$transaction(async (tx) => {
       // Utang pinjam tunai = pemasukan "Pinjaman diterima" (D-78);
       // piutang dari dompet = pengeluaran "Piutang diberikan" sebesar total semua orang (D-86).
       let loanTransactionId: string | undefined;
-      if (loanWalletId) {
+      if (loanWalletId && timezone) {
         const payable = input.direction === 'PAYABLE';
         const names = input.debtors.map((d) => d.name).join(', ');
         const category = await upsertDefaultCategory(
@@ -239,7 +249,7 @@ export async function createReceivable(
             categoryId: category.id,
             type: category.type,
             amount: input.debtors.reduce((sum, d) => sum + toBigInt(d.amount), 0n),
-            occurredAt: new Date(),
+            occurredAt: loanAt(new Date(), timezone),
             note: `${payable ? 'Pinjam' : 'Pinjamkan'} ${names} · ${input.title}`.slice(0, 1000),
           },
         });
