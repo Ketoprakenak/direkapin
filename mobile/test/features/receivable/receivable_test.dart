@@ -135,6 +135,7 @@ void main() {
       find.widgetWithText(TextFormField, 'Nama 1'),
       'Sari',
     );
+    await tester.ensureVisible(find.text('Simpan'));
     await tester.tap(find.text('Simpan'));
     await tester.pumpAndSettle();
     expect(find.text('Nominal harus lebih dari 0'), findsOneWidget);
@@ -156,6 +157,22 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Rp55.000'), findsOneWidget);
+    expect(
+      find.text('Dicatat sebagai pengeluaran "Piutang diberikan"'),
+      findsOneWidget,
+    );
+    await tester.ensureVisible(find.text('Simpan'));
+    await tester.tap(find.text('Simpan'));
+    await tester.pumpAndSettle();
+    // Piutang dari menu = pinjamkan uang: dompet wajib (D-86).
+    expect(find.text('Pilih dompet'), findsOneWidget);
+    expect(fake.writes, isEmpty);
+
+    await tester.ensureVisible(find.byType(DropdownButtonFormField<String>));
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('BCA · Rp900.000').last);
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Simpan'));
     await tester.tap(find.text('Simpan'));
     await tester.pumpAndSettle();
@@ -163,6 +180,8 @@ void main() {
     final write = fake.writes.single;
     expect(write.path, '/receivables');
     expect(write.body!['title'], 'Kopi kantor');
+    expect(write.body, containsPair('loanWalletId', 'w1'));
+    expect(write.body!.containsKey('direction'), isFalse);
     expect(write.body!['debtors'], [
       {'name': 'Sari', 'amount': 30000},
       {'name': 'Dimas', 'amount': 25000},
@@ -410,6 +429,8 @@ void main() {
     expect(find.text('Bagi ke teman'), findsOneWidget);
     expect(find.text('Dari pengeluaran Makan Rp200.000'), findsOneWidget);
     expect(find.widgetWithText(TextFormField, 'Makan'), findsOneWidget);
+    // Sudah ada pengeluarannya: tanpa pilihan dompet (D-86).
+    expect(find.byType(DropdownButtonFormField<String>), findsNothing);
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Nama 1'),
       'Budi',

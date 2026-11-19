@@ -234,7 +234,7 @@ describe('payables (utang, FIN-20)', () => {
     });
   });
 
-  it('validasi utang: 1 orang, loanWalletId hanya utang dan dompet sah', async () => {
+  it('validasi utang: 1 orang, dompet pinjaman sah', async () => {
     const ctx = await setup();
     const two = await utang(ctx, {
       debtors: [
@@ -244,14 +244,6 @@ describe('payables (utang, FIN-20)', () => {
     });
     expect(two.statusCode).toBe(400);
     expect(two.json().error.details.debtors).toBe('Utang hanya untuk 1 orang');
-    const onReceivable = await ctx.call('POST', '/receivables', {
-      title: 'X',
-      date: '2026-11-16',
-      debtors: [{ name: 'A', amount: 1 }],
-      loanWalletId: ctx.bca,
-    });
-    expect(onReceivable.statusCode).toBe(400);
-    expect(onReceivable.json().error.details.loanWalletId).toBeDefined();
     const other = await setup('b@example.test');
     const foreign = await utang(ctx, { loanWalletId: other.bca });
     expect(foreign.statusCode).toBe(400);
@@ -399,6 +391,77 @@ describe('payables (utang, FIN-20)', () => {
     // Transaksi pinjaman dihapus: uangnya tidak ada lagi, jadi dihitung seperti talangan.
     await ctx.call('DELETE', `/transactions/${loan.loan.transactionId}`);
     expect(await dash()).toEqual([80_000, -2_950_000, 3_030_000]);
+  });
+});
+
+describe('pinjamkan uang (D-86)', () => {
+  type Ctx = Awaited<ReturnType<typeof setup>>;
+  const lend = (ctx: Ctx, extra: object = {}) =>
+    ctx.call('POST', '/receivables', {
+      title: 'Pinjam kos',
+      date: '2026-11-16',
+      debtors: [
+        { name: 'Budi', amount: 30_000 },
+        { name: 'Andi', amount: 20_000 },
+      ],
+      loanWalletId: ctx.bca,
+      ...extra,
+    });
+
+  it('piutang dari dompet: pengeluaran Piutang diberikan, saldo turun, cicilan naik lagi', async () => {
+    const ctx = await setup();
+    const res = await lend(ctx);
+    expect(res.statusCode).toBe(201);
+    const created = res.json();
+    expect(created.loan).toMatchObject({ amount: 50_000, wallet: { id: ctx.bca } });
+    expect(await ctx.balance()).toBe(50_000);
+    const [tx] = (await ctx.call('GET', '/transactions')).json().items;
+    expect(tx).toMatchObject({
+      type: 'EXPENSE',
+      amount: 50_000,
+      note: 'Pinjamkan Budi, Andi · Pinjam kos',
+      category: { name: 'Piutang diberikan' },
+    });
+    expect((await ctx.pay(created.debtors[0].id, 30_000)).statusCode).toBe(201);
+    expect(await ctx.balance()).toBe(80_000);
+  });
+
+  it('ubah nominal orang: pengeluaran pinjaman ikut berubah', async () => {
+    const ctx = await setup();
+    const created = (await lend(ctx)).json();
+    const res = await ctx.call('PATCH', `/receivables/debtors/${created.debtors[1].id}`, {
+      amount: 45_000,
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().loan.amount).toBe(75_000);
+    expect(await ctx.balance()).toBe(25_000);
+  });
+
+  it('utang pinjam tunai: ubah nominal ikut mengubah pemasukan pinjaman', async () => {
+    const ctx = await setup();
+    const created = (
+      await ctx.call('POST', '/receivables', {
+        direction: 'PAYABLE',
+        title: 'Pinjam',
+        date: '2026-11-16',
+        debtors: [{ name: 'Rina', amount: 50_000 }],
+        loanWalletId: ctx.bca,
+      })
+    ).json();
+    await ctx.call('PATCH', `/receivables/debtors/${created.debtors[0].id}`, { amount: 70_000 });
+    expect(await ctx.balance()).toBe(170_000);
+  });
+
+  it('ditolak: bareng sumber pengeluaran, dompet milik user lain', async () => {
+    const ctx = await setup();
+    const both = await lend(ctx, { sourceTransactionId: randomUUID() });
+    expect(both.statusCode).toBe(400);
+    expect(both.json().error.details.loanWalletId).toBe('Bagi pengeluaran tidak memakai dompet');
+    const other = await setup('b@example.test');
+    const foreign = await lend(ctx, { loanWalletId: other.bca });
+    expect(foreign.statusCode).toBe(400);
+    expect(foreign.json().error.details.loanWalletId).toBeDefined();
+    expect(await other.balance()).toBe(100_000);
   });
 });
 

@@ -70,6 +70,9 @@ class _ReceivableFormScreenState extends ConsumerState<ReceivableFormScreen> {
 
   bool get _isEdit => widget.receivable != null;
 
+  /// Piutang baru dari menu = pinjamkan uang, selalu dari dompet (D-86).
+  bool get _lend => !_isEdit && !_payable && widget.source == null;
+
   bool get _payable =>
       (widget.receivable?.direction ?? widget.direction).isPayable;
 
@@ -142,7 +145,7 @@ class _ReceivableFormScreenState extends ConsumerState<ReceivableFormScreen> {
           ...data,
           'clientId': _clientId,
           if (_payable) 'direction': 'PAYABLE',
-          if (_payable && _cash) 'loanWalletId': _walletId,
+          if ((_payable && _cash) || _lend) 'loanWalletId': _walletId,
           'sourceTransactionId': ?widget.source?.transactionId,
           if (note.isNotEmpty) 'note': note,
           'debtors': [
@@ -181,34 +184,36 @@ class _ReceivableFormScreenState extends ConsumerState<ReceivableFormScreen> {
     ),
     if (_cash) ...[
       const SizedBox(height: Spacing.md),
-      ref
-          .watch(walletsProvider(includeSavings: true))
-          .when(
-            loading: () => const LinearProgressIndicator(),
-            error: (error, _) => ErrorState(
-              error: error,
-              onRetry: () => ref.invalidate(walletsProvider),
-            ),
-            data: (items) => DropdownButtonFormField<String>(
-              initialValue: _walletId,
-              isExpanded: true,
-              items: [
-                for (final wallet in items)
-                  DropdownMenuItem(
-                    value: wallet.id,
-                    child: Text(
-                      '${wallet.name} · ${formatRupiah(wallet.balance)}',
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-              ],
-              decoration: const InputDecoration(labelText: 'Masuk ke dompet'),
-              onChanged: (value) => setState(() => _walletId = value),
-              validator: (value) => value == null ? 'Pilih dompet' : null,
-            ),
-          ),
+      _walletField('Masuk ke dompet'),
     ],
   ];
+
+  Widget _walletField(String label) => ref
+      .watch(walletsProvider(includeSavings: true))
+      .when(
+        loading: () => const LinearProgressIndicator(),
+        error: (error, _) => ErrorState(
+          error: error,
+          onRetry: () => ref.invalidate(walletsProvider),
+        ),
+        data: (items) => DropdownButtonFormField<String>(
+          initialValue: _walletId,
+          isExpanded: true,
+          items: [
+            for (final wallet in items)
+              DropdownMenuItem(
+                value: wallet.id,
+                child: Text(
+                  '${wallet.name} · ${formatRupiah(wallet.balance)}',
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+          ],
+          decoration: InputDecoration(labelText: label),
+          onChanged: (value) => setState(() => _walletId = value),
+          validator: (value) => value == null ? 'Pilih dompet' : null,
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -352,6 +357,10 @@ class _ReceivableFormScreenState extends ConsumerState<ReceivableFormScreen> {
                     ],
                   ],
                 ),
+                if (_lend) ...[
+                  const SizedBox(height: Spacing.md),
+                  _walletField('Dari dompet'),
+                ],
                 const SizedBox(height: Spacing.md),
                 FrameCard(
                   child: Column(
@@ -369,6 +378,11 @@ class _ReceivableFormScreenState extends ConsumerState<ReceivableFormScreen> {
                       if (source != null)
                         Text(
                           'Bagian kamu ${formatRupiah(source.amount - _total)}',
+                          style: theme.textTheme.labelSmall,
+                        ),
+                      if (_lend)
+                        Text(
+                          'Dicatat sebagai pengeluaran "Piutang diberikan"',
                           style: theme.textTheme.labelSmall,
                         ),
                     ],

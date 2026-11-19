@@ -24,6 +24,9 @@ const PAYMENT_CATEGORY = {
 /** Kategori bawaan pemasukan utang pinjam tunai (D-78). */
 const LOAN_CATEGORY = { ...PAYMENT_CATEGORY, name: 'Pinjaman diterima' } as const;
 
+/** Kategori bawaan pengeluaran piutang pinjamkan uang (D-86). */
+const LEND_CATEGORY = { ...PAYMENT_CATEGORY, name: 'Piutang diberikan', type: 'EXPENSE' } as const;
+
 type Direction = 'RECEIVABLE' | 'PAYABLE';
 
 const walletRefSelect = { select: { id: true, name: true, icon: true, color: true } } as const;
@@ -31,7 +34,7 @@ const walletRefSelect = { select: { id: true, name: true, icon: true, color: tru
 async function upsertDefaultCategory(
   tx: Prisma.TransactionClient,
   userId: string,
-  category: typeof PAYMENT_CATEGORY | typeof LOAN_CATEGORY,
+  category: typeof PAYMENT_CATEGORY | typeof LOAN_CATEGORY | typeof LEND_CATEGORY,
 ) {
   return tx.category.upsert({
     where: { userId_name_type: { userId, name: category.name, type: category.type } },
@@ -218,20 +221,26 @@ export async function createReceivable(
 
   const create = () =>
     prisma.$transaction(async (tx) => {
-      // Pinjam tunai: uang masuk ke dompet sebagai pemasukan "Pinjaman diterima" (D-78).
+      // Utang pinjam tunai = pemasukan "Pinjaman diterima" (D-78);
+      // piutang dari dompet = pengeluaran "Piutang diberikan" sebesar total semua orang (D-86).
       let loanTransactionId: string | undefined;
-      const [first] = input.debtors;
-      if (loanWalletId && first) {
-        const category = await upsertDefaultCategory(tx, userId, LOAN_CATEGORY);
+      if (loanWalletId) {
+        const payable = input.direction === 'PAYABLE';
+        const names = input.debtors.map((d) => d.name).join(', ');
+        const category = await upsertDefaultCategory(
+          tx,
+          userId,
+          payable ? LOAN_CATEGORY : LEND_CATEGORY,
+        );
         const loan = await tx.transaction.create({
           data: {
             userId,
             walletId: loanWalletId,
             categoryId: category.id,
-            type: 'INCOME',
-            amount: toBigInt(first.amount),
+            type: category.type,
+            amount: input.debtors.reduce((sum, d) => sum + toBigInt(d.amount), 0n),
             occurredAt: new Date(),
-            note: `Pinjam ${first.name} · ${input.title}`.slice(0, 1000),
+            note: `${payable ? 'Pinjam' : 'Pinjamkan'} ${names} · ${input.title}`.slice(0, 1000),
           },
         });
         loanTransactionId = loan.id;
@@ -312,6 +321,21 @@ export async function updateDebtor(
         ...(input.amount !== undefined && { amount: toBigInt(input.amount) }),
       },
     });
+    // Transaksi pinjaman selalu = total semua orang (D-86); nominalnya dikunci di PATCH /transactions.
+    const { loanTransactionId } = await tx.receivable.findUniqueOrThrow({
+      where: { id: debtor.receivableId },
+      select: { loanTransactionId: true },
+    });
+    if (input.amount !== undefined && loanTransactionId) {
+      const { _sum } = await tx.receivableDebtor.aggregate({
+        where: { receivableId: debtor.receivableId },
+        _sum: { amount: true },
+      });
+      await tx.transaction.update({
+        where: { id: loanTransactionId },
+        data: { amount: _sum.amount ?? 0n },
+      });
+    }
   });
   return toReceivableResponse(await findOwned(prisma, userId, debtor.receivableId));
 }

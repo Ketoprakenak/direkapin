@@ -232,6 +232,13 @@ Ref: D-85.
 - [x] PRD, DECISIONS, DESIGN
 - [x] Uji di HP asli (hapus lalu pasang ulang widget), lalu commit
 
+## Slice 27 — Piutang dari menu = pinjamkan uang (FIN-19, D-86) · Status: Selesai
+Ref: D-86.
+- [x] Backend: `loanWalletId` untuk RECEIVABLE → pengeluaran "Piutang diberikan", sinkron nominal saat orang diubah, test
+- [x] Mobile: "Dari dompet" wajib di form Catat piutang, info di detail, test
+- [x] PRD, DECISIONS, openapi
+- [x] Uji di HP asli, lalu commit
+
 ---
 
 ## Log
@@ -284,3 +291,5 @@ Ref: D-85.
 | 2026-11-16 | 18, 19, 20 | Tabungan, piutang talangan, dan utang (+ `clientId` saat catat, cap LUNAS TERBAYAR, kunci nominal transaksi tertaut, `/wallets` menolak tabungan) jalan di HP asli menurut owner. Backend 307 lolos + 1 dilewati, mobile 308 lolos, lint dan analyze bersih. Commit di `feat/p1-batch`; belum deploy dan rilis |
 | 2026-11-16 | 21 | Bagi ke teman jalan di HP asli menurut owner. Backend 314 lolos + 1 dilewati, mobile 318 lolos. Release notes `1.4.0` ditambahkan; merge `feat/p1-batch` ke `main`. Sisa: deploy backend (5 migrasi baru) di mini PC, `LATEST_APK_VERSION=1.4.0`, tag `v1.4.0` |
 | 2026-11-16 | 18–21 | Rilis `v1.4.0`: backend di-deploy di mini PC (5 migrasi baru), `LATEST_APK_VERSION=1.4.0`, tag `v1.4.0` menerbitkan APK. Aplikasi live di versi terbaru dan banner update muncul di HP menurut owner |
+| 2026-11-18 | 22–26 | Rilis `v1.5.0` dari `35dd556`: backend di-deploy di mini PC dengan `OWNER_EMAIL`, tag `v1.5.0` dipush. Fix `c75dd87` (POST `/invites` lewat tunnel = 415; `OWNER_EMAIL` kosong bikin api gagal start) di-deploy; buat kode undangan jalan di HP menurut owner. Backend 323 lolos + 1 dilewati, mobile 353 lolos. Hasil workflow APK dan `LATEST_APK_VERSION=1.5.0` belum dikonfirmasi |
+| 2026-11-19 | 27 | Piutang dari menu = pinjamkan uang (D-86): dompet berkurang lewat pengeluaran "Piutang diberikan", jalan di HP asli (APK debug) menurut owner. Backend 327 lolos + 1 dilewati, mobile 353 lolos. Belum di-deploy ke mini PC |

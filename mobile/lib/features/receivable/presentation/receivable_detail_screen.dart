@@ -154,7 +154,9 @@ class _Detail extends StatelessWidget {
               ),
               if (r.loan case final loan?)
                 Text(
-                  'Pinjaman masuk ke ${loan.wallet.name}',
+                  r.direction.isPayable
+                      ? 'Pinjaman masuk ke ${loan.wallet.name}'
+                      : 'Dipinjamkan dari ${loan.wallet.name}',
                   style: theme.textTheme.labelSmall,
                 ),
               if (r.note != null) ...[

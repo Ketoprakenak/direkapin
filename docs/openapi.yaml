@@ -558,8 +558,11 @@ paths:
       summary: Catat talangan (beberapa orang, nominal manual) atau utang (1 orang)
       description: >
         direction PAYABLE wajib tepat 1 orang (400 debtors "Utang hanya untuk 1 orang").
-        loanWalletId (hanya PAYABLE, dompet aktif) = pinjam tunai: dibuat transaksi INCOME
+        loanWalletId (dompet aktif) = pinjam tunai untuk PAYABLE: dibuat transaksi INCOME
         berkategori "Pinjaman diterima" (otomatis) sebesar nominal, catatan "Pinjam <nama> · <judul>".
+        Untuk RECEIVABLE = pinjamkan uang (D-86): transaksi EXPENSE berkategori "Piutang diberikan"
+        (otomatis) sebesar Σ debtors, catatan "Pinjamkan <nama, nama> · <judul>". Bersama
+        sourceTransactionId = 400 loanWalletId "Bagi pengeluaran tidak memakai dompet".
       requestBody:
         required: true
         content:
@@ -582,7 +585,7 @@ paths:
                     properties:
                       name: { type: string, minLength: 1, maxLength: 30 }
                       amount: { $ref: '#/components/schemas/Money' }
-                loanWalletId: { type: string, format: uuid, description: 'Hanya PAYABLE; dompet tujuan pinjam tunai' }
+                loanWalletId: { type: string, format: uuid, description: 'PAYABLE: dompet tujuan pinjam tunai; RECEIVABLE: dompet asal uang yang dipinjamkan (D-86)' }
                 clientId: { type: string, format: uuid, description: 'Kirim ulang dengan clientId sama = 201 catatan yang sama, tanpa pinjaman dobel (D-58)' }
                 sourceTransactionId:
                   type: string

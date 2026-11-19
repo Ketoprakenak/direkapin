@@ -36,11 +36,12 @@ export const createReceivableBody = z
         message: 'Hanya untuk piutang',
       });
     }
-    if (body.direction === 'RECEIVABLE' && body.loanWalletId) {
+    // Bagi pengeluaran sudah punya pengeluarannya sendiri; dompet = pinjamkan uang (D-86).
+    if (body.sourceTransactionId && body.loanWalletId) {
       ctx.addIssue({
         code: 'custom',
         path: ['loanWalletId'],
-        message: 'Hanya untuk utang pinjam tunai',
+        message: 'Bagi pengeluaran tidak memakai dompet',
       });
     }
   });
