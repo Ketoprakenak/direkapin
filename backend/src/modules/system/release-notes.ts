@@ -5,6 +5,13 @@
  */
 export const releaseNotes: { version: string; items: string[] }[] = [
   {
+    version: '1.5.2',
+    items: [
+      'Pinjaman utang/piutang jatuh di tanggal catatan, bukan hari ini',
+      'Hapus utang/piutang = batal total: pinjaman dan cicilannya ikut terhapus, saldo balik',
+    ],
+  },
+  {
     version: '1.5.1',
     items: [
       'Catat piutang dari menu = pinjamkan uang: pilih dompet, saldonya langsung berkurang',
