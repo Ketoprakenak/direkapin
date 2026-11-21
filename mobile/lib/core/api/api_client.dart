@@ -8,6 +8,9 @@ part 'api_client.g.dart';
 
 const _apiUrl = String.fromEnvironment('API_URL');
 
+/// Satu halaman list; [nextCursor] null = sudah habis.
+typedef ApiPage<T> = ({List<T> items, String? nextCursor});
+
 @Riverpod(keepAlive: true)
 Dio apiClient(Ref ref) {
   assert(_apiUrl != '', 'Jalankan dengan --dart-define=API_URL=...');

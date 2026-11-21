@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../../../core/api/api_client.dart';
 import '../../../core/api/api_error.dart';
 import 'wallet_models.dart';
 
@@ -57,6 +58,23 @@ class WalletApi {
     return (response.data!['items'] as List)
         .map((item) => Transfer.fromJson(item as Map<String, dynamic>))
         .toList();
+  });
+
+  /// Transfer masuk/keluar satu dompet per halaman, terbaru di atas.
+  Future<ApiPage<Transfer>> transferPage({
+    required String walletId,
+    String? cursor,
+  }) => apiCall(() async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/transfers',
+      queryParameters: {'limit': 50, 'wallet': walletId, 'cursor': ?cursor},
+    );
+    return (
+      items: (response.data!['items'] as List)
+          .map((item) => Transfer.fromJson(item as Map<String, dynamic>))
+          .toList(),
+      nextCursor: response.data!['nextCursor'] as String?,
+    );
   });
 
   Future<void> createTransfer(Map<String, Object?> data) =>

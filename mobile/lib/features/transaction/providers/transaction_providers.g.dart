@@ -50,19 +50,11 @@ final class TransactionApiProvider
 
 String _$transactionApiHash() => r'03c80eaabb4ef2dcf7633a37601a24a262cee0f8';
 
-@ProviderFor(walletTransactions)
+@ProviderFor(WalletTransactions)
 final walletTransactionsProvider = WalletTransactionsFamily._();
 
 final class WalletTransactionsProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<Transaction>>,
-          List<Transaction>,
-          FutureOr<List<Transaction>>
-        >
-    with
-        $FutureModifier<List<Transaction>>,
-        $FutureProvider<List<Transaction>> {
+    extends $AsyncNotifierProvider<WalletTransactions, WalletHistory> {
   WalletTransactionsProvider._({
     required WalletTransactionsFamily super.from,
     required String super.argument,
@@ -86,15 +78,7 @@ final class WalletTransactionsProvider
 
   @$internal
   @override
-  $FutureProviderElement<List<Transaction>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<List<Transaction>> create(Ref ref) {
-    final argument = this.argument as String;
-    return walletTransactions(ref, argument);
-  }
+  WalletTransactions create() => WalletTransactions();
 
   @override
   bool operator ==(Object other) {
@@ -108,10 +92,17 @@ final class WalletTransactionsProvider
 }
 
 String _$walletTransactionsHash() =>
-    r'96ba3083c1fa9ad066369452bd70c19d98eb5a87';
+    r'1ed0e9d8d38672af1feb51a1164c820d86f2d5e5';
 
 final class WalletTransactionsFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<List<Transaction>>, String> {
+    with
+        $ClassFamilyOverride<
+          WalletTransactions,
+          AsyncValue<WalletHistory>,
+          WalletHistory,
+          FutureOr<WalletHistory>,
+          String
+        > {
   WalletTransactionsFamily._()
     : super(
         retry: null,
@@ -126,6 +117,27 @@ final class WalletTransactionsFamily extends $Family
 
   @override
   String toString() => r'walletTransactionsProvider';
+}
+
+abstract class _$WalletTransactions extends $AsyncNotifier<WalletHistory> {
+  late final _$args = ref.$arg as String;
+  String get walletId => _$args;
+
+  FutureOr<WalletHistory> build(String walletId);
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<WalletHistory>, WalletHistory>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<WalletHistory>, WalletHistory>,
+              AsyncValue<WalletHistory>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, () => build(_$args));
+  }
 }
 
 /// Cari & filter transaksi (FIN-11). [type] = `INCOME`/`EXPENSE`, tanggal `YYYY-MM-DD`.

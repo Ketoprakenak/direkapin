@@ -39,19 +39,28 @@ class TransfersScreen extends ConsumerWidget {
 }
 
 class TransferTile extends StatelessWidget {
-  const TransferTile(this.transfer, {super.key});
+  const TransferTile(this.transfer, {super.key, this.walletId});
 
   final Transfer transfer;
+
+  /// Diisi di riwayat satu dompet: judul dan nominal dilihat dari dompet itu.
+  final String? walletId;
 
   @override
   Widget build(BuildContext context) {
     final when = transfer.occurredAt.toLocal();
+    final incoming = walletId == transfer.toWallet.id;
+    final other = incoming ? transfer.fromWallet : transfer.toWallet;
     return ListTile(
       leading: IconCircle(
-        icon: transfer.toWallet.icon,
-        color: transfer.toWallet.color,
+        icon: walletId == null ? transfer.toWallet.icon : other.icon,
+        color: walletId == null ? transfer.toWallet.color : other.color,
       ),
-      title: Text('${transfer.fromWallet.name} ke ${transfer.toWallet.name}'),
+      title: Text(
+        walletId == null
+            ? '${transfer.fromWallet.name} ke ${transfer.toWallet.name}'
+            : '${incoming ? 'Dari' : 'Ke'} ${other.name}',
+      ),
       subtitle: Text(
         [
           transfer.note ?? '${formatShortDate(when)}, ${formatTime(when)}',
@@ -60,7 +69,12 @@ class TransferTile extends StatelessWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      trailing: AmountText(transfer.amount),
+      trailing: walletId == null
+          ? AmountText(transfer.amount)
+          : AmountText(
+              incoming ? transfer.amount : -transfer.amount,
+              signed: true,
+            ),
       onTap: () => context.pushNamed(Routes.transferDetail, extra: transfer),
     );
   }

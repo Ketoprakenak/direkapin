@@ -601,6 +601,8 @@ void main() {
       final server = formServer();
       await pumpRoutedApp(tester, server, routeName: Routes.wallets);
       expect(find.text('Rp500.000'), findsOneWidget);
+      // Tombol tambah di app bar, bukan FAB yang menutupi ikon edit dompet terbawah.
+      expect(find.byType(FloatingActionButton), findsNothing);
 
       await tester.tap(find.byTooltip('Tambah dompet'));
       await tester.pumpAndSettle();

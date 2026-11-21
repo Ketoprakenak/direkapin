@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../../../core/api/api_client.dart';
 import '../../../core/api/api_error.dart';
 import 'transaction_models.dart';
 
@@ -32,6 +33,23 @@ class TransactionApi {
     return (response.data!['items'] as List)
         .map((item) => Transaction.fromJson(item as Map<String, dynamic>))
         .toList();
+  });
+
+  /// Transaksi satu dompet per halaman, terbaru di atas.
+  Future<ApiPage<Transaction>> page({
+    required String walletId,
+    String? cursor,
+  }) => apiCall(() async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/transactions',
+      queryParameters: {'limit': 50, 'wallet': walletId, 'cursor': ?cursor},
+    );
+    return (
+      items: (response.data!['items'] as List)
+          .map((item) => Transaction.fromJson(item as Map<String, dynamic>))
+          .toList(),
+      nextCursor: response.data!['nextCursor'] as String?,
+    );
   });
 
   /// ID transaksi baru, untuk upload fotonya.

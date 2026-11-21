@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/router.dart';
-import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/money_widgets.dart';
 import '../../../core/widgets/state_views.dart';
 import '../data/wallet_models.dart';
@@ -25,12 +24,13 @@ class WalletsScreen extends ConsumerWidget {
             icon: const Icon(Icons.swap_horiz_rounded),
             onPressed: () => context.pushNamed(Routes.transfers),
           ),
+          // Bukan FAB: FAB menutupi ikon edit dompet di baris terbawah.
+          IconButton(
+            tooltip: 'Tambah dompet',
+            icon: const Icon(Icons.add_rounded),
+            onPressed: () => showWalletSheet(context),
+          ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        tooltip: 'Tambah dompet',
-        onPressed: () => showWalletSheet(context),
-        child: const Icon(Icons.add_rounded),
       ),
       body: wallets.when(
         loading: () => const ListSkeleton(),
@@ -45,7 +45,6 @@ class WalletsScreen extends ConsumerWidget {
                 ),
               )
             : ListView.builder(
-                padding: const EdgeInsets.only(bottom: Spacing.xxl * 2),
                 itemCount: items.length,
                 itemBuilder: (context, index) => _WalletTile(items[index]),
               ),
