@@ -5,6 +5,14 @@
  */
 export const releaseNotes: { version: string; items: string[] }[] = [
   {
+    version: '1.5.3',
+    items: [
+      'Riwayat dompet ikut menampilkan transfer masuk/keluar, jadi cocok dengan saldo',
+      'Riwayat dompet bisa "Muat lagi" dan ditutup baris saldo awal',
+      'Tombol tambah dompet pindah ke atas, tidak menutupi tombol edit lagi',
+    ],
+  },
+  {
     version: '1.5.2',
     items: [
       'Pinjaman utang/piutang jatuh di tanggal catatan, bukan hari ini',
